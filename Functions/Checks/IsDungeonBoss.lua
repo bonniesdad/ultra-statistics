@@ -1,5 +1,3 @@
--- Dungeon/Raid boss identification helpers (ported from UltraHardcore)
-
 function IsDungeonBoss(unitGUID)
   if not unitGUID then
     return false, false
@@ -18,8 +16,6 @@ function IsDungeonBoss(unitGUID)
     return false, false
   end
 
-  -- NOTE: Large table intentionally kept identical to UltraHardcore to match behavior.
-  -- This is the comprehensive list of WoW Classic dungeon boss NPC IDs.
   local dungeonBossIDs = {
     -- Ragefire Chasm
     [11520] = true,

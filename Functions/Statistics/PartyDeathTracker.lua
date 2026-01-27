@@ -1,5 +1,3 @@
--- Party Death Tracker (ported/minimized from UltraHardcore)
-
 PartyDeathTracker = PartyDeathTracker or {}
 
 local function UnitIsFeigningDeath(unitID)

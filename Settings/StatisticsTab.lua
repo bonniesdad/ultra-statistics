@@ -712,8 +712,8 @@ local function AttachSettingCheckbox(radio, settingName)
     if GLOBAL_SETTINGS then
       GLOBAL_SETTINGS[settingName] = v
     end
-    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
-      UltraHardcoreStatsFrame.UpdateRowVisibility()
+    if UltraStatsFrame and UltraStatsFrame.UpdateRowVisibility then
+      UltraStatsFrame.UpdateRowVisibility()
     end
   end)
 end

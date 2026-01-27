@@ -1,5 +1,3 @@
--- Critical hit statistics tracker (ported/minimized from UltraHardcore)
-
 CritTracker = CritTracker or {}
 
 function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)

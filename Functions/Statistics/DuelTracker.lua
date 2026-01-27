@@ -1,5 +1,3 @@
--- Duel Tracker (ported from UltraHardcore)
-
 local GLOBAL_DUEL_WINNER_KNOCKOUT = getglobal('DUEL_WINNER_KNOCKOUT')
 local GLOBAL_DUEL_WINNER_RETREAT = getglobal('DUEL_WINNER_RETREAT')
 

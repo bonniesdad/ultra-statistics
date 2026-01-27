@@ -1,5 +1,3 @@
--- Kill Tracker (ported from UltraHardcore)
-
 KillTracker = KillTracker or {}
 
 function KillTracker.HandlePartyKill(destGUID)

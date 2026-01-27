@@ -1,5 +1,3 @@
--- Track lowest health percentage (ported/minimized from UltraHardcore)
-
 local pvpPauseLowestHealth = false
 local pvpPauseLowestHealthThisLevel = false
 local pvpPauseLowestHealthThisSession = false

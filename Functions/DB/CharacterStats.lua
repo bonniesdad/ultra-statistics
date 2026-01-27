@@ -1,5 +1,3 @@
--- Character Stats Management (ported/minimized from UltraHardcore)
-
 local statsInitialized = false
 
 local function copyValue(value)

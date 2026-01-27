@@ -1,9 +1,5 @@
--- Settings.lua (UltraStatistics)
--- Clone of UltraHardcore settings frame styling, but currently only the Stats tab is present.
-
 radioButtons = {}
 
--- Layout constants for consistent spacing (global so StatisticsTab.lua can access it)
 LAYOUT = {
   SECTION_HEADER_HEIGHT = 28,
   ROW_HEIGHT = 46,
@@ -39,15 +35,15 @@ local function initializeTempSettings()
 end
 
 local CLASS_BACKGROUND_MAP = {
-  WARRIOR = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_warrior.png',
-  PALADIN = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_pally.png',
-  HUNTER = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_hunter.png',
-  ROGUE = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_rogue.png',
-  PRIEST = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_priest.png',
-  MAGE = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_mage.png',
-  WARLOCK = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_warlock.png',
-  DRUID = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_druid.png',
-  SHAMAN = 'Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\bg_shaman.png',
+  WARRIOR = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_warrior.png',
+  PALADIN = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_pally.png',
+  HUNTER = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_hunter.png',
+  ROGUE = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_rogue.png',
+  PRIEST = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_priest.png',
+  MAGE = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_mage.png',
+  WARLOCK = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_warlock.png',
+  DRUID = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_druid.png',
+  SHAMAN = 'Interface\\AddOns\\UltraStatistics\\Textures\\bg_shaman.png',
 }
 
 local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
@@ -108,8 +104,14 @@ titleBar:SetBackdropColor(0, 0, 0, 0.95)
 
 local titleBarBackground = titleBar:CreateTexture(nil, 'BACKGROUND')
 titleBarBackground:SetAllPoints()
-titleBarBackground:SetTexture('Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\header.png')
+titleBarBackground:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\header.png')
 titleBarBackground:SetTexCoord(0, 1, 0, 1)
+
+local titleBarLeftIcon = titleBar:CreateTexture(nil, 'OVERLAY')
+titleBarLeftIcon:SetSize(36, 36)
+titleBarLeftIcon:SetPoint('LEFT', titleBar, 'LEFT', 15, 3)
+titleBarLeftIcon:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\bonnie0.png')
+titleBarLeftIcon:SetTexCoord(0, 1, 0, 1)
 
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
@@ -124,7 +126,7 @@ dividerFrame:SetFrameLevel(20)
 
 local dividerTexture = dividerFrame:CreateTexture(nil, 'ARTWORK')
 dividerTexture:SetAllPoints()
-dividerTexture:SetTexture('Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\divider.png')
+dividerTexture:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\divider.png')
 dividerTexture:SetTexCoord(0, 1, 0, 1)
 
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
@@ -137,8 +139,8 @@ closeButton:SetScript('OnClick', function()
   initializeTempSettings()
   settingsFrame:Hide()
 end)
-closeButton:SetNormalTexture('Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\header-x.png')
-closeButton:SetPushedTexture('Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\header-x.png')
+closeButton:SetNormalTexture('Interface\\AddOns\\UltraStatistics\\Textures\\header-x.png')
+closeButton:SetPushedTexture('Interface\\AddOns\\UltraStatistics\\Textures\\header-x.png')
 closeButton:SetHighlightTexture('Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight', 'ADD')
 
 local closeButtonTex = closeButton:GetNormalTexture()
@@ -184,7 +186,6 @@ SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
 
 initializeTempSettings()
 
--- Minimap button (same libs/behavior as UltraHardcore)
 local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraStatistics', {
   type = 'data source',
   text = 'ULTRA STATISTICS',

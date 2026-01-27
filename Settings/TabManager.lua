@@ -1,6 +1,3 @@
--- TabManager.lua (UltraStatistics)
--- Clone of UltraHardcore tab styling, but currently only implements the Stats tab.
-
 local TAB_WIDTH = 200
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
@@ -64,7 +61,7 @@ local function createTabButton(text, index, parentFrame)
 
   local background = button:CreateTexture(nil, 'BACKGROUND')
   background:SetAllPoints()
-  background:SetTexture('Interface\\AddOns\\UltraStatistics\\UltraHardcore\\Textures\\tab_texture.png')
+  background:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\tab_texture.png')
   button.backgroundTexture = background
 
   button:SetBackdrop({

@@ -1,5 +1,3 @@
--- Item Usage Tracker (ported from UltraHardcore)
-
 ItemTracker = ItemTracker or {}
 
 local healingPotionSpellIDs = {

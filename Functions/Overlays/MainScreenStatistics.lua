@@ -2,7 +2,7 @@
 -- Shows the same statistics that appear in the settings panel, but on the main screen at all times
 
 -- Create the main statistics frame with backdrop styling
-local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent, 'BackdropTemplate')
+local statsFrame = CreateFrame('Frame', 'UltraStatsFrame', UIParent, 'BackdropTemplate')
 statsFrame:SetSize(220, 360) -- Increased width for better spacing
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
 
@@ -650,8 +650,8 @@ local function UpdateRowVisibility()
 end
 
 -- Make UpdateRowVisibility globally accessible
-UltraHardcoreStatsFrame = statsFrame
-UltraHardcoreStatsFrame.UpdateRowVisibility = UpdateRowVisibility
+UltraStatsFrame = statsFrame
+UltraStatsFrame.UpdateRowVisibility = UpdateRowVisibility
 
 -- Hide the frame if the statistics setting is off
 local function CheckAddonEnabled()

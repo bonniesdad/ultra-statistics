@@ -1,6 +1,3 @@
--- Statistics Tracking Toast Notifications (UltraStatistics)
--- Ported from UltraHardcore with DB + texture path adjustments.
-
 StatisticsTrackingToast = StatisticsTrackingToast or {}
 
 local TOAST_WIDTH = 260
@@ -744,7 +741,6 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
   end
   local iconMarkup = (cfg.type == 'money') and '' or GetStatIconMarkup(statKey)
 
-  -- Preserve UltraHardcore behavior: if these "record" stats didn't actually improve, skip.
   if statKey == 'highestCritValue' then
     local newVal = tonumber(newValue) or 0
     local oldVal = tonumber(oldValue) or 0
