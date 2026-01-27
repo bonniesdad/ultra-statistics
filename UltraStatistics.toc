@@ -1,0 +1,52 @@
+## Interface: 11508, 20505
+## Title: Ultra Statistics
+## Version: 1.0.0
+## Author: BonniesDad
+## Notes: Statistis for WoW Classic characters.
+## IconTexture: Interface\AddOns\UltraStatistics\Textures\stats-icons\playerJumps.png
+## SavedVariables: UltraStatisticsDB
+
+UltraStatistics.lua
+
+## Libs
+Libs/LibStub/LibStub.lua
+Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
+Libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
+Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua
+Libs/AceComm-3.0/AceComm-3.0.xml
+Libs/AceSerializer-3.0/AceSerializer-3.0.xml
+
+## Functions
+Functions/Utils/FormatNumber.lua
+Functions/Utils/FrameUtils.lua
+
+Functions/DB/SaveDBData.lua
+Functions/DB/LoadDBData.lua
+Functions/DB/CharacterStats.lua
+
+Functions/Checks/IsEnemyElite.lua
+Functions/Checks/IsEnemyRareElite.lua
+Functions/Checks/IsEnemyWorldBoss.lua
+Functions/Checks/IsDungeonBoss.lua
+
+Functions/Statistics/ItemTracker.lua
+Functions/Statistics/KillTracker.lua
+Functions/Statistics/CritTracker.lua
+Functions/Statistics/PartyDeathTracker.lua
+Functions/Statistics/TrackLowestHealth.lua
+Functions/Statistics/TrackPlayerDeaths.lua
+Functions/Statistics/TrackAvoidance.lua
+Functions/Statistics/TrackGold.lua
+Functions/Statistics/TrackJumps.lua
+Functions/Statistics/Track360s.lua
+Functions/Statistics/DuelTracker.lua
+Functions/Statistics/CombatLogDispatcher.lua
+Functions/Statistics/DuelEventListener.lua
+
+Settings/TabManager.lua
+Settings/Settings.lua
+Settings/StatisticsTab.lua
+Settings/SettingsTab.lua
+Settings/InfoTab.lua
+Functions/Overlays/StatisticsTrackingToast.lua
+Functions/Overlays/MainScreenStatistics.lua
