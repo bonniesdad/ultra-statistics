@@ -28,6 +28,7 @@ Functions/Utils/ExpansionCheck.lua
 Functions/DB/SaveDBData.lua
 Functions/DB/LoadDBData.lua
 Functions/DB/CharacterStats.lua
+Functions/Utils/ImportFromUltra.lua
 
 Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua

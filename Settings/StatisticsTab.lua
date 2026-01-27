@@ -2039,10 +2039,31 @@ function InitializeStatisticsTab(tabContents)
     end
   end)
 
+  -- Import from Ultra button
+  local importButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
+  importButton:SetSize(140, 30)
+  importButton:SetPoint('BOTTOMRIGHT', tabContents[1], 'BOTTOM', -50, -35)
+  importButton:SetText('Import Stats from Ultra')
+  importButton:SetScript('OnEnter', function()
+    GameTooltip:SetOwner(importButton, 'ANCHOR_RIGHT')
+    GameTooltip:SetText('Import higher stats from the Ultra / UltraHardcore addon if you have it installed.')
+    GameTooltip:Show()
+  end)
+  importButton:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+  importButton:SetScript('OnClick', function()
+    if _G.ShowImportFromUltraDialog then
+      _G.ShowImportFromUltraDialog()
+    else
+      print('ULTRA STATISTICS - Import not available. Reload UI.')
+    end
+  end)
+
   -- Share button for Statistics tab
   local shareButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
   shareButton:SetSize(80, 30)
-  shareButton:SetPoint('BOTTOM', tabContents[1], 'BOTTOM', 0, -35)
+  shareButton:SetPoint('BOTTOMLEFT', tabContents[1], 'BOTTOM', 50, -35)
   shareButton:SetText('Share')
 
   -- Add tooltip

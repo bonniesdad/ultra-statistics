@@ -15,10 +15,10 @@ function LoadDBData()
 
   -- Defaults needed by the ported Statistics UI + on-screen overlay.
   local defaultSettings = {
-    showOnScreenStatistics = true,
+    showOnScreenStatistics = false,
     -- Statistics tracking/toasts
-    showStatisticsTracking = true,
-    minimalStatisticsTracking = true,
+    showStatisticsTracking = false,
+    minimalStatisticsTracking = false,
     statisticsTrackingTierOnly = false,
     statisticsToastEnabled = {},
     -- Statistics panel appearance

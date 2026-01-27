@@ -26,7 +26,8 @@ local LAYOUT = {
   PAGE_WIDTH = 520,
   ROW_WIDTH = 480,
   SEARCH_WIDTH = 400,
-  HEADER_HEIGHT = 22,
+  HEADER_HEIGHT = 28,
+  HEADER_PADDING_H = 12,
   ROW_HEIGHT = 30,
   COLOR_ROW_HEIGHT = 24,
   SECTION_GAP = 10,
@@ -113,11 +114,11 @@ function InitializeSettingsTab(tabContents)
     end
   end
 
-  -- Search and options container
+  -- Search and options container (content offset down by 40)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
   searchBox:SetSize(LAYOUT.SEARCH_WIDTH, 24)
   searchBox:SetAutoFocus(false)
-  searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -20)
+  searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -60)
 
   local searchPlaceholder = searchBox:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
   searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
@@ -217,16 +218,17 @@ function InitializeSettingsTab(tabContents)
       self:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
     end)
 
+    local headerPad = LAYOUT.HEADER_PADDING_H or 12
     local sectionHeader =
       sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-    sectionHeader:SetPoint('LEFT', sectionHeaderButton, 'LEFT', 4, 0)
+    sectionHeader:SetPoint('LEFT', sectionHeaderButton, 'LEFT', headerPad, 0)
     sectionHeader:SetText(section.title)
     sectionHeader:SetTextColor(0.9, 0.85, 0.75, 1)
     sectionHeader:SetShadowOffset(1, -1)
     sectionHeader:SetShadowColor(0, 0, 0, 0.8)
 
     local headerIcon = sectionHeaderButton:CreateTexture(nil, 'ARTWORK')
-    headerIcon:SetPoint('RIGHT', sectionHeaderButton, 'RIGHT', -6, 0)
+    headerIcon:SetPoint('RIGHT', sectionHeaderButton, 'RIGHT', -headerPad, 0)
     headerIcon:SetSize(16, 16)
     headerIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
     sectionChildren[sectionIndex] = {}
@@ -246,13 +248,9 @@ function InitializeSettingsTab(tabContents)
         numRows = numRows + 1
         local checkbox =
           CreateFrame('CheckButton', nil, sectionFrame, 'ChatConfigCheckButtonTemplate')
-        checkbox:SetPoint(
-          'TOPLEFT',
-          sectionFrame,
-          'TOPLEFT',
-          10,
-          -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
-        )
+        local rowY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
+        checkbox:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, rowY)
+        checkbox._originalOffsetY = rowY
         checkbox.Text:SetText(checkboxItem.name)
         checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
         checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
@@ -332,13 +330,9 @@ function InitializeSettingsTab(tabContents)
           numRows = numRows + 1
           local repositionButton = CreateFrame('Button', nil, sectionFrame, 'UIPanelButtonTemplate')
           repositionButton:SetSize(180, 25)
-          repositionButton:SetPoint(
-            'TOPLEFT',
-            sectionFrame,
-            'TOPLEFT',
-            10,
-            -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
-          )
+          local btnY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
+          repositionButton:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, btnY)
+          repositionButton._originalOffsetY = btnY
           repositionButton:SetText('Reposition Statistics Toast')
           repositionButton:SetScript('OnClick', function()
             if _G.EnableStatisticsTrackingToastRepositioning then
@@ -363,6 +357,7 @@ function InitializeSettingsTab(tabContents)
           repositionButton:SetScript('OnLeave', function()
             GameTooltip:Hide()
           end)
+          repositionButton._uhcSearch = 'reposition statistics toast notification position'
           table.insert(sectionChildren[sectionIndex], repositionButton)
         end
       end
@@ -454,14 +449,15 @@ function InitializeSettingsTab(tabContents)
   })
   displayHeaderBtn:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
   displayHeaderBtn:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  local displayHeaderPad = LAYOUT.HEADER_PADDING_H or 12
   local displayHeaderText = displayHeaderBtn:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  displayHeaderText:SetPoint('LEFT', displayHeaderBtn, 'LEFT', 4, 0)
+  displayHeaderText:SetPoint('LEFT', displayHeaderBtn, 'LEFT', displayHeaderPad, 0)
   displayHeaderText:SetText('Statistics Display')
   displayHeaderText:SetTextColor(0.9, 0.85, 0.75, 1)
   displayHeaderText:SetShadowOffset(1, -1)
   displayHeaderText:SetShadowColor(0, 0, 0, 0.8)
   local displayHeaderIcon = displayHeaderBtn:CreateTexture(nil, 'ARTWORK')
-  displayHeaderIcon:SetPoint('RIGHT', displayHeaderBtn, 'RIGHT', -6, 0)
+  displayHeaderIcon:SetPoint('RIGHT', displayHeaderBtn, 'RIGHT', -displayHeaderPad, 0)
   displayHeaderIcon:SetSize(16, 16)
   displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
 
@@ -492,6 +488,11 @@ function InitializeSettingsTab(tabContents)
   local bgSlider = CreateFrame('Slider', nil, opacityRow, 'OptionsSliderTemplate')
   bgSlider:SetPoint('LEFT', percentText, 'RIGHT', 10, 0)
   bgSlider:SetSize(180, 16)
+  local bgSliderTrack = bgSlider:CreateTexture(nil, 'BACKGROUND')
+  bgSliderTrack:SetAllPoints(bgSlider)
+  bgSliderTrack:SetTexture('Interface\\Tooltips\\UI-Tooltip-Background')
+  bgSliderTrack:SetTexCoord(0, 1, 0, 1)
+  bgSliderTrack:SetVertexColor(0.2, 0.2, 0.25, 0.95)
   bgSlider:SetMinMaxValues(0, 100)
   bgSlider:SetValueStep(1)
   bgSlider:SetObeyStepOnDrag(true)
@@ -522,6 +523,11 @@ function InitializeSettingsTab(tabContents)
   local borderSlider = CreateFrame('Slider', nil, borderOpacityRow, 'OptionsSliderTemplate')
   borderSlider:SetPoint('LEFT', borderPercentText, 'RIGHT', 10, 0)
   borderSlider:SetSize(180, 16)
+  local borderSliderTrack = borderSlider:CreateTexture(nil, 'BACKGROUND')
+  borderSliderTrack:SetAllPoints(borderSlider)
+  borderSliderTrack:SetTexture('Interface\\Tooltips\\UI-Tooltip-Background')
+  borderSliderTrack:SetTexCoord(0, 1, 0, 1)
+  borderSliderTrack:SetVertexColor(0.2, 0.2, 0.25, 0.95)
   borderSlider:SetMinMaxValues(0, 100)
   borderSlider:SetValueStep(1)
   borderSlider:SetObeyStepOnDrag(true)
@@ -548,6 +554,52 @@ function InitializeSettingsTab(tabContents)
     end
     scrollChild:SetHeight(total + 30)
   end
+
+  local function applySearchFilter(query)
+    local q = string.lower(query or '')
+    if q == '' then
+      -- Restore all and use saved collapse state for Statistics
+      local saved = GLOBAL_SETTINGS.collapsedSettingsSections.presetSection['Statistics']
+      if saved == nil then
+        saved = false
+      end
+      sectionCollapsed[1] = saved
+      sectionHeaderIcons[1]:SetTexture(
+        saved and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
+      )
+      for _, child in ipairs(sectionChildren[1]) do
+        child:ClearAllPoints()
+        child:SetPoint('TOPLEFT', sectionFrames[1], 'TOPLEFT', 10, child._originalOffsetY or 0)
+        child:SetShown(not saved)
+      end
+      sectionFrames[1]:SetHeight(saved and sectionCollapsedHeights[1] or sectionExpandedHeights[1])
+    else
+      -- Expand Statistics section and filter children
+      sectionCollapsed[1] = false
+      sectionHeaderIcons[1]:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
+      local visibleCount = 0
+      for _, child in ipairs(sectionChildren[1]) do
+        local blob = child._uhcSearch or ''
+        if IsSearchMatch(blob, q) then
+          child:Show()
+          child:ClearAllPoints()
+          child:SetPoint(
+            'TOPLEFT',
+            sectionFrames[1],
+            'TOPLEFT',
+            10,
+            -(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * ROW_HEIGHT)
+          )
+          visibleCount = visibleCount + 1
+        else
+          child:Hide()
+        end
+      end
+      sectionFrames[1]:SetHeight(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * ROW_HEIGHT + 5)
+    end
+    recalcContentHeight()
+  end
+
   recalcContentHeight()
   scrollFrame:SetScript('OnSizeChanged', function()
     scrollChild:SetWidth(scrollFrame:GetWidth() - 10)
@@ -602,6 +654,7 @@ function InitializeSettingsTab(tabContents)
     else
       searchPlaceholder:Hide()
     end
+    applySearchFilter(txt)
   end)
   searchBox:SetScript('OnEditFocusGained', function()
     if (searchBox:GetText() or '') == '' then
@@ -612,6 +665,12 @@ function InitializeSettingsTab(tabContents)
     if (searchBox:GetText() or '') == '' then
       searchPlaceholder:Show()
     end
+  end)
+  searchBox:SetScript('OnEscapePressed', function(self)
+    self:SetText('')
+    self:ClearFocus()
+    searchPlaceholder:Show()
+    applySearchFilter('')
   end)
 
   _G.updateCheckboxes = updateCheckboxes
