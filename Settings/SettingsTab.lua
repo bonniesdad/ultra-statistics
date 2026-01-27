@@ -1,9 +1,13 @@
 -- Settings Tab - Statistics-related options only
 
 local settingsCheckboxOptions = { {
-  name = 'On Screen Statistics',
+  name = 'Show Tiers',
+  dbSettingsValueName = 'showTiers',
+  tooltip = 'Use the tier system (Bronze, Silver, Gold, Master, Demon)',
+}, {
+  name = 'Show Statistics on Main Screen',
   dbSettingsValueName = 'showOnScreenStatistics',
-  tooltip = 'Show important ULTRA statistics on the screen at all times',
+  tooltip = 'Show selected statistics on the screen at all times',
 }, {
   name = 'Show Statistics Notifications',
   dbSettingsValueName = 'showStatisticsTracking',
@@ -58,18 +62,18 @@ function updateRadioButtons()
   end
 end
 
--- Single section: Statistics
+-- Single section: Statistics (showOnScreenStatistics is in Statistics Display panel)
 local STATISTICS_SECTIONS = { {
   title = 'Statistics',
   settings = {
-    'showOnScreenStatistics',
+    'showTiers',
     'showStatisticsTracking',
     'minimalStatisticsTracking',
     'statisticsTrackingTierOnly',
   },
 } }
 
-function InitializeSettingsTab(tabContents)
+function UltraStatistics_InitializeSettingsTab(tabContents)
   if not tabContents or not tabContents[2] then return end
   if tabContents[2].initialized then return end
   tabContents[2].initialized = true
@@ -114,11 +118,25 @@ function InitializeSettingsTab(tabContents)
     end
   end
 
-  -- Search and options container (content offset down by 40)
+  -- Search row full width: [Search bar stretches] [Clear] [Collapse All], right edge lines up with panel below (LEFT 10, RIGHT -10)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
-  searchBox:SetSize(LAYOUT.SEARCH_WIDTH, 24)
+  searchBox:SetHeight(24)
   searchBox:SetAutoFocus(false)
-  searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -60)
+
+  local clearSearchButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  clearSearchButton:SetSize(56, 22)
+  clearSearchButton:SetText('Clear')
+
+  local collapseAllButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  collapseAllButton:SetSize(96, 22)
+  collapseAllButton:SetText('Collapse')
+  collapseAllButton:SetPoint('TOPRIGHT', tabContents[2], 'TOPRIGHT', -40, -60)
+
+  clearSearchButton:SetPoint('TOPRIGHT', collapseAllButton, 'TOPLEFT', -6, 0)
+
+  searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 20, -60)
+  searchBox:SetPoint('TOPRIGHT', clearSearchButton, 'TOPLEFT', -6, 0)
+  searchBox:SetHeight(24)
 
   local searchPlaceholder = searchBox:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
   searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
@@ -452,7 +470,7 @@ function InitializeSettingsTab(tabContents)
   local displayHeaderPad = LAYOUT.HEADER_PADDING_H or 12
   local displayHeaderText = displayHeaderBtn:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   displayHeaderText:SetPoint('LEFT', displayHeaderBtn, 'LEFT', displayHeaderPad, 0)
-  displayHeaderText:SetText('Statistics Display')
+  displayHeaderText:SetText('Main Screen Statistics Display')
   displayHeaderText:SetTextColor(0.9, 0.85, 0.75, 1)
   displayHeaderText:SetShadowOffset(1, -1)
   displayHeaderText:SetShadowColor(0, 0, 0, 0.8)
@@ -463,7 +481,44 @@ function InitializeSettingsTab(tabContents)
 
   local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
   local GAP = 12
-  local displayRowsHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + LAYOUT.COLOR_ROW_HEIGHT * 2 + 20
+  -- On Screen Statistics checkbox as first row in Statistics Display
+  local onScreenCheckboxItem
+  for _, item in ipairs(settingsCheckboxOptions) do
+    if item.dbSettingsValueName == 'showOnScreenStatistics' then
+      onScreenCheckboxItem = item
+      break
+    end
+  end
+  if onScreenCheckboxItem then
+    local onScreenCheckbox =
+      CreateFrame('CheckButton', nil, displaySection, 'ChatConfigCheckButtonTemplate')
+    onScreenCheckbox:SetPoint(
+      'TOPLEFT',
+      displaySection,
+      'TOPLEFT',
+      10,
+      -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+    )
+    onScreenCheckbox.Text:SetText(onScreenCheckboxItem.name)
+    onScreenCheckbox.Text:SetPoint('LEFT', onScreenCheckbox, 'RIGHT', 5, 0)
+    onScreenCheckbox:SetChecked(tempSettings.showOnScreenStatistics)
+    checkboxes['showOnScreenStatistics'] = onScreenCheckbox
+    onScreenCheckbox:SetScript('OnClick', function(self)
+      tempSettings.showOnScreenStatistics = self:GetChecked()
+      cascadeDependencyUpdates('showOnScreenStatistics')
+    end)
+    onScreenCheckbox:SetScript('OnEnter', function()
+      GameTooltip:SetOwner(onScreenCheckbox, 'ANCHOR_RIGHT')
+      GameTooltip:SetText(onScreenCheckboxItem.tooltip or '')
+      GameTooltip:Show()
+    end)
+    onScreenCheckbox:SetScript('OnLeave', function()
+      GameTooltip:Hide()
+    end)
+  end
+
+  local displayRowsHeight =
+    HEADER_HEIGHT + HEADER_CONTENT_GAP + ROW_HEIGHT + LAYOUT.COLOR_ROW_HEIGHT * 2 + 20
   displaySection:SetHeight(displayRowsHeight)
 
   local opacityRow = CreateFrame('Frame', nil, displaySection)
@@ -473,7 +528,7 @@ function InitializeSettingsTab(tabContents)
     displaySection,
     'TOPLEFT',
     10,
-    -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+    -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ROW_HEIGHT)
   )
   local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   opacityLabel:SetPoint('LEFT', opacityRow, 'LEFT', 0, 0)
@@ -599,6 +654,37 @@ function InitializeSettingsTab(tabContents)
     end
     recalcContentHeight()
   end
+
+  clearSearchButton:SetScript('OnClick', function()
+    searchBox:SetText('')
+    searchBox:ClearFocus()
+    searchPlaceholder:Show()
+    applySearchFilter('')
+  end)
+
+  collapseAllButton:SetScript('OnClick', function()
+    for idx = 1, #sectionFrames do
+      if sectionCollapsed[idx] ~= nil then
+        sectionCollapsed[idx] = true
+        if sectionHeaderIcons[idx] then
+          sectionHeaderIcons[idx]:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
+        end
+        if sectionCollapsedHeights[idx] then
+          sectionFrames[idx]:SetHeight(sectionCollapsedHeights[idx])
+        end
+        if sectionChildren[idx] then
+          for _, child in ipairs(sectionChildren[idx]) do
+            child:SetShown(false)
+          end
+        end
+        local title = (STATISTICS_SECTIONS[idx] and STATISTICS_SECTIONS[idx].title)
+        if title and GLOBAL_SETTINGS.collapsedSettingsSections and GLOBAL_SETTINGS.collapsedSettingsSections.presetSection then
+          GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[title] = true
+        end
+      end
+    end
+    recalcContentHeight()
+  end)
 
   recalcContentHeight()
   scrollFrame:SetScript('OnSizeChanged', function()

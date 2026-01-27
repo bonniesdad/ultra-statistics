@@ -23,12 +23,7 @@ local function GetStatIconMarkup(statKey)
   if type(statKey) ~= 'string' or statKey == '' then
     return ''
   end
-  -- Prefer built-in icon for money stats.
-  if statKey == 'goldGained' or statKey == 'goldSpent' then
-    local goldIconPath = 'Interface\\MoneyFrame\\UI-GoldIcon'
-    return string.format('|T%s:%d:%d:0:0|t', goldIconPath, STAT_ICON_SIZE, STAT_ICON_SIZE)
-  end
-  -- Icon path convention in UltraStatistics: Textures/stats-icons/<statKey>.png
+  -- Use addon textures for all stats (petDeaths, blocks, parries, dodges, resists, goldSpent, goldGained, highestCritValue, highestHealCritValue, partyMemberDeaths, etc.)
   local path = 'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. statKey .. '.png'
   return string.format('|T%s:%d:%d:0:0|t', path, STAT_ICON_SIZE, STAT_ICON_SIZE)
 end
@@ -770,7 +765,7 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     local sign = (delta or 0) >= 0 and '+' or ''
     deltaText = sign .. tostring(delta or 0)
   end
-  local iconMarkup = (cfg.type == 'money') and '' or GetStatIconMarkup(statKey)
+  local iconMarkup = GetStatIconMarkup(statKey)
 
   if statKey == 'highestCritValue' then
     local newVal = tonumber(newValue) or 0

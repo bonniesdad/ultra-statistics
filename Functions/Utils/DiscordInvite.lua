@@ -12,16 +12,20 @@ do
       dialogFrame:Raise()
       if editBox then
         if C_Timer and C_Timer.After then
-          C_Timer.After(0.05, function()
+          C_Timer.After(0, function()
             editBox:SetFocus()
-            editBox:HighlightText()
             editBox:SetCursorPosition(0)
-            dialogFrame:Raise()
+            C_Timer.After(0.05, function()
+              if editBox and dialogFrame and dialogFrame:IsShown() then
+                editBox:HighlightText()
+                dialogFrame:Raise()
+              end
+            end)
           end)
         else
           editBox:SetFocus()
-          editBox:HighlightText()
           editBox:SetCursorPosition(0)
+          editBox:HighlightText()
           dialogFrame:Raise()
         end
       end
@@ -87,16 +91,21 @@ do
         if editBox then
           editBox:SetText(inviteUrl)
           if C_Timer and C_Timer.After then
-            C_Timer.After(0.05, function()
+            -- Defer to next frame so dialog is fully shown, then focus and highlight
+            C_Timer.After(0, function()
               editBox:SetFocus()
-              editBox:HighlightText()
               editBox:SetCursorPosition(0)
-              dialogFrame:Raise()
+              C_Timer.After(0.05, function()
+                if editBox and dialogFrame and dialogFrame:IsShown() then
+                  editBox:HighlightText()
+                  dialogFrame:Raise()
+                end
+              end)
             end)
           else
             editBox:SetFocus()
-            editBox:HighlightText()
             editBox:SetCursorPosition(0)
+            editBox:HighlightText()
             dialogFrame:Raise()
           end
         end

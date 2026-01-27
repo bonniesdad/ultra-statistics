@@ -1,6 +1,6 @@
 -- Info Tab Content
 -- Initialize Info Tab when called
-function InitializeInfoTab(tabContents)
+function UltraStatistics_InitializeInfoTab(tabContents)
   if not tabContents or not tabContents[3] then return end
 
   -- Check if already initialized to prevent duplicates
@@ -33,17 +33,14 @@ function InitializeInfoTab(tabContents)
   bugReportText:SetWidth(500)
   bugReportText:SetNonSpaceWrap(true)
 
-  -- Discord invite button
+  -- Discord invite button (opens dialog with copyable invite link)
   local discordButton = CreateFrame('Button', nil, tabContents[3], 'UIPanelButtonTemplate')
   discordButton:SetSize(220, 24)
   discordButton:SetPoint('TOP', bugReportText, 'BOTTOM', 0, -10)
   discordButton:SetText('Discord Invite Link')
   discordButton:SetScript('OnClick', function()
-    if GetCVarBool('scriptErrors') then
-      -- No built-in URL open in WoW; show a hint
-      print(
-        'Ultra Statistics: Join the Discord linked in the addon description or CurseForge page.'
-      )
+    if _G.UHC_DiscordInvite_ShowDialog then
+      _G.UHC_DiscordInvite_ShowDialog()
     end
   end)
 

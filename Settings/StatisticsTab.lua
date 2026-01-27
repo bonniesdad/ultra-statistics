@@ -101,6 +101,14 @@ local SECTION_CONTENT_BOTTOM_PADDING = 12 -- gap between last row and frame edge
 local SECTION_BOTTOM_PADDING = 30 -- add breathing room below each section
 local STAT_TIER_ICON_SIZE = 14
 local STAT_TIER_ICON_GAP = 12
+-- Death stats do not show an icon next to the toast button
+local STATS_WITHOUT_TOAST_ICON = {
+  playerDeaths = true,
+  playerDeathsThisSession = true,
+  playerDeathsThisLevel = true,
+  petDeaths = true,
+  partyMemberDeaths = true,
+}
 -- Fill colors progress from calm/neutral to impressive across tiers
 local TIER_COLORS = {
   { 0.78, 0.49, 0.20, 0.95 }, -- tier 1: bronze
@@ -920,6 +928,9 @@ function UpdateStatBar(statKey, value)
   local bar = statBars[statKey]
   if not bar then return end
 
+  local showTiers = not GLOBAL_SETTINGS or GLOBAL_SETTINGS.showTiers ~= false
+  local showNotifications = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking
+
   local cfg = STAT_BAR_CONFIG[statKey] or STAT_BAR_CONFIG.default
   local valueOnly = cfg.valueOnly
   local fillColor = cfg.color or STAT_BAR_CONFIG.default.color
@@ -962,7 +973,7 @@ function UpdateStatBar(statKey, value)
         displayText = isZero and '-' or (formatNumberWithCommas(rawValue) .. suffix)
       end
 
-      -- Calculate and show tier for non-percent valueOnly stats (unless noTier is set)
+      -- Calculate and show tier for non-percent valueOnly stats (unless noTier is set), or use white when Show Tiers off
       if not cfg.noTier then
         local base = cfg.base or STAT_BAR_CONFIG.default.base
         local multiplier = cfg.multiplier or STAT_BAR_CONFIG.default.multiplier
@@ -972,26 +983,40 @@ function UpdateStatBar(statKey, value)
 
         local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
         local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
-        -- Get tier color
-        local tierColorIndex = math.min(tier, #TIER_COLORS)
-        local tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
-        -- Use tier color for value text
-        textColor = tierColor
-        -- Store tier info for positioning after value text is set up
-        if bar.tier then
-          bar.tier:SetText(tierName)
-          -- Check if toast is disabled and grey out if so
-          local toastEnabled =
-            GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
-          if toastEnabled then
-            bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
-          else
-            bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
+        if showTiers then
+          -- Use tier color for value text
+          local tierColorIndex = math.min(tier, #TIER_COLORS)
+          local tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
+          textColor = tierColor
+          -- Store tier info for positioning after value text is set up
+          if bar.tier then
+            bar.tier:SetText(tierName)
+            -- Check if toast is disabled and grey out if so
+            local toastEnabled =
+              GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+            if toastEnabled then
+              bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+            else
+              bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
+            end
+            bar.tier.tierMin = tierMin
+            bar.tier.tierMax = tierMax
+            bar.tier.tierCurrent = value or 0
+            bar.tier.tierName = tierName
           end
-          bar.tier.tierMin = tierMin
-          bar.tier.tierMax = tierMax
-          bar.tier.tierCurrent = value or 0
-          bar.tier.tierName = tierName
+        else
+          -- Show Tiers off: white text, tier UI hidden (toast button shown later when notifications on)
+          textColor = { 1, 1, 1, 1 }
+          if bar.tier then
+            bar.tier:SetText('')
+            bar.tier:Hide()
+          end
+          if bar.tierBg then
+            bar.tierBg:Hide()
+          end
+          if bar.tierIcon then
+            bar.tierIcon:Hide()
+          end
         end
       else
         -- Hide tier for stats with noTier flag
@@ -1021,16 +1046,18 @@ function UpdateStatBar(statKey, value)
     bar.text:SetText(displayText or '')
     bar.text:SetTextColor(textColor[1] or 1, textColor[2] or 1, textColor[3] or 1, 1)
 
-    -- Position tier text after value text is positioned (for non-percent valueOnly stats)
-    if cfg.type ~= 'percent' and not cfg.noTier and bar.tier and bar.tier:GetText() ~= '' then
+    -- Position tier text after value text is positioned (for non-percent valueOnly stats, when Show Tiers on)
+    if cfg.type ~= 'percent' and not cfg.noTier and showTiers and bar.tier and bar.tier:GetText() ~= '' then
       bar.tier:Show()
       bar.tier:ClearAllPoints()
       -- Position tier text consistently from the right (moved 30px left)
       bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
-      if bar.tierIcon then
+      if bar.tierIcon and showNotifications then
         bar.tierIcon:ClearAllPoints()
         bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
         bar.tierIcon:Show()
+      elseif bar.tierIcon then
+        bar.tierIcon:Hide()
       end
       if bar.tierBg then
         bar.tierBg:ClearAllPoints()
@@ -1041,17 +1068,16 @@ function UpdateStatBar(statKey, value)
       end
     end
 
-    -- Show toast button for non-tier stats and certain percent stats when showStatisticsTracking is enabled
+    -- Show toast button: when Notifications on, for noTier/percent-with-toast stats or for any tier stat when Show Tiers off
     local shouldShowToastButton = false
-    if bar.toastButton and GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking then
-      -- Show for noTier stats or percent stats that should have toast buttons
+    if bar.toastButton and showNotifications then
       local percentStatsWithToast = {
         lowestHealth = true,
         lowestHealthThisLevel = true,
         lowestHealthThisSession = true,
         duelsWinPercent = true,
       }
-      if cfg.noTier or percentStatsWithToast[statKey] then
+      if cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier) then
         shouldShowToastButton = true
       end
     end
@@ -1061,6 +1087,17 @@ function UpdateStatBar(statKey, value)
       bar.toastButton:ClearAllPoints()
       -- Position toast button consistently from the right (moved 30px left)
       bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
+      -- Show stat icon to the right of the toast button only when Notifications on (deaths have no icon)
+      if bar.tierIcon and statKey and showNotifications and not STATS_WITHOUT_TOAST_ICON[statKey] then
+        bar.tierIcon:ClearAllPoints()
+        bar.tierIcon:SetPoint('LEFT', bar.toastButton, 'RIGHT', STAT_TIER_ICON_GAP, 0)
+        bar.tierIcon:SetTexture(
+          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. statKey .. '.png'
+        )
+        bar.tierIcon:Show()
+      elseif bar.tierIcon then
+        bar.tierIcon:Hide()
+      end
       -- Update visual state based on toast enabled status
       local toastEnabled =
         GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
@@ -1071,6 +1108,11 @@ function UpdateStatBar(statKey, value)
       end
     elseif bar.toastButton then
       bar.toastButton:Hide()
+      -- Don't hide tierIcon when tier is visible; it was set above and follows showNotifications like other icons
+      local tierVisible = cfg.type ~= 'percent' and not cfg.noTier and showTiers and bar.tier and bar.tier:GetText() ~= ''
+      if bar.tierIcon and not tierVisible then
+        bar.tierIcon:Hide()
+      end
     end
 
     -- Keep bar height consistent
@@ -1130,7 +1172,7 @@ function UpdateStatBar(statKey, value)
 
     local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
     local tierColor = nil
-    if not cfg.color and #TIER_COLORS > 0 then
+    if showTiers and not cfg.color and #TIER_COLORS > 0 then
       local tierColorIndex = math.min(tier, #TIER_COLORS)
       tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
       effectiveFillColor = tierColor
@@ -1140,35 +1182,33 @@ function UpdateStatBar(statKey, value)
     bar.fill:SetWidth(availableWidth * progress)
     bar.text:SetText(formatNumberWithCommas(value or 0))
 
-    -- Set tier name (bronze, silver, gold, master, demon)
+    -- Set tier name and colours when Show Tiers on; otherwise white text
     local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
-    bar.tier:SetText(tierName)
-
-    -- Set tier text color to match tier color
-    if not tierColor then
-      local tierColorIndex = math.min(tier, #TIER_COLORS)
-      tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
-    end
-    -- Check if toast is disabled and grey out if so
-    local toastEnabled =
-      GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
-    if toastEnabled then
-      bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+    if showTiers then
+      bar.tier:SetText(tierName)
+      if not tierColor then
+        local tierColorIndex = math.min(tier, #TIER_COLORS)
+        tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
+      end
+      local toastEnabled =
+        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+      if toastEnabled then
+        bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+      else
+        bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
+      end
+      if not cfg.color then
+        bar.text:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+      end
+      if bar.tier then
+        bar.tier.tierMin = tierMin
+        bar.tier.tierMax = tierMax
+        bar.tier.tierCurrent = value or 0
+        bar.tier.tierName = tierName
+      end
     else
-      bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
-    end
-
-    -- Set value text color to match tier color (only if not using custom color)
-    if not cfg.color then
-      bar.text:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
-    end
-
-    -- Store tier range and name for tooltip
-    if bar.tier then
-      bar.tier.tierMin = tierMin
-      bar.tier.tierMax = tierMax
-      bar.tier.tierCurrent = value or 0
-      bar.tier.tierName = tierName
+      bar.tier:SetText('')
+      bar.text:SetTextColor(1, 1, 1, 1)
     end
 
     if bar.minText then
@@ -1207,9 +1247,9 @@ function UpdateStatBar(statKey, value)
     bar.maxText:SetDrawLayer('OVERLAY', 50)
   end
 
-  -- Layout: tier on the left, value on the right
+  -- Layout: tier on the left, value on the right (only when Show Tiers on); hide tier icon when Notifications off
   if bar.tier then
-    if cfg.type == 'percent' or cfg.noTier then
+    if cfg.type == 'percent' or cfg.noTier or not showTiers then
       bar.tier:Hide()
       if bar.tierIcon then
         bar.tierIcon:Hide()
@@ -1220,35 +1260,34 @@ function UpdateStatBar(statKey, value)
     else
       bar.tier:Show()
       bar.tier:ClearAllPoints()
-      -- Position tier text consistently from the right (moved 30px left)
       bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
-      if bar.tierIcon then
+      if bar.tierIcon and showNotifications then
         bar.tierIcon:ClearAllPoints()
         bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
         bar.tierIcon:Show()
+      elseif bar.tierIcon then
+        bar.tierIcon:Hide()
       end
       if bar.tierBg then
         bar.tierBg:ClearAllPoints()
         bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
-        -- Pill should wrap tier text only (icon sits outside the pill)
         bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
         bar.tierBg:Show()
       end
     end
   end
 
-  -- Show toast button for non-tier stats and certain percent stats when showStatisticsTracking is enabled
+  -- Show toast button when Notifications on: noTier/percent-with-toast, or any tier stat when Show Tiers off
   if bar.toastButton then
     local shouldShowToastButton = false
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking then
-      -- Show for noTier stats or percent stats that should have toast buttons
+    if showNotifications then
       local percentStatsWithToast = {
         lowestHealth = true,
         lowestHealthThisLevel = true,
         lowestHealthThisSession = true,
         duelsWinPercent = true,
       }
-      if cfg.noTier or percentStatsWithToast[statKey] then
+      if cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier) then
         shouldShowToastButton = true
       end
     end
@@ -1258,6 +1297,17 @@ function UpdateStatBar(statKey, value)
       bar.toastButton:ClearAllPoints()
       -- Position toast button consistently from the right (moved 30px left)
       bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
+      -- Show stat icon to the right of the toast button only when Notifications on (deaths have no icon)
+      if bar.tierIcon and statKey and showNotifications and not STATS_WITHOUT_TOAST_ICON[statKey] then
+        bar.tierIcon:ClearAllPoints()
+        bar.tierIcon:SetPoint('LEFT', bar.toastButton, 'RIGHT', STAT_TIER_ICON_GAP, 0)
+        bar.tierIcon:SetTexture(
+          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. statKey .. '.png'
+        )
+        bar.tierIcon:Show()
+      elseif bar.tierIcon then
+        bar.tierIcon:Hide()
+      end
       -- Update visual state based on toast enabled status
       local toastEnabled =
         GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
@@ -1268,6 +1318,10 @@ function UpdateStatBar(statKey, value)
       end
     else
       bar.toastButton:Hide()
+      -- Hide icon when toast hidden (not in tier mode here; tier mode icon is handled by Layout block above)
+      if bar.tierIcon and (cfg.type == 'percent' or cfg.noTier or not showTiers) then
+        bar.tierIcon:Hide()
+      end
     end
   end
   bar.text:ClearAllPoints()
@@ -1288,7 +1342,7 @@ function UpdateStatBar(statKey, value)
 end
 
 -- Initialize Statistics Tab when called
-function InitializeStatisticsTab(tabContents)
+function UltraStatistics_InitializeStatisticsTab(tabContents)
   -- Check if tabContents[1] exists
   if not tabContents or not tabContents[1] then return end
 
@@ -2046,7 +2100,9 @@ function InitializeStatisticsTab(tabContents)
   importButton:SetText('Import Stats from Ultra')
   importButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(importButton, 'ANCHOR_RIGHT')
-    GameTooltip:SetText('Import higher stats from the Ultra / UltraHardcore addon if you have it installed.')
+    GameTooltip:SetText(
+    'Import higher stats from the Ultra / UltraHardcore addon if you have it installed.'
+    )
     GameTooltip:Show()
   end)
   importButton:SetScript('OnLeave', function()

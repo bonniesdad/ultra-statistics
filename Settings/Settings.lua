@@ -139,8 +139,8 @@ local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 4)
 closeButton:SetSize(12, 12)
 closeButton:SetScript('OnClick', function()
-  if TabManagerResetTabState then
-    TabManagerResetTabState()
+  if UltraStatistics_ResetTabState then
+    UltraStatistics_ResetTabState()
   end
   initializeTempSettings()
   settingsFrame:Hide()
@@ -158,25 +158,26 @@ if closeButtonPushed then
   closeButtonPushed:SetTexCoord(0, 1, 0, 1)
 end
 
-function ToggleSettings()
+-- Use a unique name so we don't overwrite Ultra/UltraHardcore's ToggleSettings or menu opener
+function ToggleUltraStatistics()
   if settingsFrame:IsShown() then
-    if TabManagerResetTabState then
-      TabManagerResetTabState()
+    if UltraStatistics_ResetTabState then
+      UltraStatistics_ResetTabState()
     end
     settingsFrame:Hide()
   else
     updateSettingsFrameBackdrop()
-    if TabManagerInitializeTabs then
-      TabManagerInitializeTabs(settingsFrame)
+    if UltraStatistics_InitializeTabs then
+      UltraStatistics_InitializeTabs(settingsFrame)
     end
 
     initializeTempSettings()
 
-    if TabManagerHideAllTabs and TabManagerSetDefaultTab then
-      TabManagerHideAllTabs()
-      TabManagerSetDefaultTab()
-    elseif TabManagerSwitchToTab then
-      TabManagerSwitchToTab(1)
+    if UltraStatistics_HideAllTabs and UltraStatistics_SetDefaultTab then
+      UltraStatistics_HideAllTabs()
+      UltraStatistics_SetDefaultTab()
+    elseif UltraStatistics_SwitchToTab then
+      UltraStatistics_SwitchToTab(1)
     end
 
     settingsFrame:Show()
@@ -185,10 +186,9 @@ function ToggleSettings()
     end
   end
 end
-
-SLASH_TOGGLESETTINGS1 = '/ustats'
-SLASH_TOGGLESETTINGS2 = '/ultrastats'
-SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
+SLASH_ULTRASTATISTICS1 = '/ustats'
+SLASH_ULTRASTATISTICS2 = '/ultrastats'
+SlashCmdList['ULTRASTATISTICS'] = ToggleUltraStatistics
 
 initializeTempSettings()
 
@@ -198,7 +198,7 @@ local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraStatistics', {
   icon = 'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\playerJumps.png',
   OnClick = function(_, btn)
     if btn == 'LeftButton' then
-      ToggleSettings()
+      ToggleUltraStatistics()
     end
   end,
   OnTooltipShow = function(tooltip)
@@ -207,12 +207,26 @@ local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraStatistics', {
   end,
 })
 
-local minimapSettings = { hide = false }
-if UltraStatisticsDB and UltraStatisticsDB.minimapButton then
-  for key, value in pairs(UltraStatisticsDB.minimapButton) do
-    minimapSettings[key] = value
+-- Register minimap icon only after ADDON_LOADED so UltraStatisticsDB is the saved table from disk.
+-- LibDBIcon writes minimapPos into the db we pass; that must be UltraStatisticsDB.minimapButton so it persists.
+local function registerMinimapIcon()
+  if not UltraStatisticsDB then
+    UltraStatisticsDB = {}
   end
+  if not UltraStatisticsDB.minimapButton then
+    UltraStatisticsDB.minimapButton = { hide = false }
+  elseif UltraStatisticsDB.minimapButton.hide == nil then
+    UltraStatisticsDB.minimapButton.hide = false
+  end
+  local addonIcon = LibStub('LibDBIcon-1.0')
+  addonIcon:Register('UltraStatistics', addonLDB, UltraStatisticsDB.minimapButton)
 end
 
-local addonIcon = LibStub('LibDBIcon-1.0')
-addonIcon:Register('UltraStatistics', addonLDB, minimapSettings)
+local minimapLoadFrame = CreateFrame('Frame')
+minimapLoadFrame:RegisterEvent('ADDON_LOADED')
+minimapLoadFrame:SetScript('OnEvent', function(_, event, addonName)
+  if event == 'ADDON_LOADED' and addonName == 'UltraStatistics' then
+    minimapLoadFrame:UnregisterEvent('ADDON_LOADED')
+    registerMinimapIcon()
+  end
+end)

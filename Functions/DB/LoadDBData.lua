@@ -15,6 +15,7 @@ function LoadDBData()
 
   -- Defaults needed by the ported Statistics UI + on-screen overlay.
   local defaultSettings = {
+    showTiers = true,
     showOnScreenStatistics = false,
     -- Statistics tracking/toasts
     showStatisticsTracking = false,

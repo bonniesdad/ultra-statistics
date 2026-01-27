@@ -88,7 +88,7 @@ local function createTabButton(text, index, parentFrame)
   button.text = buttonText
 
   button:SetScript('OnClick', function()
-    TabManagerSwitchToTab(index)
+    UltraStatistics_SwitchToTab(index)
   end)
 
   button.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
@@ -104,7 +104,8 @@ local function createTabContent(_, parentFrame)
   return content
 end
 
-function TabManagerInitializeTabs(settingsFrame)
+-- Use UltraStatistics_* globals only so we never overwrite UltraHardcore's TabManager* when both addons load
+function UltraStatistics_InitializeTabs(settingsFrame)
   if tabButtons[1] then return end
 
   tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
@@ -115,7 +116,7 @@ function TabManagerInitializeTabs(settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame)
 end
 
-function TabManagerSwitchToTab(index)
+function UltraStatistics_SwitchToTab(index)
   index = tonumber(index) or 1
   if index < 1 then
     index = 1
@@ -182,12 +183,12 @@ function TabManagerSwitchToTab(index)
 
   activeTab = index
 
-  if index == 1 and InitializeStatisticsTab then
-    InitializeStatisticsTab(tabContents)
+  if index == 1 and UltraStatistics_InitializeStatisticsTab then
+    UltraStatistics_InitializeStatisticsTab(tabContents)
     if UpdateLowestHealthDisplay then
       if C_Timer and C_Timer.After then
         C_Timer.After(0, function()
-          if TabManagerGetActiveTab and TabManagerGetActiveTab() == 1 and UpdateLowestHealthDisplay then
+          if UltraStatistics_GetActiveTab and UltraStatistics_GetActiveTab() == 1 and UpdateLowestHealthDisplay then
             UpdateLowestHealthDisplay()
           end
         end)
@@ -195,22 +196,22 @@ function TabManagerSwitchToTab(index)
         UpdateLowestHealthDisplay()
       end
     end
-  elseif index == 2 and InitializeSettingsTab then
-    InitializeSettingsTab(tabContents)
-  elseif index == 3 and InitializeInfoTab then
-    InitializeInfoTab(tabContents)
+  elseif index == 2 and UltraStatistics_InitializeSettingsTab then
+    UltraStatistics_InitializeSettingsTab(tabContents)
+  elseif index == 3 and UltraStatistics_InitializeInfoTab then
+    UltraStatistics_InitializeInfoTab(tabContents)
   end
 end
 
-function TabManagerSetDefaultTab()
-  TabManagerSwitchToTab(1)
+function UltraStatistics_SetDefaultTab()
+  UltraStatistics_SwitchToTab(1)
 end
 
-function TabManagerGetActiveTab()
+function UltraStatistics_GetActiveTab()
   return activeTab
 end
 
-function TabManagerHideAllTabs()
+function UltraStatistics_HideAllTabs()
   for _, content in ipairs(tabContents) do
     content:Hide()
   end
@@ -239,7 +240,7 @@ function TabManagerHideAllTabs()
   end
 end
 
-function TabManagerResetTabState()
+function UltraStatistics_ResetTabState()
   activeTab = 1
   for _, content in ipairs(tabContents) do
     content:Hide()
