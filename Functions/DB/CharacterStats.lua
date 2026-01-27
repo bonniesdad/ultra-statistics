@@ -17,49 +17,39 @@ local CharacterStats = {
     lowestHealthThisLevel = 100,
     lowestHealthThisSession = 100,
     closeEscapes = 0,
-
     enemiesSlain = 0,
     elitesSlain = 0,
     rareElitesSlain = 0,
     worldBossesSlain = 0,
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
-
     petDeaths = 0,
     partyMemberDeaths = 0,
     -- Player death stats
     playerDeaths = 0,
     playerDeathsThisSession = 0,
     playerDeathsThisLevel = 0,
-
     -- Avoidance / mitigation
     blocks = 0,
     parries = 0,
     dodges = 0,
     resists = 0,
-
     healthPotionsUsed = 0,
     manaPotionsUsed = 0,
     bandagesUsed = 0,
     targetDummiesUsed = 0,
     grenadesUsed = 0,
-
     highestCritValue = 0,
     highestHealCritValue = 0,
-
     duelsTotal = 0,
     duelsWon = 0,
     duelsLost = 0,
     duelsWinPercent = 0,
-
     playerJumps = 0,
     player360s = 0,
-
     goldGained = 0, -- COPPER
     goldSpent = 0, -- COPPER
-
     lastLogoutTime = 0,
-
     -- XP verification fields (safe to keep at 0 for now)
     xpTotal = 0,
   },
@@ -152,13 +142,13 @@ function CharacterStats:LogStatsToChat()
   local playerLevel = UnitLevel('player') or 1
   local _, playerClass = UnitClass('player')
   local msg =
-    '[UltraStatistics] ' .. playerName .. ' (' .. (playerClass or 'Class') .. ' L' .. playerLevel .. ') - ' ..
-      'Lowest HP: ' .. string.format('%.1f', stats.lowestHealth or 100) .. '% - ' ..
-      'Enemies: ' .. formatNumberWithCommas(stats.enemiesSlain or 0) .. ' - ' ..
-      'Elites: ' .. formatNumberWithCommas(stats.elitesSlain or 0)
+    '[UltraStatistics] ' .. playerName .. ' (' .. (playerClass or 'Class') .. ' L' .. playerLevel .. ') - ' .. 'Lowest HP: ' .. string.format(
+      '%.1f',
+      stats.lowestHealth or 100
+    ) .. '% - ' .. 'Enemies: ' .. formatNumberWithCommas(
+      stats.enemiesSlain or 0
+    ) .. ' - ' .. 'Elites: ' .. formatNumberWithCommas(stats.elitesSlain or 0)
   DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 
 _G.CharacterStats = CharacterStats
-
-

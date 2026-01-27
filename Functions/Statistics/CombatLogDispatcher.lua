@@ -4,7 +4,8 @@ local frame = CreateFrame('Frame')
 frame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 
 frame:SetScript('OnEvent', function()
-  local _, subEvent, _, sourceGUID, _, _, _, destGUID, _, _, _, spellID = CombatLogGetCurrentEventInfo()
+  local _, subEvent, _, sourceGUID, _, _, _, destGUID, _, _, _, spellID =
+    CombatLogGetCurrentEventInfo()
 
   local amount
   if subEvent == 'SWING_DAMAGE' then
@@ -32,5 +33,3 @@ frame:SetScript('OnEvent', function()
     PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   end
 end)
-
-

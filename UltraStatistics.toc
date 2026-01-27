@@ -7,6 +7,7 @@
 ## SavedVariables: UltraStatisticsDB
 
 UltraStatistics.lua
+PatchNotes.lua
 
 ## Libs
 Libs/LibStub/LibStub.lua
@@ -17,8 +18,12 @@ Libs/AceComm-3.0/AceComm-3.0.xml
 Libs/AceSerializer-3.0/AceSerializer-3.0.xml
 
 ## Functions
+Functions/PatchNotesDisplay.lua
+
 Functions/Utils/FormatNumber.lua
 Functions/Utils/FrameUtils.lua
+Functions/Utils/DiscordInvite.lua
+Functions/Utils/ExpansionCheck.lua
 
 Functions/DB/SaveDBData.lua
 Functions/DB/LoadDBData.lua
@@ -48,5 +53,6 @@ Settings/Settings.lua
 Settings/StatisticsTab.lua
 Settings/SettingsTab.lua
 Settings/InfoTab.lua
+
 Functions/Overlays/StatisticsTrackingToast.lua
 Functions/Overlays/MainScreenStatistics.lua

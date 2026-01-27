@@ -17,14 +17,10 @@ jumpTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
   end
 
   hooksecurefunc('AscendStop', function()
-    if not IsFalling() then
-      return
-    end
+    if not IsFalling() then return end
     local now = GetTime()
     if not JumpCounter.lastJump or (now - JumpCounter.lastJump > JumpCounter.debounce) then
       JumpCounter:OnJump()
     end
   end)
 end)
-
-

@@ -34,7 +34,9 @@ local function GetStatIconMarkup(statKey)
 end
 
 local function GetFontStringPixelWidth(fs)
-  if not fs then return 0 end
+  if not fs then
+    return 0
+  end
   if fs.GetUnboundedStringWidth then
     return fs:GetUnboundedStringWidth() or 0
   end
@@ -45,8 +47,12 @@ local function GetFontStringPixelWidth(fs)
 end
 
 local function Clamp(n, minV, maxV)
-  if n < minV then return minV end
-  if n > maxV then return maxV end
+  if n < minV then
+    return minV
+  end
+  if n > maxV then
+    return maxV
+  end
   return n
 end
 
@@ -83,13 +89,23 @@ local function GetTierName(tier)
   if type(names) == 'table' then
     return names[tier] or names[5] or tostring(tier)
   end
-  local fallback = { [1] = 'Bronze', [2] = 'Silver', [3] = 'Gold', [4] = 'Master', [5] = 'Demon' }
+  local fallback = {
+    [1] = 'Bronze',
+    [2] = 'Silver',
+    [3] = 'Gold',
+    [4] = 'Master',
+    [5] = 'Demon',
+  }
   return fallback[tier] or fallback[5] or tostring(tier)
 end
 
 local function ClampInt(n, minV, maxV)
-  if n < minV then return minV end
-  if n > maxV then return maxV end
+  if n < minV then
+    return minV
+  end
+  if n > maxV then
+    return maxV
+  end
   return n
 end
 
@@ -133,9 +149,7 @@ local function GetTierDisplayName(tier)
   return tostring(name)
 end
 
-local EXCLUDED_STATS = {
-  duelsWinPercent = true,
-}
+local EXCLUDED_STATS = { duelsWinPercent = true }
 
 local function formatNumber(n)
   if _G.formatNumberWithCommas then
@@ -146,8 +160,12 @@ end
 
 local function FormatMoneyText(copper)
   copper = tonumber(copper) or 0
-  if copper < 0 then copper = -copper end
-  if copper == 0 then return '-' end
+  if copper < 0 then
+    copper = -copper
+  end
+  if copper == 0 then
+    return '-'
+  end
   local g = math.floor(copper / 10000)
   local s = math.floor((copper % 10000) / 100)
   local c = math.floor(copper % 100)
@@ -155,15 +173,18 @@ local function FormatMoneyText(copper)
   local parts = {}
   local iconSize = 12
   if g > 0 then
-    local goldIcon = string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local goldIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', g, goldIcon))
   end
   if s > 0 then
-    local silverIcon = string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local silverIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', s, silverIcon))
   end
   if c > 0 then
-    local copperIcon = string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local copperIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', c, copperIcon))
   end
   return (#parts > 0) and table.concat(parts, ' ') or '-'
@@ -178,7 +199,9 @@ local function FormatSignedMoney(delta, forcedSign)
     sign = delta >= 0 and '+' or '-'
   end
   local absText = FormatMoneyText(math.abs(delta))
-  if absText == '-' then absText = '0' end
+  if absText == '-' then
+    absText = '0'
+  end
   return sign .. absText
 end
 
@@ -215,9 +238,7 @@ end
 -- Position persistence functions (UltraStatisticsDB)
 local function SaveStatisticsTrackingToastPosition()
   local f = StatisticsTrackingToast.frame
-  if not f or not UltraStatisticsDB then
-    return
-  end
+  if not f or not UltraStatisticsDB then return end
 
   local point, _, relativePoint, xOfs, yOfs = f:GetPoint()
   UltraStatisticsDB.statisticsTrackingToastPosition = {
@@ -235,9 +256,7 @@ end
 
 local function LoadStatisticsTrackingToastPosition()
   local f = StatisticsTrackingToast.frame
-  if not f or not UltraStatisticsDB then
-    return
-  end
+  if not f or not UltraStatisticsDB then return end
 
   local pos = UltraStatisticsDB.statisticsTrackingToastPosition
   f:ClearAllPoints()
@@ -298,7 +317,12 @@ function StatisticsTrackingToast:EnableRepositioningMode()
       tile = true,
       tileSize = 8,
       edgeSize = 3,
-      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
     })
     f:SetBackdropColor(1, 1, 0, 0.2)
     f:SetBackdropBorderColor(1, 1, 0, 1)
@@ -365,7 +389,8 @@ local function EnsureFrames()
     return
   end
 
-  local f = CreateFrame('Frame', 'UltraStatisticsStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
+  local f =
+    CreateFrame('Frame', 'UltraStatisticsStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
   f:SetSize(TOAST_WIDTH, 30)
   f:SetFrameStrata('DIALOG')
   f:Show()
@@ -482,7 +507,12 @@ local function CreateToast()
     tile = true,
     tileSize = 8,
     edgeSize = 10,
-    insets = { left = 3, right = 3, top = 3, bottom = 3 },
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
   })
   toast:SetBackdropColor(0.05, 0.05, 0.08, 0.65)
   toast:SetBackdropBorderColor(0.35, 0.35, 0.45, 0.9)
@@ -543,17 +573,13 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
   end
 
   local cfg, defCfg = GetStatBarConfig(statKey)
-  if not cfg or statKey == 'default' or statKey == 'percent' then
-    return
-  end
+  if not cfg or statKey == 'default' or statKey == 'percent' then return end
 
   if EXCLUDED_STATS[statKey] then return end
 
   if _G.GLOBAL_SETTINGS.statisticsToastEnabled then
     local toastEnabled = _G.GLOBAL_SETTINGS.statisticsToastEnabled[statKey]
-    if toastEnabled == false then
-      return
-    end
+    if toastEnabled == false then return end
   end
 
   local displayName = HumanizeStatKey(statKey)
@@ -683,9 +709,12 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
       toast.barText:Hide()
       ResizeToastToText(toast)
 
-      local pushAmount = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
+      local pushAmount =
+        (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
       local minPush = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
-      if pushAmount < minPush then pushAmount = minPush end
+      if pushAmount < minPush then
+        pushAmount = minPush
+      end
       pushExistingDownFromIndex(pushAmount, 1)
       insertToastAt(toast, 1)
       toast:Show()
@@ -714,7 +743,9 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
       local pushAmount =
         (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
       local minPush = (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
-      if pushAmount < minPush then pushAmount = minPush end
+      if pushAmount < minPush then
+        pushAmount = minPush
+      end
       pushExistingDownFromIndex(pushAmount, 1)
       insertToastAt(achievementToast, 1)
       achievementToast:Show()
@@ -779,9 +810,12 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
   ResizeToastToText(toast)
 
   do
-    local pushAmount = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
+    local pushAmount =
+      (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
     local minPush = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
-    if pushAmount < minPush then pushAmount = minPush end
+    if pushAmount < minPush then
+      pushAmount = minPush
+    end
     pushExistingDownFromIndex(pushAmount, 1)
   end
   insertToastAt(toast, 1)
@@ -842,5 +876,3 @@ do
     end
   end)
 end
-
-

@@ -390,5 +390,3 @@ function IsDungeonFinalBoss(unitGUID)
 
   return dungeonFinalBossIDs[npcID] or false, raidFinalBossIDs[npcID] or false
 end
-
-

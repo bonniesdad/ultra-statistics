@@ -44,7 +44,7 @@ local function ApplyStatsBackgroundOpacity()
   statsBackground:SetColorTexture(0, 0, 0, alpha)
   -- Also update backdrop color
   statsFrame:SetBackdropColor(0.1, 0.1, 0.1, alpha * 0.9)
-  
+
   -- Border opacity
   local borderAlpha = 0.9
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.statisticsBorderOpacity ~= nil then
@@ -245,7 +245,6 @@ local partyDeathsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontH
 partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -278)
 partyDeathsValue:SetText(formatNumberWithCommas(0))
 partyDeathsValue:SetTextColor(1, 0.2, 0.2, 1) -- Red for deaths
-
 -- Player Deaths rows
 local playerDeathsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 playerDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -293)
@@ -256,11 +255,13 @@ playerDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -293)
 playerDeathsValue:SetText(formatNumberWithCommas(0))
 playerDeathsValue:SetTextColor(1, 0.2, 0.2, 1)
 
-local playerDeathsThisSessionLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+local playerDeathsThisSessionLabel =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 playerDeathsThisSessionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -308)
 playerDeathsThisSessionLabel:SetText('Deaths (Session):')
 playerDeathsThisSessionLabel:SetTextColor(1, 0.9, 0.5, 1)
-local playerDeathsThisSessionValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+local playerDeathsThisSessionValue =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 playerDeathsThisSessionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -308)
 playerDeathsThisSessionValue:SetText(formatNumberWithCommas(0))
 playerDeathsThisSessionValue:SetTextColor(1, 0.2, 0.2, 1)
@@ -733,16 +734,19 @@ local function FormatMoneyText(copper)
   local parts = {}
   local iconSize = 12
   if g > 0 then
-    local goldIcon = string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local goldIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', g, goldIcon))
   end
   if s > 0 then
-    local silverIcon = string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local silverIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', s, silverIcon))
   end
   -- Only show copper if it's non-zero.
   if c > 0 then
-    local copperIcon = string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local copperIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', c, copperIcon))
   end
   return (#parts > 0) and table.concat(parts, ' ') or '-'

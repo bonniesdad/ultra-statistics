@@ -155,5 +155,3 @@ frame:SetScript('OnEvent', function(_, event, arg1, _, arg3)
   if IsFeigningDeath() then return end
   TrackLowestHealth(event)
 end)
-
-

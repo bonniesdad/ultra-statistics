@@ -36,5 +36,3 @@ frame:SetScript('OnEvent', function()
     increment('resists')
   end
 end)
-
-

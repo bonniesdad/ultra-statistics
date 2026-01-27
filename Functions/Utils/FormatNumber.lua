@@ -24,5 +24,3 @@ function formatNumberWithCommas(number)
 
   return formatted
 end
-
-

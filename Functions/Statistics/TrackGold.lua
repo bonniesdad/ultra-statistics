@@ -3,7 +3,6 @@
 local frame = CreateFrame('Frame')
 
 local lastMoney = nil -- copper
-
 local function InitBaseline()
   if GetMoney then
     lastMoney = GetMoney() or 0
@@ -62,5 +61,3 @@ frame:SetScript('OnEvent', function(_, event, arg1)
     OnMoneyChanged()
   end
 end)
-
-

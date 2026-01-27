@@ -46,5 +46,3 @@ function DuelTracker(msg)
     end
   end
 end
-
-

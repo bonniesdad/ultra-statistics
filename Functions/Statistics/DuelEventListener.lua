@@ -8,5 +8,3 @@ frame:SetScript('OnEvent', function(_, _, msg)
     DuelTracker(msg)
   end
 end)
-
-

@@ -1,5 +1,7 @@
 function IsEnemyElite(unitGUID)
-  if not unitGUID then return false end
+  if not unitGUID then
+    return false
+  end
 
   -- Check if the killed enemy is currently our target
   if UnitGUID('target') == unitGUID then
@@ -22,5 +24,3 @@ function IsEnemyElite(unitGUID)
 
   return false
 end
-
-

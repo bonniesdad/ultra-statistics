@@ -36,5 +36,3 @@ function CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
     end
   end
 end
-
-

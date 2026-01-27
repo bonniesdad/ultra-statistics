@@ -54,7 +54,9 @@ end
 
 function ItemTracker.HandleHealthPotionUsage(subEvent, sourceGUID, spellID)
   if not CharacterStats then return end
-  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') and healingPotionSpellIDs[spellID] then
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
+    'player'
+  ) and healingPotionSpellIDs[spellID] then
     local current = CharacterStats:GetStat('healthPotionsUsed') or 0
     CharacterStats:UpdateStat('healthPotionsUsed', current + 1)
   end
@@ -62,7 +64,9 @@ end
 
 function ItemTracker.HandleManaPotionUsage(subEvent, sourceGUID, spellID)
   if not CharacterStats then return end
-  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') and manaPotionSpellIDs[spellID] then
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
+    'player'
+  ) and manaPotionSpellIDs[spellID] then
     local current = CharacterStats:GetStat('manaPotionsUsed') or 0
     CharacterStats:UpdateStat('manaPotionsUsed', current + 1)
   end
@@ -70,7 +74,9 @@ end
 
 function ItemTracker.HandleTargetDummyUsage(subEvent, sourceGUID, spellID)
   if not CharacterStats then return end
-  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') and targetDummySpellIDs[spellID] then
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
+    'player'
+  ) and targetDummySpellIDs[spellID] then
     local current = CharacterStats:GetStat('targetDummiesUsed') or 0
     CharacterStats:UpdateStat('targetDummiesUsed', current + 1)
   end
@@ -78,7 +84,9 @@ end
 
 function ItemTracker.HandleGrenadeUsage(subEvent, sourceGUID, spellID)
   if not CharacterStats then return end
-  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') and grenadeSpellIDs[spellID] then
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
+    'player'
+  ) and grenadeSpellIDs[spellID] then
     local current = CharacterStats:GetStat('grenadesUsed') or 0
     CharacterStats:UpdateStat('grenadesUsed', current + 1)
   end
@@ -91,5 +99,3 @@ function ItemTracker.HandleItemUsage(subEvent, sourceGUID, destGUID, spellID)
   ItemTracker.HandleTargetDummyUsage(subEvent, sourceGUID, spellID)
   ItemTracker.HandleGrenadeUsage(subEvent, sourceGUID, spellID)
 end
-
-

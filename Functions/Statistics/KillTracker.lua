@@ -37,5 +37,3 @@ function KillTracker.HandlePartyKill(destGUID)
   local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
   CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
 end
-
-

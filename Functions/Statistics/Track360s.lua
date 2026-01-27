@@ -42,9 +42,7 @@ spinTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
   end
 
   hooksecurefunc('AscendStop', function()
-    if not IsFalling() then
-      return
-    end
+    if not IsFalling() then return end
     BeginJumpSpinTracking()
   end)
 
@@ -82,5 +80,3 @@ spinTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
     end
   end)
 end)
-
-

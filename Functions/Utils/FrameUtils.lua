@@ -29,5 +29,3 @@ function MakeFrameDraggable(frame, dbKey)
     end
   end)
 end
-
-

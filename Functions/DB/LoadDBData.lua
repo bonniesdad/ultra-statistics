@@ -16,20 +16,16 @@ function LoadDBData()
   -- Defaults needed by the ported Statistics UI + on-screen overlay.
   local defaultSettings = {
     showOnScreenStatistics = true,
-
     -- Statistics tracking/toasts
     showStatisticsTracking = true,
     minimalStatisticsTracking = true,
     statisticsTrackingTierOnly = false,
     statisticsToastEnabled = {},
-
     -- Statistics panel appearance
     statisticsBackgroundOpacity = 0.3,
     statisticsBorderOpacity = 0.9,
-
     -- Collapsed sections in Statistics tab
     collapsedStatsSections = {},
-
     -- Row visibility settings (MainScreenStatistics.lua reads these)
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = false,
@@ -37,7 +33,6 @@ function LoadDBData()
     showMainStatisticsPanelThisLevel = false,
     showMainStatisticsPanelTotalHP = false,
     showMainStatisticsPanelTotalMana = false,
-
     showMainStatisticsPanelEnemiesSlain = true,
     showMainStatisticsPanelDungeonsCompleted = false,
     showMainStatisticsPanelPetDeaths = false,
@@ -47,7 +42,6 @@ function LoadDBData()
     showMainStatisticsPanelWorldBossesSlain = false,
     showMainStatisticsPanelHighestCritValue = false,
     showMainStatisticsPanelHighestHealCritValue = false,
-
     showMainStatisticsPanelHealthPotionsUsed = false,
     showMainStatisticsPanelManaPotionsUsed = false,
     showMainStatisticsPanelBandagesUsed = false,
@@ -96,5 +90,3 @@ function LoadDBData()
     GLOBAL_SETTINGS.collapsedStatsSections = {}
   end
 end
-
-

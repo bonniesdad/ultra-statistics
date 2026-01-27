@@ -10,7 +10,9 @@ local lastCountTime = 0
 local DEBOUNCE_SECONDS = 2.0
 
 local function IsNewSession()
-  if not CharacterStats then return false end
+  if not CharacterStats then
+    return false
+  end
   local lastLogout = CharacterStats:GetStat('lastLogoutTime')
   if not lastLogout then
     return true
@@ -48,9 +50,7 @@ frame:SetScript('OnEvent', function(_, event)
 
   if event == 'PLAYER_DEAD' then
     local nowT = GetTime and GetTime() or 0
-    if (nowT - lastCountTime) < DEBOUNCE_SECONDS then
-      return
-    end
+    if (nowT - lastCountTime) < DEBOUNCE_SECONDS then return end
     lastCountTime = nowT
 
     local total = CharacterStats:GetStat('playerDeaths') or 0
@@ -62,5 +62,3 @@ frame:SetScript('OnEvent', function(_, event)
     CharacterStats:UpdateStat('playerDeathsThisLevel', level + 1)
   end
 end)
-
-

@@ -3,14 +3,17 @@ local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
 local MAX_TABS = 3 -- Stats / Settings / Info
-
 local TAB_WIDTHS = {
   [1] = TAB_WIDTH, -- Stats
   [2] = TAB_WIDTH, -- Settings
   [3] = TAB_WIDTH, -- Info
 }
 
-local BASE_TEXT_COLOR = { r = 0.922, g = 0.871, b = 0.761 }
+local BASE_TEXT_COLOR = {
+  r = 0.922,
+  g = 0.871,
+  b = 0.761,
+}
 local ACTIVE_CLASS_FADE = 0.75
 
 local function getPlayerClassColor()
@@ -69,7 +72,12 @@ local function createTabButton(text, index, parentFrame)
     edgeFile = 'Interface\\Buttons\\WHITE8x8',
     tile = false,
     edgeSize = 1,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    insets = {
+      left = 0,
+      right = 0,
+      top = 0,
+      bottom = 0,
+    },
   })
   button:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
 
@@ -109,8 +117,12 @@ end
 
 function TabManagerSwitchToTab(index)
   index = tonumber(index) or 1
-  if index < 1 then index = 1 end
-  if index > MAX_TABS then index = MAX_TABS end
+  if index < 1 then
+    index = 1
+  end
+  if index > MAX_TABS then
+    index = MAX_TABS
+  end
 
   for _, content in ipairs(tabContents) do
     content:Hide()
@@ -130,7 +142,12 @@ function TabManagerSwitchToTab(index)
       edgeFile = 'Interface\\Buttons\\WHITE8x8',
       tile = false,
       edgeSize = 1,
-      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
     })
     tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
@@ -154,7 +171,12 @@ function TabManagerSwitchToTab(index)
     edgeFile = 'Interface\\Buttons\\WHITE8x8',
     tile = false,
     edgeSize = 1,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    insets = {
+      left = 0,
+      right = 0,
+      top = 0,
+      bottom = 0,
+    },
   })
   tabButtons[index]:SetBackdropBorderColor(fadedR, fadedG, fadedB, 1)
 
@@ -206,7 +228,12 @@ function TabManagerHideAllTabs()
       edgeFile = 'Interface\\Buttons\\WHITE8x8',
       tile = false,
       edgeSize = 1,
-      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
     })
     tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
@@ -232,5 +259,3 @@ function TabManagerResetTabState()
     end
   end
 end
-
-

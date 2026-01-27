@@ -56,7 +56,8 @@ local function getClassBackgroundTexture()
   return 'Interface\\DialogFrame\\UI-DialogBox-Background'
 end
 
-local settingsFrame = CreateFrame('Frame', 'UltraStatisticsSettingsFrame', UIParent, 'BackdropTemplate')
+local settingsFrame =
+  CreateFrame('Frame', 'UltraStatisticsSettingsFrame', UIParent, 'BackdropTemplate')
 tinsert(UISpecialFrames, 'UltraStatisticsSettingsFrame')
 settingsFrame:SetSize(660, 700)
 settingsFrame:SetMovable(true)
@@ -88,7 +89,12 @@ local function updateSettingsFrameBackdrop()
     edgeFile = 'Interface\\Buttons\\WHITE8x8',
     tile = false,
     edgeSize = 2,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    insets = {
+      left = 0,
+      right = 0,
+      top = 0,
+      bottom = 0,
+    },
   })
   settingsFrame:SetBackdropBorderColor(0, 0, 0, 1)
 end
@@ -210,5 +216,3 @@ end
 
 local addonIcon = LibStub('LibDBIcon-1.0')
 addonIcon:Register('UltraStatistics', addonLDB, minimapSettings)
-
-

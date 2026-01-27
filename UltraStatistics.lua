@@ -23,5 +23,3 @@ UltraStatistics:SetScript('OnEvent', function(_, event, arg1)
     end
   end
 end)
-
-

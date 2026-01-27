@@ -33,7 +33,9 @@ local function IsPartyMember(destGUID)
 end
 
 local function IsPartyMemberFeigningDeath(destGUID)
-  if not IsInGroup() then return false end
+  if not IsInGroup() then
+    return false
+  end
   if IsInRaid() then
     for i = 1, GetNumGroupMembers() do
       local _, _, _, _, _, _, _, _, _, _, _, guid = GetRaidRosterInfo(i)
@@ -58,12 +60,8 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   local isPartyMember, deadPlayerName = IsPartyMember(destGUID)
   if not isPartyMember or not deadPlayerName then return end
 
-  if IsPartyMemberFeigningDeath(destGUID) then
-    return
-  end
+  if IsPartyMemberFeigningDeath(destGUID) then return end
 
   local current = CharacterStats:GetStat('partyMemberDeaths') or 0
   CharacterStats:UpdateStat('partyMemberDeaths', current + 1)
 end
-
-

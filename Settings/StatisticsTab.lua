@@ -36,16 +36,15 @@ local STATISTIC_TOOLTIPS = {
   dungeonsCompleted = 'Number of dungeons you have fully completed',
   highestCritValue = 'The highest critical hit damage you have dealt',
   highestHealCritValue = 'The highest critical heal you have done',
-  closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
   petDeaths = 'Total number of times your pet has died permanently',
   -- Survival section
+  closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
+  partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
   healthPotionsUsed = 'Number of health potions you have consumed',
   manaPotionsUsed = 'Number of mana potions you have consumed',
   bandagesApplied = 'Number of bandages you have used to heal',
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
-  -- Social section
-  partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
   playerDeaths = 'Total number of times your character has died',
   playerDeathsThisSession = 'Number of times your character has died this session',
   playerDeathsThisLevel = 'Number of times your character has died at your current level',
@@ -491,9 +490,7 @@ local function CreateStatBar(parent)
   tierText:SetScript('OnMouseDown', function(self, button)
     if button == 'LeftButton' and self.statKey then
       -- Don't allow toggling if showStatisticsTracking is disabled
-      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then
-        return
-      end
+      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then return end
 
       if not GLOBAL_SETTINGS.statisticsToastEnabled then
         GLOBAL_SETTINGS.statisticsToastEnabled = {}
@@ -555,9 +552,7 @@ local function CreateStatBar(parent)
   toastButton:SetScript('OnMouseDown', function(self, button)
     if button == 'LeftButton' and self.statKey then
       -- Don't allow toggling if showStatisticsTracking is disabled
-      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then
-        return
-      end
+      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then return end
 
       if not GLOBAL_SETTINGS.statisticsToastEnabled then
         GLOBAL_SETTINGS.statisticsToastEnabled = {}
@@ -903,16 +898,19 @@ local function FormatMoneyText(copper)
   local parts = {}
   local iconSize = 12
   if g > 0 then
-    local goldIcon = string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local goldIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', g, goldIcon))
   end
   if s > 0 then
-    local silverIcon = string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local silverIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', s, silverIcon))
   end
   -- Only show copper if it's non-zero.
   if c > 0 then
-    local copperIcon = string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
+    local copperIcon =
+      string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
     table.insert(parts, string.format('%d%s', c, copperIcon))
   end
   return (#parts > 0) and table.concat(parts, ' ') or '-'
@@ -1708,13 +1706,6 @@ function InitializeStatisticsTab(tabContents)
     defaultValue = 0,
     width = 1,
   }, {
-    key = 'closeEscapes',
-    label = 'Close Escapes:',
-    tooltipKey = 'closeEscapes',
-    settingName = 'showMainStatisticsPanelCloseEscapes',
-    defaultValue = 0,
-    width = 1,
-  }, {
     key = 'highestCritValue',
     label = 'Highest Crit Value:',
     tooltipKey = 'highestCritValue',
@@ -1800,6 +1791,13 @@ function InitializeStatisticsTab(tabContents)
 
   -- Create survival statistics entries (items/consumables used)
   local survivalStats = { {
+    key = 'closeEscapes',
+    label = 'Close Escapes:',
+    tooltipKey = 'closeEscapes',
+    settingName = 'showMainStatisticsPanelCloseEscapes',
+    defaultValue = 0,
+    width = 1,
+  }, {
     key = 'healthPotionsUsed',
     label = 'Health Potions Used:',
     tooltipKey = 'healthPotionsUsed',
@@ -1841,6 +1839,13 @@ function InitializeStatisticsTab(tabContents)
     tooltipKey = 'resists',
     defaultValue = 0,
     width = 1,
+  }, {
+    key = 'partyMemberDeaths',
+    label = 'Party Deaths Witnessed:',
+    tooltipKey = 'partyDeathsWitnessed',
+    settingName = 'showMainStatisticsPanelPartyMemberDeaths',
+    defaultValue = 0,
+    width = 1,
   } }
 
   -- Only add Engineering-related stats if player has Engineering profession
@@ -1861,85 +1866,6 @@ function InitializeStatisticsTab(tabContents)
     })
   end
   CreateStatsGrid(survivalContent, survivalStats, { defaultWidth = 0.5 })
-  -- Create modern WoW-style Social section (collapsible)
-  local socialHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  socialHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
-  socialHeader:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 12,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  socialHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-  socialHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
-  local socialLabel = socialHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  socialLabel:SetPoint('LEFT', socialHeader, 'LEFT', 24, 0)
-  socialLabel:SetText('Social')
-  socialLabel:SetTextColor(0.9, 0.85, 0.75, 1)
-  socialLabel:SetShadowOffset(1, -1)
-  socialLabel:SetShadowColor(0, 0, 0, 0.8)
-
-  local socialContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  socialContent:SetSize(540, 1 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
-  socialContent:Show()
-  local socialSection = addSection(socialHeader, socialContent, 'social')
-  makeHeaderClickable(socialHeader, socialContent, 'social', socialSection)
-  socialContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 10,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  socialContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
-  socialContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
-
-  local socialStats = { {
-    key = 'partyMemberDeaths',
-    label = 'Party Deaths Witnessed:',
-    tooltipKey = 'partyDeathsWitnessed',
-    settingName = 'showMainStatisticsPanelPartyMemberDeaths',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsTotal',
-    label = 'Duels Total:',
-    tooltipKey = 'duelsTotal',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsWon',
-    label = 'Duels Won:',
-    tooltipKey = 'duelsWon',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsLost',
-    label = 'Duels Lost:',
-    tooltipKey = 'duelsLost',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsWinPercent',
-    label = 'Duel Win Percent:',
-    tooltipKey = 'duelsWinPercent',
-    defaultValue = 0,
-    width = 1,
-  } }
-  CreateStatsGrid(socialContent, socialStats, { defaultWidth = 0.5 })
 
   -- Create modern WoW-style Misc section (collapsible)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
@@ -1995,7 +1921,7 @@ function InitializeStatisticsTab(tabContents)
   miscContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
   miscContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
-  -- Create misc statistics display inside the content frame
+  -- Create misc statistics display inside the content frame (includes former Social stats)
   local miscStats = { {
     key = 'playerJumps',
     label = 'Jumps Performed:',
@@ -2018,6 +1944,30 @@ function InitializeStatisticsTab(tabContents)
     key = 'goldSpent',
     label = 'Gold Spent:',
     tooltipKey = 'goldSpent',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
     defaultValue = 0,
     width = 1,
   } }
@@ -2049,7 +1999,6 @@ function InitializeStatisticsTab(tabContents)
       UpdateStatBar('petDeaths', CharacterStats:GetStat('petDeaths') or 0)
     end
     UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
-    UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
     UpdateStatBar('playerDeaths', CharacterStats:GetStat('playerDeaths') or 0)
     UpdateStatBar('playerDeathsThisSession', CharacterStats:GetStat('playerDeathsThisSession') or 0)
     UpdateStatBar('playerDeathsThisLevel', CharacterStats:GetStat('playerDeathsThisLevel') or 0)
@@ -2069,10 +2018,6 @@ function InitializeStatisticsTab(tabContents)
     UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue') or 0)
 
     for _, stat in ipairs(survivalStats) do
-      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
-    end
-
-    for _, stat in ipairs(socialStats) do
       UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
     end
 

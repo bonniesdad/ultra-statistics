@@ -18,5 +18,3 @@ function SaveCharacterSettings(settings)
   local characterGUID = UnitGUID('player')
   UltraStatisticsDB.characterSettings[characterGUID] = settings
 end
-
-

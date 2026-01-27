@@ -1,5 +1,7 @@
 function IsEnemyRareElite(unitGUID)
-  if not unitGUID then return false end
+  if not unitGUID then
+    return false
+  end
 
   if UnitGUID('target') == unitGUID then
     local classification = UnitClassification('target')
@@ -20,5 +22,3 @@ function IsEnemyRareElite(unitGUID)
 
   return false
 end
-
-
