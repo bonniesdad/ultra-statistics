@@ -40,6 +40,111 @@ local LAYOUT = {
   SLIDER_WIDTH = 150,
 }
 
+local ROW_BUTTON_HEIGHT = 48
+local ROW_BUTTON_PAD_H = 14
+local ROW_BUTTON_PAD_V = 10
+local OPTION_ROW_TOTAL = 58   -- height of each option row (button + gap between rows)
+local REPOSITION_ROW_HEIGHT = 32  -- smaller row for Reposition button (no description)
+
+--- Create a full-width WoW-style option row: title, optional description, turns green when selected. Checkbox-compatible (SetChecked, GetChecked, Enable, Disable, .Text, SetDescription).
+local function CreateOptionRowButton(parent)
+  local btn = CreateFrame('Button', nil, parent, 'BackdropTemplate')
+  btn:SetHeight(ROW_BUTTON_HEIGHT)
+  btn:RegisterForClicks('LeftButtonUp')
+
+  local checked = false
+  local disabled = false
+
+  btn:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8x8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 8,
+    insets = { left = 5, right = 5, top = 5, bottom = 5 },
+  })
+
+  function btn:UpdateVisual()
+    if disabled then
+      self:SetBackdropColor(0.22, 0.22, 0.22, 0.95)
+      self:SetBackdropBorderColor(0.35, 0.35, 0.35, 0.9)
+    elseif checked then
+      self:SetBackdropColor(0.15, 0.42, 0.2, 0.95)
+      self:SetBackdropBorderColor(0.25, 0.6, 0.3, 1)
+    else
+      self:SetBackdropColor(0.32, 0.3, 0.26, 0.95)
+      self:SetBackdropBorderColor(0.5, 0.45, 0.38, 0.95)
+    end
+  end
+
+  function btn:SetChecked(on)
+    if checked == on then return end
+    checked = on
+    self:UpdateVisual()
+  end
+
+  function btn:GetChecked()
+    return checked
+  end
+
+  function btn:SetDescription(text)
+    if self.Description then
+      self.Description:SetText(text or '')
+      self.Description:SetShown(text and text ~= '')
+    end
+  end
+
+  do
+    local rawEnable, rawDisable = btn.Enable, btn.Disable
+    btn.Enable = function(self)
+      disabled = false
+      if rawEnable then rawEnable(self) end
+      self:UpdateVisual()
+    end
+    btn.Disable = function(self)
+      disabled = true
+      if rawDisable then rawDisable(self) end
+      self:UpdateVisual()
+    end
+  end
+
+  -- Title (top line)
+  local label = btn:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  label:SetPoint('TOPLEFT', btn, 'TOPLEFT', ROW_BUTTON_PAD_H, -ROW_BUTTON_PAD_V)
+  label:SetPoint('RIGHT', btn, 'RIGHT', -ROW_BUTTON_PAD_H, 0)
+  label:SetJustifyH('LEFT')
+  label:SetNonSpaceWrap(false)
+  btn.Text = label
+
+  -- Description (second line, smaller, below title)
+  local desc = btn:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  desc:SetPoint('TOPLEFT', label, 'BOTTOMLEFT', 0, -2)
+  desc:SetPoint('RIGHT', btn, 'RIGHT', -ROW_BUTTON_PAD_H, 0)
+  desc:SetJustifyH('LEFT')
+  desc:SetWordWrap(true)
+  desc:SetNonSpaceWrap(false)
+  desc:SetTextColor(0.75, 0.72, 0.65, 1)
+  btn.Description = desc
+
+  -- WoW-style hover
+  btn:SetScript('OnEnter', function(self)
+    if disabled then return end
+    if checked then
+      self:SetBackdropColor(0.2, 0.5, 0.28, 1)
+      self:SetBackdropBorderColor(0.35, 0.7, 0.4, 1)
+    else
+      self:SetBackdropColor(0.4, 0.37, 0.32, 1)
+      self:SetBackdropBorderColor(0.6, 0.55, 0.45, 1)
+    end
+  end)
+  btn:SetScript('OnLeave', function(self)
+    self:UpdateVisual()
+  end)
+
+  btn:SetChecked(false)
+  return btn
+end
+
 local function IsSearchMatch(searchBlob, query)
   if not query or query == '' then
     return true
@@ -264,14 +369,14 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
 
       if checkboxItem then
         numRows = numRows + 1
-        local checkbox =
-          CreateFrame('CheckButton', nil, sectionFrame, 'ChatConfigCheckButtonTemplate')
-        local rowY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
-        checkbox:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, rowY)
+        local rowY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL))
+        local checkbox = CreateOptionRowButton(sectionFrame)
+        checkbox:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', ROW_BUTTON_PAD_H, rowY)
+        checkbox:SetPoint('TOPRIGHT', sectionFrame, 'TOPRIGHT', -ROW_BUTTON_PAD_H, rowY)
         checkbox._originalOffsetY = rowY
         checkbox.Text:SetText(checkboxItem.name)
-        checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
-        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
+        checkbox:SetDescription(checkboxItem.tooltip)
+        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName] and true or false)
 
         checkbox._uhcSearch =
           string.lower(
@@ -293,12 +398,18 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           if shouldDisable then
             checkbox:Disable()
             checkbox.Text:SetTextColor(0.5, 0.5, 0.5)
+            if checkbox.Description then
+              checkbox.Description:SetTextColor(0.45, 0.45, 0.45, 1)
+            end
             checkbox:SetChecked(false)
             tempSettings[checkboxItem.dbSettingsValueName] = false
             cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
           else
             checkbox:Enable()
             checkbox.Text:SetTextColor(1, 1, 1)
+            if checkbox.Description then
+              checkbox.Description:SetTextColor(0.75, 0.72, 0.65, 1)
+            end
           end
         end
         updateDependencyState()
@@ -309,11 +420,15 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
         checkbox:SetScript('OnClick', function(self)
           if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
           if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
-          tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
+          local newVal = not self:GetChecked()
+          self:SetChecked(newVal)
+          tempSettings[checkboxItem.dbSettingsValueName] = newVal
           cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
         end)
 
+        local rowHoverOnEnter, rowHoverOnLeave = checkbox:GetScript('OnEnter'), checkbox:GetScript('OnLeave')
         checkbox:SetScript('OnEnter', function(self)
+          if rowHoverOnEnter then rowHoverOnEnter(self) end
           GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
           local tooltipText = checkboxItem.tooltip or ''
           if checkboxItem.dependsOn then
@@ -340,7 +455,8 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           GameTooltip:SetText(tooltipText)
           GameTooltip:Show()
         end)
-        checkbox:SetScript('OnLeave', function()
+        checkbox:SetScript('OnLeave', function(self)
+          if rowHoverOnLeave then rowHoverOnLeave(self) end
           GameTooltip:Hide()
         end)
 
@@ -348,8 +464,8 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           numRows = numRows + 1
           local repositionButton = CreateFrame('Button', nil, sectionFrame, 'UIPanelButtonTemplate')
           repositionButton:SetSize(180, 25)
-          local btnY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
-          repositionButton:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, btnY)
+          local btnY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL))
+          repositionButton:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', ROW_BUTTON_PAD_H, btnY)
           repositionButton._originalOffsetY = btnY
           repositionButton:SetText('Reposition Statistics Toast')
           repositionButton:SetScript('OnClick', function()
@@ -381,7 +497,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
       end
     end
 
-    local expandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + (numRows * ROW_HEIGHT) + 5
+    local expandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL) + REPOSITION_ROW_HEIGHT + 8
     local collapsedHeight = HEADER_HEIGHT
     sectionExpandedHeights[sectionIndex] = expandedHeight
     sectionCollapsedHeights[sectionIndex] = collapsedHeight
@@ -490,35 +606,30 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     end
   end
   if onScreenCheckboxItem then
-    local onScreenCheckbox =
-      CreateFrame('CheckButton', nil, displaySection, 'ChatConfigCheckButtonTemplate')
-    onScreenCheckbox:SetPoint(
-      'TOPLEFT',
-      displaySection,
-      'TOPLEFT',
-      10,
-      -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
-    )
-    onScreenCheckbox.Text:SetText(onScreenCheckboxItem.name)
-    onScreenCheckbox.Text:SetPoint('LEFT', onScreenCheckbox, 'RIGHT', 5, 0)
-    onScreenCheckbox:SetChecked(tempSettings.showOnScreenStatistics)
-    checkboxes['showOnScreenStatistics'] = onScreenCheckbox
-    onScreenCheckbox:SetScript('OnClick', function(self)
-      tempSettings.showOnScreenStatistics = self:GetChecked()
+    local onScreenRow = CreateOptionRowButton(displaySection)
+    onScreenRow:SetPoint('TOPLEFT', displaySection, 'TOPLEFT', ROW_BUTTON_PAD_H, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
+    onScreenRow:SetPoint('TOPRIGHT', displaySection, 'TOPRIGHT', -ROW_BUTTON_PAD_H, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
+    onScreenRow.Text:SetText(onScreenCheckboxItem.name)
+    onScreenRow:SetDescription(onScreenCheckboxItem.tooltip)
+    onScreenRow:SetChecked(tempSettings.showOnScreenStatistics and true or false)
+    checkboxes['showOnScreenStatistics'] = onScreenRow
+    onScreenRow:SetScript('OnClick', function(self)
+      local newVal = not self:GetChecked()
+      self:SetChecked(newVal)
+      tempSettings.showOnScreenStatistics = newVal
       cascadeDependencyUpdates('showOnScreenStatistics')
     end)
-    onScreenCheckbox:SetScript('OnEnter', function()
-      GameTooltip:SetOwner(onScreenCheckbox, 'ANCHOR_RIGHT')
-      GameTooltip:SetText(onScreenCheckboxItem.tooltip or '')
-      GameTooltip:Show()
+    local rowHoverOnEnter, rowHoverOnLeave = onScreenRow:GetScript('OnEnter'), onScreenRow:GetScript('OnLeave')
+    onScreenRow:SetScript('OnEnter', function(self)
+      if rowHoverOnEnter then rowHoverOnEnter(self) end
     end)
-    onScreenCheckbox:SetScript('OnLeave', function()
-      GameTooltip:Hide()
+    onScreenRow:SetScript('OnLeave', function(self)
+      if rowHoverOnLeave then rowHoverOnLeave(self) end
     end)
   end
 
   local displayRowsHeight =
-    HEADER_HEIGHT + HEADER_CONTENT_GAP + ROW_HEIGHT + LAYOUT.COLOR_ROW_HEIGHT * 2 + 20
+    HEADER_HEIGHT + HEADER_CONTENT_GAP + OPTION_ROW_TOTAL + LAYOUT.COLOR_ROW_HEIGHT * 2 + 24
   displaySection:SetHeight(displayRowsHeight)
 
   local opacityRow = CreateFrame('Frame', nil, displaySection)
@@ -528,7 +639,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     displaySection,
     'TOPLEFT',
     10,
-    -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ROW_HEIGHT)
+    -(HEADER_HEIGHT + HEADER_CONTENT_GAP + OPTION_ROW_TOTAL)
   )
   local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   opacityLabel:SetPoint('LEFT', opacityRow, 'LEFT', 0, 0)
@@ -624,7 +735,11 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
       )
       for _, child in ipairs(sectionChildren[1]) do
         child:ClearAllPoints()
-        child:SetPoint('TOPLEFT', sectionFrames[1], 'TOPLEFT', 10, child._originalOffsetY or 0)
+        local y = child._originalOffsetY or 0
+        child:SetPoint('TOPLEFT', sectionFrames[1], 'TOPLEFT', ROW_BUTTON_PAD_H, y)
+        if child.Description then
+          child:SetPoint('TOPRIGHT', sectionFrames[1], 'TOPRIGHT', -ROW_BUTTON_PAD_H, y)
+        end
         child:SetShown(not saved)
       end
       sectionFrames[1]:SetHeight(saved and sectionCollapsedHeights[1] or sectionExpandedHeights[1])
@@ -638,19 +753,17 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
         if IsSearchMatch(blob, q) then
           child:Show()
           child:ClearAllPoints()
-          child:SetPoint(
-            'TOPLEFT',
-            sectionFrames[1],
-            'TOPLEFT',
-            10,
-            -(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * ROW_HEIGHT)
-          )
+          local y = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * OPTION_ROW_TOTAL)
+          child:SetPoint('TOPLEFT', sectionFrames[1], 'TOPLEFT', ROW_BUTTON_PAD_H, y)
+          if child.Description then
+            child:SetPoint('TOPRIGHT', sectionFrames[1], 'TOPRIGHT', -ROW_BUTTON_PAD_H, y)
+          end
           visibleCount = visibleCount + 1
         else
           child:Hide()
         end
       end
-      sectionFrames[1]:SetHeight(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * ROW_HEIGHT + 5)
+      sectionFrames[1]:SetHeight(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * OPTION_ROW_TOTAL + 8)
     end
     recalcContentHeight()
   end

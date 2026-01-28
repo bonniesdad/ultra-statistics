@@ -15,8 +15,8 @@ function LoadDBData()
 
   -- Defaults needed by the ported Statistics UI + on-screen overlay.
   local defaultSettings = {
-    showTiers = true,
-    showOnScreenStatistics = false,
+    showTiers = false,
+    showOnScreenStatistics = true,
     -- Statistics tracking/toasts
     showStatisticsTracking = false,
     minimalStatisticsTracking = false,
@@ -30,7 +30,7 @@ function LoadDBData()
     -- Row visibility settings (MainScreenStatistics.lua reads these)
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = false,
-    showMainStatisticsPanelSessionHealth = true,
+    showMainStatisticsPanelSessionHealth = false,
     showMainStatisticsPanelThisLevel = false,
     showMainStatisticsPanelTotalHP = false,
     showMainStatisticsPanelTotalMana = false,
