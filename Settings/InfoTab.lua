@@ -12,7 +12,7 @@ function UltraStatistics_InitializeInfoTab(tabContents)
   -- Philosophy text (at top, moved down by 30)
   local philosophyText = tabContents[3]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   philosophyText:SetPoint('TOP', tabContents[3], 'TOP', 0, -70)
-  philosophyText:SetWidth(500)
+  philosophyText:SetWidth(475)
   philosophyText:SetText(
     'Ultra Statistics\nVersion: ' .. (C_AddOns.GetAddOnMetadata(
       'UltraStatistics',
@@ -30,7 +30,7 @@ function UltraStatistics_InitializeInfoTab(tabContents)
   )
   bugReportText:SetJustifyH('CENTER')
   bugReportText:SetTextColor(0.95, 0.95, 0.9)
-  bugReportText:SetWidth(500)
+  bugReportText:SetWidth(475)
   bugReportText:SetNonSpaceWrap(true)
 
   -- Discord invite button (opens dialog with copyable invite link)

@@ -733,7 +733,7 @@ local function CreateStatsGrid(parent, statsList, options)
   local baseYOffset = opts.baseYOffset or -LAYOUT.CONTENT_PADDING
   local parentWidth = parent:GetWidth()
   if not parentWidth or parentWidth == 0 then
-    parentWidth = opts.fallbackWidth or 540
+    parentWidth = opts.fallbackWidth or 415
   end
   local barLeftBase = LAYOUT.ROW_INDENT + STAT_BAR_INSET
   local fullBarWidth = math.max(0, parentWidth - barLeftBase * 2)
@@ -1109,7 +1109,8 @@ function UpdateStatBar(statKey, value)
     elseif bar.toastButton then
       bar.toastButton:Hide()
       -- Don't hide tierIcon when tier is visible; it was set above and follows showNotifications like other icons
-      local tierVisible = cfg.type ~= 'percent' and not cfg.noTier and showTiers and bar.tier and bar.tier:GetText() ~= ''
+      local tierVisible =
+        cfg.type ~= 'percent' and not cfg.noTier and showTiers and bar.tier and bar.tier:GetText() ~= ''
       if bar.tierIcon and not tierVisible then
         bar.tierIcon:Hide()
       end
@@ -1378,7 +1379,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -30, 10) -- Leave room for scrollbar on right
   -- Create scroll child frame
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-  statsScrollChild:SetSize(560, 300) -- Width matches section header width
+  statsScrollChild:SetSize(435, 300) -- Width matches section header width
   statsScrollFrame:SetScrollChild(statsScrollChild)
   local resourceEventFrame
 
@@ -1488,7 +1489,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Character Info section (collapsible)
   local characterInfoHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  characterInfoHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
+  characterInfoHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
 
   -- Modern WoW row styling with rounded corners and greyish background
   characterInfoHeader:SetBackdrop({
@@ -1517,7 +1518,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Character Info breakdown
   local characterInfoContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  characterInfoContent:SetSize(540, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Level only
+  characterInfoContent:SetSize(415, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Level only
   -- Position will be set by updateSectionPositions
   characterInfoContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -1563,7 +1564,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create Health Tracking section
   local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
+  healthTrackingHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
 
   healthTrackingHeader:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
@@ -1589,7 +1590,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
+  healthTrackingContent:SetSize(415, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
   healthTrackingContent:Show()
   local healthTrackingSection =
     addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
@@ -1662,7 +1663,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Combat section (collapsible)
   local combatHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  combatHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
+  combatHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
 
   -- Modern WoW row styling with rounded corners and greyish background
@@ -1691,7 +1692,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Combat breakdown
   local combatContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  combatContent:SetSize(540, 8 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
+  combatContent:SetSize(415, 8 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
   -- Position will be set by updateSectionPositions
   combatContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -1792,7 +1793,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Survival section (collapsible)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
+  survivalHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
@@ -1820,7 +1821,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Survival breakdown
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
+  survivalContent:SetSize(415, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   survivalContent:Show() -- Always show
   -- Register section and make header clickable
@@ -1923,7 +1924,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Misc section (collapsible)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
+  miscHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   miscHeader:SetBackdrop({
@@ -1951,7 +1952,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Misc breakdown
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscContent:SetSize(540, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
+  miscContent:SetSize(415, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   miscContent:Show()
 
@@ -2093,16 +2094,14 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     end
   end)
 
-  -- Import from Ultra button
+  -- Import from Ultra button (far right)
   local importButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
   importButton:SetSize(140, 30)
-  importButton:SetPoint('BOTTOMRIGHT', tabContents[1], 'BOTTOM', -50, -35)
-  importButton:SetText('Import Stats from Ultra')
+  importButton:SetPoint('BOTTOMRIGHT', tabContents[1], 'BOTTOMRIGHT', -10, -30)
+  importButton:SetText('Import from Ultra')
   importButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(importButton, 'ANCHOR_RIGHT')
-    GameTooltip:SetText(
-    'Import higher stats from the Ultra / UltraHardcore addon if you have it installed.'
-    )
+    GameTooltip:SetText('Import higher stats from the Ultra addon if you have it installed.')
     GameTooltip:Show()
   end)
   importButton:SetScript('OnLeave', function()
@@ -2113,30 +2112,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       _G.ShowImportFromUltraDialog()
     else
       print('ULTRA STATISTICS - Import not available. Reload UI.')
-    end
-  end)
-
-  -- Share button for Statistics tab
-  local shareButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
-  shareButton:SetSize(80, 30)
-  shareButton:SetPoint('BOTTOMLEFT', tabContents[1], 'BOTTOM', 50, -35)
-  shareButton:SetText('Share')
-
-  -- Add tooltip
-  shareButton:SetScript('OnEnter', function()
-    GameTooltip:SetOwner(shareButton, 'ANCHOR_RIGHT')
-    GameTooltip:SetText('Share ULTRA STATISTICS to Chat')
-    GameTooltip:Show()
-  end)
-  shareButton:SetScript('OnLeave', function()
-    GameTooltip:Hide()
-  end)
-
-  shareButton:SetScript('OnClick', function()
-    if CharacterStats and CharacterStats.LogStatsToChat then
-      CharacterStats:LogStatsToChat()
-    else
-      print('ULTRA STATISTICS - CharacterStats not available. Please reload UI.')
     end
   end)
 

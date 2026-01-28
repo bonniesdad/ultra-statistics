@@ -59,7 +59,7 @@ end
 local settingsFrame =
   CreateFrame('Frame', 'UltraStatisticsSettingsFrame', UIParent, 'BackdropTemplate')
 tinsert(UISpecialFrames, 'UltraStatisticsSettingsFrame')
-settingsFrame:SetSize(660, 700)
+settingsFrame:SetSize(535, 700)
 settingsFrame:SetMovable(true)
 settingsFrame:EnableMouse(true)
 settingsFrame:RegisterForDrag('LeftButton')
@@ -101,7 +101,7 @@ end
 updateSettingsFrameBackdrop()
 
 local titleBar = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-titleBar:SetSize(660, 60)
+titleBar:SetSize(535, 60)
 titleBar:SetPoint('TOP', settingsFrame, 'TOP')
 titleBar:SetFrameStrata('DIALOG')
 titleBar:SetFrameLevel(20)
@@ -125,7 +125,7 @@ settingsTitleLabel:SetText('ULTRA STATISTICS')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
-dividerFrame:SetSize(670, 24)
+dividerFrame:SetSize(545, 24)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
 dividerFrame:SetFrameStrata('DIALOG')
 dividerFrame:SetFrameLevel(20)

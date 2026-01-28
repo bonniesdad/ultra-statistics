@@ -6,7 +6,9 @@ PATCH_NOTES = { {
   notes = {
     'Initial release of Ultra Statistics.',
     '',
-    '• Port over all statistics from UltraHardcore.',
+    'FEATURES: ',
+    '• Port over all existing functionality from Ultra.',
+    '• Import button to import stats from Ultra.',
     '',
     'NEW STATISTICS:',
     '• Added statistics for:',

@@ -11,11 +11,11 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Show Statistics Notifications',
   dbSettingsValueName = 'showStatisticsTracking',
-  tooltip = 'Show statistic update notifications (e.g. Enemies Slain)',
+  tooltip = 'Show notifications on statistic updates',
 }, {
   name = 'Minimal Style Notifications',
   dbSettingsValueName = 'minimalStatisticsTracking',
-  tooltip = 'Show "+X [icon]" only (no stat name text)',
+  tooltip = 'Show minimal information in the notifications',
   dependsOn = 'showStatisticsTracking',
 }, {
   name = 'Only Show Tier Notifications',
@@ -27,8 +27,8 @@ local settingsCheckboxOptions = { {
 local settingsSliderOptions = {}
 
 local LAYOUT = {
-  PAGE_WIDTH = 520,
-  ROW_WIDTH = 480,
+  PAGE_WIDTH = 395,
+  ROW_WIDTH = 355,
   SEARCH_WIDTH = 400,
   HEADER_HEIGHT = 28,
   HEADER_PADDING_H = 12,
@@ -43,9 +43,8 @@ local LAYOUT = {
 local ROW_BUTTON_HEIGHT = 48
 local ROW_BUTTON_PAD_H = 14
 local ROW_BUTTON_PAD_V = 10
-local OPTION_ROW_TOTAL = 58   -- height of each option row (button + gap between rows)
-local REPOSITION_ROW_HEIGHT = 32  -- smaller row for Reposition button (no description)
-
+local OPTION_ROW_TOTAL = 58 -- height of each option row (button + gap between rows)
+local REPOSITION_ROW_HEIGHT = 32 -- smaller row for Reposition button (no description)
 --- Create a full-width WoW-style option row: title, optional description, turns green when selected. Checkbox-compatible (SetChecked, GetChecked, Enable, Disable, .Text, SetDescription).
 local function CreateOptionRowButton(parent)
   local btn = CreateFrame('Button', nil, parent, 'BackdropTemplate')
@@ -61,7 +60,12 @@ local function CreateOptionRowButton(parent)
     tile = true,
     tileSize = 8,
     edgeSize = 8,
-    insets = { left = 5, right = 5, top = 5, bottom = 5 },
+    insets = {
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5,
+    },
   })
 
   function btn:UpdateVisual()
@@ -98,12 +102,16 @@ local function CreateOptionRowButton(parent)
     local rawEnable, rawDisable = btn.Enable, btn.Disable
     btn.Enable = function(self)
       disabled = false
-      if rawEnable then rawEnable(self) end
+      if rawEnable then
+        rawEnable(self)
+      end
       self:UpdateVisual()
     end
     btn.Disable = function(self)
       disabled = true
-      if rawDisable then rawDisable(self) end
+      if rawDisable then
+        rawDisable(self)
+      end
       self:UpdateVisual()
     end
   end
@@ -426,9 +434,13 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
         end)
 
-        local rowHoverOnEnter, rowHoverOnLeave = checkbox:GetScript('OnEnter'), checkbox:GetScript('OnLeave')
+        local rowHoverOnEnter, rowHoverOnLeave =
+          checkbox:GetScript('OnEnter'),
+          checkbox:GetScript('OnLeave')
         checkbox:SetScript('OnEnter', function(self)
-          if rowHoverOnEnter then rowHoverOnEnter(self) end
+          if rowHoverOnEnter then
+            rowHoverOnEnter(self)
+          end
           GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
           local tooltipText = checkboxItem.tooltip or ''
           if checkboxItem.dependsOn then
@@ -456,7 +468,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           GameTooltip:Show()
         end)
         checkbox:SetScript('OnLeave', function(self)
-          if rowHoverOnLeave then rowHoverOnLeave(self) end
+          if rowHoverOnLeave then
+            rowHoverOnLeave(self)
+          end
           GameTooltip:Hide()
         end)
 
@@ -497,7 +511,8 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
       end
     end
 
-    local expandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL) + REPOSITION_ROW_HEIGHT + 8
+    local expandedHeight =
+      HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL) + REPOSITION_ROW_HEIGHT + 8
     local collapsedHeight = HEADER_HEIGHT
     sectionExpandedHeights[sectionIndex] = expandedHeight
     sectionCollapsedHeights[sectionIndex] = collapsedHeight
@@ -595,6 +610,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   displayHeaderIcon:SetSize(16, 16)
   displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
 
+  local displaySectionContentChildren = {}
   local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
   local GAP = 12
   -- On Screen Statistics checkbox as first row in Statistics Display
@@ -607,8 +623,21 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end
   if onScreenCheckboxItem then
     local onScreenRow = CreateOptionRowButton(displaySection)
-    onScreenRow:SetPoint('TOPLEFT', displaySection, 'TOPLEFT', ROW_BUTTON_PAD_H, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
-    onScreenRow:SetPoint('TOPRIGHT', displaySection, 'TOPRIGHT', -ROW_BUTTON_PAD_H, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
+    table.insert(displaySectionContentChildren, onScreenRow)
+    onScreenRow:SetPoint(
+      'TOPLEFT',
+      displaySection,
+      'TOPLEFT',
+      ROW_BUTTON_PAD_H,
+      -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+    )
+    onScreenRow:SetPoint(
+      'TOPRIGHT',
+      displaySection,
+      'TOPRIGHT',
+      -ROW_BUTTON_PAD_H,
+      -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+    )
     onScreenRow.Text:SetText(onScreenCheckboxItem.name)
     onScreenRow:SetDescription(onScreenCheckboxItem.tooltip)
     onScreenRow:SetChecked(tempSettings.showOnScreenStatistics and true or false)
@@ -619,12 +648,18 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
       tempSettings.showOnScreenStatistics = newVal
       cascadeDependencyUpdates('showOnScreenStatistics')
     end)
-    local rowHoverOnEnter, rowHoverOnLeave = onScreenRow:GetScript('OnEnter'), onScreenRow:GetScript('OnLeave')
+    local rowHoverOnEnter, rowHoverOnLeave =
+      onScreenRow:GetScript('OnEnter'),
+      onScreenRow:GetScript('OnLeave')
     onScreenRow:SetScript('OnEnter', function(self)
-      if rowHoverOnEnter then rowHoverOnEnter(self) end
+      if rowHoverOnEnter then
+        rowHoverOnEnter(self)
+      end
     end)
     onScreenRow:SetScript('OnLeave', function(self)
-      if rowHoverOnLeave then rowHoverOnLeave(self) end
+      if rowHoverOnLeave then
+        rowHoverOnLeave(self)
+      end
     end)
   end
 
@@ -633,6 +668,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   displaySection:SetHeight(displayRowsHeight)
 
   local opacityRow = CreateFrame('Frame', nil, displaySection)
+  table.insert(displaySectionContentChildren, opacityRow)
   opacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
   opacityRow:SetPoint(
     'TOPLEFT',
@@ -674,6 +710,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end)
 
   local borderOpacityRow = CreateFrame('Frame', nil, displaySection)
+  table.insert(displaySectionContentChildren, borderOpacityRow)
   borderOpacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
   borderOpacityRow:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', 0, -6)
   local borderLabel = borderOpacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -708,6 +745,18 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     end
   end)
 
+  local displaySectionExpandedHeight = displayRowsHeight
+  local displaySectionKey = 'Main Screen Statistics Display'
+  local displayInitialCollapsed =
+    GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
+  if displayInitialCollapsed then
+    displaySection:SetHeight(HEADER_HEIGHT)
+    for _, c in ipairs(displaySectionContentChildren) do
+      c:Hide()
+    end
+    displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
+  end
+
   table.insert(sectionFrames, displaySection)
 
   local function recalcContentHeight()
@@ -720,6 +769,26 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     end
     scrollChild:SetHeight(total + 30)
   end
+
+  displayHeaderBtn:SetScript('OnClick', function()
+    local cur = GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
+    if cur == nil then
+      cur = false
+    end
+    local collapsed = not cur
+    GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = collapsed
+    displayHeaderIcon:SetTexture(
+      collapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
+    )
+    for _, c in ipairs(displaySectionContentChildren) do
+      c:SetShown(not collapsed)
+    end
+    displaySection:SetHeight(collapsed and HEADER_HEIGHT or displaySectionExpandedHeight)
+    if SaveCharacterSettings then
+      SaveCharacterSettings(GLOBAL_SETTINGS)
+    end
+    recalcContentHeight()
+  end)
 
   local function applySearchFilter(query)
     local q = string.lower(query or '')
@@ -763,7 +832,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           child:Hide()
         end
       end
-      sectionFrames[1]:SetHeight(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * OPTION_ROW_TOTAL + 8)
+      sectionFrames[1]:SetHeight(
+        HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * OPTION_ROW_TOTAL + 8
+      )
     end
     recalcContentHeight()
   end
@@ -795,6 +866,15 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[title] = true
         end
       end
+    end
+    -- Also collapse Main Screen Statistics Display section
+    if displaySection and displaySectionContentChildren and displaySectionKey then
+      GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = true
+      displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
+      for _, c in ipairs(displaySectionContentChildren) do
+        c:SetShown(false)
+      end
+      displaySection:SetHeight(HEADER_HEIGHT)
     end
     recalcContentHeight()
   end)

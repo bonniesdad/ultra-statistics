@@ -1,4 +1,4 @@
-local TAB_WIDTH = 200
+local TAB_WIDTH = 167
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
@@ -98,7 +98,7 @@ end
 
 local function createTabContent(_, parentFrame)
   local content = CreateFrame('Frame', nil, parentFrame)
-  content:SetSize(620, 600)
+  content:SetSize(495, 600)
   content:SetPoint('TOP', parentFrame, 'TOP', 0, -50)
   content:Hide()
   return content
