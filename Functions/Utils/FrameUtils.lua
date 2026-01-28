@@ -30,18 +30,6 @@ function MakeFrameDraggable(frame, dbKey)
   end)
 end
 
--- Reusable accordion list for Heroics/Raids-style instance panels.
--- Options:
---   scrollChild (Frame) REQUIRED
---   layout (table) REQUIRED (expects SECTION_HEADER_HEIGHT, SECTION_SPACING)
---   instances (array) REQUIRED (see HeroicsTab.lua for shape)
---   collapsedStateTable (table) REQUIRED (e.g. GLOBAL_SETTINGS.collapsedHeroicsSections)
---   width (number) optional (default 435)
---   bgHeight (number) optional (default 200)
---   bgInsetX (number) optional (default 0)
---   bgInsetY (number) optional (default 0)
---   texturesRoot (string) optional (default "heroics") -> Textures/<root>/<slug>/bg.png etc
---   defaultCollapsed (boolean) optional (default true)
 function UltraStatistics_CreateInstanceAccordionList(opts)
   if type(opts) ~= 'table' then return nil end
 
@@ -240,13 +228,25 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     end
 
     if hasFinalBossKill then
-      content:SetBackdropBorderColor(0.1, 0.8, 0.1, 1)
-      header:SetBackdropBorderColor(0.1, 0.8, 0.1, 1)
+      -- Even softer, very pale green border for completed instances
+      content:SetBackdropBorderColor(0.7, 0.95, 0.7, 1)
+      header:SetBackdropBorderColor(0.7, 0.95, 0.7, 1)
     end
 
     local totalClears = instance.totalClears or 0
     local totalDeaths = instance.totalDeaths or 0
     local firstClearDeaths = instance.firstClearDeaths or 0
+
+    -- Completion icons: header + inside content. Green if cleared at least once, incomplete icon otherwise.
+    local isCleared = (totalClears or 0) > 0
+    local statusIcon = header:CreateTexture(nil, 'ARTWORK')
+    statusIcon:SetSize(20, 20)
+    statusIcon:SetPoint('RIGHT', header, 'RIGHT', -8, 0)
+    local completeTexture =
+      'Interface\\AddOns\\UltraStatistics\\Textures\\complete.png'
+    local incompleteTexture =
+      'Interface\\AddOns\\UltraStatistics\\Textures\\incomplete.png'
+    statusIcon:SetTexture(isCleared and completeTexture or incompleteTexture)
 
     local summaryLabel = content:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
     summaryLabel:SetPoint('TOPLEFT', content, 'TOPLEFT', 12, -10)
@@ -254,6 +254,34 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     summaryLabel:SetTextColor(1, 0.95, 0.75, 1)
     summaryLabel:SetShadowOffset(1, -1)
     summaryLabel:SetShadowColor(0, 0, 0, 0.9)
+
+    -- Completion icon duplicated inside the dropdown content (right, vertically centered).
+    local contentStatusIcon = content:CreateTexture(nil, 'OVERLAY')
+    contentStatusIcon:SetSize(62, 62)
+    -- Position roughly centered vertically in the summary block, between header and bosses list.
+    contentStatusIcon:SetPoint('TOPRIGHT', content, 'TOPRIGHT', -16, -28)
+    contentStatusIcon:SetTexture(isCleared and completeTexture or incompleteTexture)
+
+    -- Centered status text above the icon, e.g. "Incomplete" or "Cleared" + date.
+    local contentStatusLabel = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    -- Slightly above the icon; adjusted so two-line cleared text sits comfortably.
+    contentStatusLabel:SetPoint('BOTTOM', contentStatusIcon, 'TOP', 0, 0)
+    contentStatusLabel:SetJustifyH('CENTER')
+    contentStatusLabel:SetTextColor(1, 0.98, 0.9, 1)
+    contentStatusLabel:SetShadowOffset(1, -1)
+    contentStatusLabel:SetShadowColor(0, 0, 0, 0.9)
+
+    local clearDateText = instance.firstClearDate
+    if isCleared then
+      if type(clearDateText) == 'string' and clearDateText ~= '' then
+        -- Two-line text when we have a date: "Cleared" on first line, date on second.
+        contentStatusLabel:SetText('Cleared\n' .. clearDateText)
+      else
+        contentStatusLabel:SetText('Cleared')
+      end
+    else
+      contentStatusLabel:SetText('Incomplete')
+    end
 
     local summaryGap = 2
     local summaryLine1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -352,33 +380,64 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           divider:SetPoint('TOPLEFT', nameFS, 'BOTTOMLEFT', 0, -titleToDividerGap)
           divider:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
 
-          local dividerToBodyGap = 8
-          local detailsGap = 2
-          local detailsLine1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          detailsLine1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -dividerToBodyGap)
-          detailsLine1:SetJustifyH('LEFT')
-          detailsLine1:SetShadowOffset(1, -1)
-          detailsLine1:SetShadowColor(0, 0, 0, 0.8)
-          detailsLine1:SetText(
-            string.format('|cffa0a0a0First attempt deaths:|r |cffffffff%s|r', formatStat(firstBossDeaths))
-          )
+          -- Table-like layout: labels left-aligned, values right-aligned
+          local statsGap = 2
+          local labelWidth = 140 -- Fixed width for labels so values align
 
-          local detailsLine2 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          detailsLine2:SetPoint('TOPLEFT', detailsLine1, 'BOTTOMLEFT', 0, -detailsGap)
-          detailsLine2:SetJustifyH('LEFT')
-          detailsLine2:SetShadowOffset(1, -1)
-          detailsLine2:SetShadowColor(0, 0, 0, 0.8)
-          detailsLine2:SetText(string.format('|cffa0a0a0Kills:|r |cffffffff%s|r', formatStat(totalBossKills)))
+          -- First attempt deaths row
+          local label1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          label1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -8)
+          label1:SetJustifyH('LEFT')
+          label1:SetWidth(labelWidth)
+          label1:SetText('|cffa0a0a0First attempt deaths:|r')
+          label1:SetShadowOffset(1, -1)
+          label1:SetShadowColor(0, 0, 0, 0.8)
 
-          local detailsLine3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          detailsLine3:SetPoint('TOPLEFT', detailsLine2, 'BOTTOMLEFT', 0, -detailsGap)
-          detailsLine3:SetJustifyH('LEFT')
-          detailsLine3:SetShadowOffset(1, -1)
-          detailsLine3:SetShadowColor(0, 0, 0, 0.8)
-          detailsLine3:SetText(string.format('|cffa0a0a0Deaths:|r |cffffffff%s|r', formatStat(totalBossDeaths)))
+          local value1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          value1:SetPoint('LEFT', label1, 'RIGHT', 4, 0)
+          value1:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
+          value1:SetJustifyH('RIGHT')
+          value1:SetText('|cffffffff' .. formatStat(firstBossDeaths) .. '|r')
+          value1:SetShadowOffset(1, -1)
+          value1:SetShadowColor(0, 0, 0, 0.8)
+
+          -- Kills row
+          local label2 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          label2:SetPoint('TOPLEFT', label1, 'BOTTOMLEFT', 0, -statsGap)
+          label2:SetJustifyH('LEFT')
+          label2:SetWidth(labelWidth)
+          label2:SetText('|cffa0a0a0Kills:|r')
+          label2:SetShadowOffset(1, -1)
+          label2:SetShadowColor(0, 0, 0, 0.8)
+
+          local value2 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          value2:SetPoint('LEFT', label2, 'RIGHT', 4, 0)
+          value2:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
+          value2:SetJustifyH('RIGHT')
+          value2:SetText('|cffffffff' .. formatStat(totalBossKills) .. '|r')
+          value2:SetShadowOffset(1, -1)
+          value2:SetShadowColor(0, 0, 0, 0.8)
+
+          -- Deaths row
+          local label3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          label3:SetPoint('TOPLEFT', label2, 'BOTTOMLEFT', 0, -statsGap)
+          label3:SetJustifyH('LEFT')
+          label3:SetWidth(labelWidth)
+          label3:SetText('|cffa0a0a0Deaths:|r')
+          label3:SetShadowOffset(1, -1)
+          label3:SetShadowColor(0, 0, 0, 0.8)
+
+          local value3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          value3:SetPoint('LEFT', label3, 'RIGHT', 4, 0)
+          value3:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
+          value3:SetJustifyH('RIGHT')
+          value3:SetText('|cffffffff' .. formatStat(totalBossDeaths) .. '|r')
+          value3:SetShadowOffset(1, -1)
+          value3:SetShadowColor(0, 0, 0, 0.8)
 
           if totalBossKills > 1 then
-            row:SetBackdropBorderColor(0.1, 0.8, 0.1, 1)
+            -- Very pale green border for bosses with multiple kills
+            row:SetBackdropBorderColor(0.7, 0.95, 0.7, 1)
           end
 
           previousRow = row
@@ -386,8 +445,8 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
       end
     end
 
-    local minHeight = 110
-    local computedHeight = 88 + (bossCount * (rowHeight + rowSpacing))
+    local minHeight = 130
+    local computedHeight = 100 + (bossCount * (rowHeight + rowSpacing))
     content:SetHeight(math.max(minHeight, computedHeight))
 
     local section = addSection(header, content, dungeonKey)
