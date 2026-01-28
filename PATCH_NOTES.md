@@ -4,7 +4,7 @@
 **Date:** 2026-01-28  
 **Expansion:** TBC
 
----s
+---
 
 Initial release of Ultra Statistics.
 

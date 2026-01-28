@@ -252,6 +252,76 @@ function IsDungeonBoss(unitGUID)
     [10502] = true,
     [1853] = true,
     [14695] = true,
+    -- TBC Dungeons
+    -- The Blood Furnace
+    [17666] = true,
+    [17380] = true,
+    [17377] = true,
+    -- The Shattered Halls
+    [16807] = true,
+    [20923] = true,
+    [16809] = true,
+    [16808] = true,
+    -- The Slave Pens
+    [17941] = true,
+    [17991] = true,
+    [17942] = true,
+    -- The Underbog
+    [17770] = true,
+    [18105] = true,
+    [17826] = true,
+    [17882] = true,
+    -- The Steamvault
+    [17797] = true,
+    [17796] = true,
+    [17798] = true,
+    -- Mana-Tombs
+    [18341] = true,
+    [18343] = true,
+    [18344] = true,
+    [22930] = true,
+    -- Auchenai Crypts
+    [18371] = true,
+    [18373] = true,
+    -- Sethekk Halls
+    [18472] = true,
+    [23035] = true,
+    [18473] = true,
+    -- Shadow Labyrinth
+    [18731] = true,
+    [18667] = true,
+    [18732] = true,
+    [18708] = true,
+    -- Old Hillsbrad Foothills
+    [17848] = true,
+    [17862] = true,
+    [18096] = true,
+    -- The Black Morass
+    [17879] = true,
+    [17880] = true,
+    [17881] = true,
+    -- The Botanica
+    [17976] = true,
+    [17975] = true,
+    [17978] = true,
+    [17980] = true,
+    [17977] = true,
+    -- The Mechanar
+    [19219] = true,
+    [19218] = true,
+    [19710] = true,
+    [19221] = true,
+    [19220] = true,
+    -- The Arcatraz
+    [20870] = true,
+    [20886] = true,
+    [20885] = true,
+    [20912] = true,
+    -- Magister's Terrace
+    [24723] = true,
+    [24744] = true,
+    [24560] = true,
+    [24664] = true,
   }
 
   local RaidBossIDs = {
@@ -328,6 +398,85 @@ function IsDungeonBoss(unitGUID)
     [15928] = true,
     [15989] = true,
     [15990] = true,
+    -- TBC Raids
+    -- Gruul's Lair
+    [18831] = true,
+    [19044] = true,
+    [18835] = true,
+    [18836] = true,
+    [18834] = true,
+    [18832] = true,
+    -- Karazhan 
+    [16152] = true, -- Attumen the Huntsman
+    [15687] = true, -- Moroes
+    [16457] = true, -- Maiden of Virtue
+    [17521] = true, -- The Big Bad Wolf (Opera)
+    [17533] = true, -- Romulo (Opera)
+    [17534] = true, -- Julianne (Opera)
+    [17535] = true, -- Dorothee (Opera)
+    [17543] = true, -- Strawman (Opera)
+    [17546] = true, -- Roar (Opera)
+    [17547] = true, -- Tinhead (Opera)
+    [18168] = true, -- The Crone (Opera)
+    [15691] = true, -- The Curator
+    [15688] = true, -- Terestian Illhoof
+    [16524] = true, -- Shade of Aran
+    [15689] = true, -- Netherspite
+    [17225] = true, -- Nightbane
+    [15690] = true, -- Prince Malchezaar
+    -- Magtheridon's Lair
+    [17256] = true, -- Hellfire Channeler
+    [17257] = true, -- Magtheridon
+    -- Serpentshrine Cavern
+    [21216] = true, -- Hydross the Unstable
+    [21217] = true, -- The Lurker Below
+    [21215] = true, -- Leotheras the Blind
+    [21214] = true, -- Fathom-Lord Karathress
+    [21213] = true, -- Morogrim Tidewalker
+    [21212] = true, -- Lady Vashj
+    -- Tempest Keep: The Eye
+    [19514] = true, -- Al'ar
+    [19516] = true, -- Void Reaver
+    [18805] = true, -- High Astromancer Solarian
+    [19622] = true, -- Kael'thas Sunstrider
+    -- The Battle for Mount Hyjal
+    [17767] = true, -- Rage Winterchill
+    [17808] = true, -- Anetheron
+    [17888] = true, -- Kaz'rogal
+    [17842] = true, -- Azgalor
+    [17968] = true, -- Archimonde
+    -- Black Temple
+    [22887] = true, -- High Warlord Naj'entus
+    [22898] = true, -- Supremus
+    [22841] = true, -- Shade of Akama
+    [22871] = true, -- Teron Gorefiend
+    [22948] = true, -- Gurtogg Bloodboil
+    [23418] = true, -- Essence of Suffering (Reliquary of Souls)
+    [23419] = true, -- Essence of Desire (Reliquary of Souls)
+    [23420] = true, -- Essence of Anger (Reliquary of Souls)
+    [22947] = true, -- Mother Shahraz
+    [22949] = true, -- Gathios the Shatterer (Illidari Council)
+    [22950] = true, -- High Nethermancer Zerevor (Illidari Council)
+    [22951] = true, -- Lady Malande (Illidari Council)
+    [22952] = true, -- Veras Darkshadow (Illidari Council)
+    [22917] = true, -- Illidan Stormrage
+    -- Zul'Aman
+    [23574] = true, -- Akil'zon
+    [23576] = true, -- Nalorakk
+    [23578] = true, -- Jan'alai
+    [23577] = true, -- Halazzi
+    [24239] = true, -- Hex Lord Malacrass
+    [23863] = true, -- Zul'jin
+    -- Sunwell Plateau
+    [24850] = true, -- Kalecgos
+    [24892] = true, -- Sathrovarr the Corruptor
+    [24882] = true, -- Brutallus
+    [25038] = true, -- Felmyst
+    [25166] = true, -- Grand Warlock Alythess (Eredar Twins)
+    [25165] = true, -- Lady Sacrolash (Eredar Twins)
+    [25741] = true, -- M'uru
+    [25840] = true, -- Entropius
+    [25315] = true, -- Kil'jaeden
   }
 
   local isDungeon = dungeonBossIDs[npcID] or false
