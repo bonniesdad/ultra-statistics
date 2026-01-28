@@ -12,6 +12,7 @@ Initial release of Ultra Statistics.
 
 - Port over all existing functionality from Ultra.
 - Import button to import stats from Ultra.
+- Added Raid and Dungeon Boss IDs for TBC.
 
 ## NEW STATISTICS
 
