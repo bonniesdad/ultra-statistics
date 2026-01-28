@@ -19,12 +19,21 @@ local TOAST_PUSH_REDUCTION_PX = 1
 
 local STAT_ICON_SIZE = 14
 
+local ICON_KEY_OVERRIDES = {
+  playerDeathsOpenWorld = 'playerDeaths',
+  playerDeathsBattleground = 'playerDeaths',
+  playerDeathsDungeon = 'playerDeaths',
+  playerDeathsRaid = 'playerDeaths',
+  playerDeathsArena = 'playerDeaths',
+}
+
 local function GetStatIconMarkup(statKey)
   if type(statKey) ~= 'string' or statKey == '' then
     return ''
   end
+  local iconKey = ICON_KEY_OVERRIDES[statKey] or statKey
   -- Use addon textures for all stats (petDeaths, blocks, parries, dodges, resists, goldSpent, goldGained, highestCritValue, highestHealCritValue, partyMemberDeaths, etc.)
-  local path = 'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. statKey .. '.png'
+  local path = 'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
   return string.format('|T%s:%d:%d:0:0|t', path, STAT_ICON_SIZE, STAT_ICON_SIZE)
 end
 
@@ -275,7 +284,7 @@ local function ResetStatisticsTrackingToastPosition()
     f:ClearAllPoints()
     f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
   end
-  print('|cfff44336[ULTRA]|r Statistics Tracking Toast position reset to default.')
+  print('|cfff44336[ULTRA STATS]|r Statistics Tracking Toast position reset to default.')
 end
 
 _G.ResetStatisticsTrackingToastPosition = ResetStatisticsTrackingToastPosition
@@ -335,7 +344,7 @@ function StatisticsTrackingToast:EnableRepositioningMode()
     confirmButton:SetScript('OnClick', function()
       SaveStatisticsTrackingToastPosition()
       StatisticsTrackingToast:DisableRepositioningMode()
-      print('|cfff44336[ULTRA]|r Statistics Tracking Toast position saved.')
+      print('|cfff44336[ULTRA STATS]|r Statistics Tracking Toast position saved.')
     end)
     f._uhcConfirmButton = confirmButton
   end
@@ -613,27 +622,6 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
       customMessage = string.format('New Highest heal crit value: %s', formatNumber(newVal))
       shouldShowCustomMessage = true
     end
-  elseif statKey == 'lowestHealth' then
-    local newVal = tonumber(newValue) or 100
-    local oldVal = tonumber(oldValue) or 100
-    if newVal < oldVal then
-      customMessage = string.format('New lowest health: %.1f%%', newVal)
-      shouldShowCustomMessage = true
-    end
-  elseif statKey == 'lowestHealthThisLevel' then
-    local newVal = tonumber(newValue) or 100
-    local oldVal = tonumber(oldValue) or 100
-    if newVal < oldVal then
-      customMessage = string.format('New lowest health (this level): %.1f%%', newVal)
-      shouldShowCustomMessage = true
-    end
-  elseif statKey == 'lowestHealthThisSession' then
-    local newVal = tonumber(newValue) or 100
-    local oldVal = tonumber(oldValue) or 100
-    if newVal < oldVal then
-      customMessage = string.format('New lowest health (this session): %.1f%%', newVal)
-      shouldShowCustomMessage = true
-    end
   elseif statKey == 'petDeaths' then
     customMessage = 'Your pet has died'
     shouldShowCustomMessage = true
@@ -778,13 +766,6 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     local newVal = tonumber(newValue) or 0
     local oldVal = tonumber(oldValue) or 0
     if newVal <= oldVal then
-      toast:Hide()
-      return
-    end
-  elseif statKey == 'lowestHealth' or statKey == 'lowestHealthThisLevel' or statKey == 'lowestHealthThisSession' then
-    local newVal = tonumber(newValue) or 100
-    local oldVal = tonumber(oldValue) or 100
-    if newVal >= oldVal then
       toast:Hide()
       return
     end

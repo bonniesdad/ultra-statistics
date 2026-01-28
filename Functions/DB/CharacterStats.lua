@@ -13,9 +13,6 @@ end
 
 local CharacterStats = {
   defaults = {
-    lowestHealth = 100,
-    lowestHealthThisLevel = 100,
-    lowestHealthThisSession = 100,
     closeEscapes = 0,
     enemiesSlain = 0,
     elitesSlain = 0,
@@ -27,8 +24,11 @@ local CharacterStats = {
     partyMemberDeaths = 0,
     -- Player death stats
     playerDeaths = 0,
-    playerDeathsThisSession = 0,
-    playerDeathsThisLevel = 0,
+    playerDeathsOpenWorld = 0,
+    playerDeathsBattleground = 0,
+    playerDeathsDungeon = 0,
+    playerDeathsRaid = 0,
+    playerDeathsArena = 0,
     -- Avoidance / mitigation
     blocks = 0,
     parries = 0,
@@ -111,43 +111,27 @@ function CharacterStats:GetStat(statName)
   return stats[statName]
 end
 
-function CharacterStats:ResetLowestHealthThisSession()
-  local stats = self:GetCurrentCharacterStats()
-  stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
-  SaveDBData('characterStats', UltraStatisticsDB.characterStats)
-end
-
-function CharacterStats:ResetLowestHealthThisLevel()
-  local stats = self:GetCurrentCharacterStats()
-  stats.lowestHealthThisLevel = self.defaults.lowestHealthThisLevel
-  SaveDBData('characterStats', UltraStatisticsDB.characterStats)
-end
-
-function CharacterStats:ResetPlayerDeathsThisSession()
-  local stats = self:GetCurrentCharacterStats()
-  stats.playerDeathsThisSession = self.defaults.playerDeathsThisSession
-  SaveDBData('characterStats', UltraStatisticsDB.characterStats)
-end
-
-function CharacterStats:ResetPlayerDeathsThisLevel()
-  local stats = self:GetCurrentCharacterStats()
-  stats.playerDeathsThisLevel = self.defaults.playerDeathsThisLevel
-  SaveDBData('characterStats', UltraStatisticsDB.characterStats)
-end
-
 -- Simple share-to-chat used by the Statistics tab "Share" button
 function CharacterStats:LogStatsToChat()
   local stats = self:GetCurrentCharacterStats()
   local playerName = UnitName('player') or 'Player'
   local playerLevel = UnitLevel('player') or 1
   local _, playerClass = UnitClass('player')
-  local msg =
-    '[UltraStatistics] ' .. playerName .. ' (' .. (playerClass or 'Class') .. ' L' .. playerLevel .. ') - ' .. 'Lowest HP: ' .. string.format(
-      '%.1f',
-      stats.lowestHealth or 100
-    ) .. '% - ' .. 'Enemies: ' .. formatNumberWithCommas(
-      stats.enemiesSlain or 0
-    ) .. ' - ' .. 'Elites: ' .. formatNumberWithCommas(stats.elitesSlain or 0)
+  local msg = '[UltraStatistics] '
+    .. playerName
+    .. ' ('
+    .. (playerClass or 'Class')
+    .. ' L'
+    .. playerLevel
+    .. ') - '
+    .. 'Deaths: '
+    .. formatNumberWithCommas(stats.playerDeaths or 0)
+    .. ' - '
+    .. 'Enemies: '
+    .. formatNumberWithCommas(stats.enemiesSlain or 0)
+    .. ' - '
+    .. 'Elites: '
+    .. formatNumberWithCommas(stats.elitesSlain or 0)
   DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 

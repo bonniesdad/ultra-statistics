@@ -486,7 +486,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
             if _G.EnableStatisticsTrackingToastRepositioning then
               _G.EnableStatisticsTrackingToastRepositioning()
               print(
-                '|cfff44336[ULTRA]|r Statistics Tracking Toast repositioning mode enabled. Drag the highlighted area and click Confirm to save.'
+                '|cfff44336[ULTRA STATS]|r Statistics Tracking Toast repositioning mode enabled. Drag the highlighted area and click Confirm to save.'
               )
             end
           end)

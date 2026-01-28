@@ -23,10 +23,6 @@ end
 local STATISTIC_TOOLTIPS = {
   -- Character Info section
   level = 'Your current character level',
-  -- Health Tracking section
-  total = "The lowest health percentage you've ever reached across all levels",
-  thisLevel = "The lowest health percentage you've reached at your current level",
-  thisSession = "The lowest health percentage you've reached in your current play session",
   -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
@@ -46,8 +42,11 @@ local STATISTIC_TOOLTIPS = {
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
   playerDeaths = 'Total number of times your character has died',
-  playerDeathsThisSession = 'Number of times your character has died this session',
-  playerDeathsThisLevel = 'Number of times your character has died at your current level',
+  playerDeathsOpenWorld = 'Number of times your character has died in the open world (not in an instance)',
+  playerDeathsBattleground = 'Number of times your character has died in a battleground',
+  playerDeathsDungeon = 'Number of times your character has died in a dungeon (5-man instance)',
+  playerDeathsRaid = 'Number of times your character has died in a raid instance',
+  playerDeathsArena = 'Number of times your character has died in an arena match',
   blocks = 'Number of times you blocked an incoming attack',
   parries = 'Number of times you parried an incoming attack',
   dodges = 'Number of times you dodged an incoming attack',
@@ -104,11 +103,30 @@ local STAT_TIER_ICON_GAP = 12
 -- Death stats do not show an icon next to the toast button
 local STATS_WITHOUT_TOAST_ICON = {
   playerDeaths = true,
-  playerDeathsThisSession = true,
-  playerDeathsThisLevel = true,
+  playerDeathsOpenWorld = true,
+  playerDeathsBattleground = true,
+  playerDeathsDungeon = true,
+  playerDeathsRaid = true,
+  playerDeathsArena = true,
   petDeaths = true,
   partyMemberDeaths = true,
 }
+
+-- Some stats share the same icon art; map new keys to existing textures to avoid requiring new PNGs.
+local ICON_KEY_OVERRIDES = {
+  playerDeathsOpenWorld = 'playerDeaths',
+  playerDeathsBattleground = 'playerDeaths',
+  playerDeathsDungeon = 'playerDeaths',
+  playerDeathsRaid = 'playerDeaths',
+  playerDeathsArena = 'playerDeaths',
+}
+
+local function ResolveStatIconKey(statKey)
+  if not statKey then
+    return statKey
+  end
+  return ICON_KEY_OVERRIDES[statKey] or statKey
+end
 -- Fill colors progress from calm/neutral to impressive across tiers
 local TIER_COLORS = {
   { 0.78, 0.49, 0.20, 0.95 }, -- tier 1: bronze
@@ -155,24 +173,6 @@ local STAT_BAR_CONFIG = {
     max = 100,
     color = { 0.85, 0.35, 0.3, 0.95 },
     bgColor = { 0.07, 0.07, 0.09, 0.75 },
-    valueOnly = true,
-  },
-  lowestHealth = {
-    type = 'percent',
-    max = 100,
-    color = { 0.85, 0.25, 0.25, 0.95 },
-    valueOnly = true,
-  },
-  lowestHealthThisLevel = {
-    type = 'percent',
-    max = 100,
-    color = { 0.85, 0.25, 0.25, 0.95 },
-    valueOnly = true,
-  },
-  lowestHealthThisSession = {
-    type = 'percent',
-    max = 100,
-    color = { 0.85, 0.25, 0.25, 0.95 },
     valueOnly = true,
   },
   duelsWinPercent = {
@@ -275,13 +275,31 @@ local STAT_BAR_CONFIG = {
     valueOnly = true,
     noTier = true,
   },
-  playerDeathsThisSession = {
+  playerDeathsOpenWorld = {
     base = 1,
     multiplier = 2,
     valueOnly = true,
     noTier = true,
   },
-  playerDeathsThisLevel = {
+  playerDeathsBattleground = {
+    base = 1,
+    multiplier = 2,
+    valueOnly = true,
+    noTier = true,
+  },
+  playerDeathsDungeon = {
+    base = 1,
+    multiplier = 2,
+    valueOnly = true,
+    noTier = true,
+  },
+  playerDeathsRaid = {
+    base = 1,
+    multiplier = 2,
+    valueOnly = true,
+    noTier = true,
+  },
+  playerDeathsArena = {
     base = 1,
     multiplier = 2,
     valueOnly = true,
@@ -684,7 +702,7 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
 
   statBars[statKey] = bar
   if bar.tierIcon and statKey then
-    local iconKey = statKey
+    local iconKey = ResolveStatIconKey(statKey)
     bar.tierIcon:SetTexture(
       'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
     )
@@ -1071,12 +1089,7 @@ function UpdateStatBar(statKey, value)
     -- Show toast button: when Notifications on, for noTier/percent-with-toast stats or for any tier stat when Show Tiers off
     local shouldShowToastButton = false
     if bar.toastButton and showNotifications then
-      local percentStatsWithToast = {
-        lowestHealth = true,
-        lowestHealthThisLevel = true,
-        lowestHealthThisSession = true,
-        duelsWinPercent = true,
-      }
+      local percentStatsWithToast = { duelsWinPercent = true }
       if cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier) then
         shouldShowToastButton = true
       end
@@ -1089,10 +1102,11 @@ function UpdateStatBar(statKey, value)
       bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
       -- Show stat icon to the right of the toast button only when Notifications on (deaths have no icon)
       if bar.tierIcon and statKey and showNotifications and not STATS_WITHOUT_TOAST_ICON[statKey] then
+        local iconKey = ResolveStatIconKey(statKey)
         bar.tierIcon:ClearAllPoints()
         bar.tierIcon:SetPoint('LEFT', bar.toastButton, 'RIGHT', STAT_TIER_ICON_GAP, 0)
         bar.tierIcon:SetTexture(
-          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. statKey .. '.png'
+          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
         )
         bar.tierIcon:Show()
       elseif bar.tierIcon then
@@ -1282,12 +1296,7 @@ function UpdateStatBar(statKey, value)
   if bar.toastButton then
     local shouldShowToastButton = false
     if showNotifications then
-      local percentStatsWithToast = {
-        lowestHealth = true,
-        lowestHealthThisLevel = true,
-        lowestHealthThisSession = true,
-        duelsWinPercent = true,
-      }
+      local percentStatsWithToast = { duelsWinPercent = true }
       if cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier) then
         shouldShowToastButton = true
       end
@@ -1300,10 +1309,11 @@ function UpdateStatBar(statKey, value)
       bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
       -- Show stat icon to the right of the toast button only when Notifications on (deaths have no icon)
       if bar.tierIcon and statKey and showNotifications and not STATS_WITHOUT_TOAST_ICON[statKey] then
+        local iconKey = ResolveStatIconKey(statKey)
         bar.tierIcon:ClearAllPoints()
         bar.tierIcon:SetPoint('LEFT', bar.toastButton, 'RIGHT', STAT_TIER_ICON_GAP, 0)
         bar.tierIcon:SetTexture(
-          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. statKey .. '.png'
+          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
         )
         bar.tierIcon:Show()
       elseif bar.tierIcon then
@@ -1584,13 +1594,13 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   local healthTrackingLabel =
     healthTrackingHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   healthTrackingLabel:SetPoint('LEFT', healthTrackingHeader, 'LEFT', 24, 0)
-  healthTrackingLabel:SetText('Health & Deaths')
+  healthTrackingLabel:SetText('Deaths')
   healthTrackingLabel:SetTextColor(0.9, 0.85, 0.75, 1)
   healthTrackingLabel:SetShadowOffset(1, -1)
   healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingContent:SetSize(415, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
+  healthTrackingContent:SetSize(415, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
   healthTrackingContent:Show()
   local healthTrackingSection =
     addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
@@ -1624,39 +1634,39 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     defaultValue = 0,
     width = 1,
   }, {
-    key = 'playerDeathsThisSession',
-    label = 'Deaths (This Session):',
-    tooltipKey = 'playerDeathsThisSession',
-    settingName = 'showMainStatisticsPanelPlayerDeathsThisSession',
+    key = 'playerDeathsOpenWorld',
+    label = 'Deaths (Open World):',
+    tooltipKey = 'playerDeathsOpenWorld',
+    settingName = 'showMainStatisticsPanelPlayerDeathsOpenWorld',
     defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'playerDeathsThisLevel',
-    label = 'Deaths (This Level):',
-    tooltipKey = 'playerDeathsThisLevel',
-    settingName = 'showMainStatisticsPanelPlayerDeathsThisLevel',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'lowestHealth',
-    label = 'Lowest Health (Total):',
-    tooltipKey = 'total',
-    settingName = 'showMainStatisticsPanelLowestHealth',
-    defaultValue = 100,
-    width = 1,
-  }, {
-    key = 'lowestHealthThisLevel',
-    label = 'Lowest Health (This Level):',
-    tooltipKey = 'thisLevel',
-    settingName = 'showMainStatisticsPanelThisLevel',
-    defaultValue = 100,
     width = 0.5,
   }, {
-    key = 'lowestHealthThisSession',
-    label = 'Lowest Health (This Session):',
-    tooltipKey = 'thisSession',
-    settingName = 'showMainStatisticsPanelSessionHealth',
-    defaultValue = 100,
+    key = 'playerDeathsBattleground',
+    label = 'Deaths (Battleground):',
+    tooltipKey = 'playerDeathsBattleground',
+    settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
+    key = 'playerDeathsDungeon',
+    label = 'Deaths (Dungeon):',
+    tooltipKey = 'playerDeathsDungeon',
+    settingName = 'showMainStatisticsPanelPlayerDeathsDungeon',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
+    key = 'playerDeathsRaid',
+    label = 'Deaths (Raid):',
+    tooltipKey = 'playerDeathsRaid',
+    settingName = 'showMainStatisticsPanelPlayerDeathsRaid',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
+    key = 'playerDeathsArena',
+    label = 'Deaths (Arena):',
+    tooltipKey = 'playerDeathsArena',
+    settingName = 'showMainStatisticsPanelPlayerDeathsArena',
+    defaultValue = 0,
     width = 0.5,
   } }
   CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
@@ -2041,13 +2051,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
     UpdateStatBar('level', UnitLevel('player') or 1)
 
-    UpdateStatBar('lowestHealth', CharacterStats:GetStat('lowestHealth') or 100)
-    UpdateStatBar('lowestHealthThisLevel', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
-    UpdateStatBar(
-      'lowestHealthThisSession',
-      CharacterStats:GetStat('lowestHealthThisSession') or 100
-    )
-
     -- Only update pet deaths for pet classes (hunter and warlock)
     local _, playerClass = UnitClass('player')
     if playerClass == 'HUNTER' or playerClass == 'WARLOCK' then
@@ -2055,8 +2058,11 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     end
     UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
     UpdateStatBar('playerDeaths', CharacterStats:GetStat('playerDeaths') or 0)
-    UpdateStatBar('playerDeathsThisSession', CharacterStats:GetStat('playerDeathsThisSession') or 0)
-    UpdateStatBar('playerDeathsThisLevel', CharacterStats:GetStat('playerDeathsThisLevel') or 0)
+    UpdateStatBar('playerDeathsOpenWorld', CharacterStats:GetStat('playerDeathsOpenWorld') or 0)
+    UpdateStatBar('playerDeathsBattleground', CharacterStats:GetStat('playerDeathsBattleground') or 0)
+    UpdateStatBar('playerDeathsDungeon', CharacterStats:GetStat('playerDeathsDungeon') or 0)
+    UpdateStatBar('playerDeathsRaid', CharacterStats:GetStat('playerDeathsRaid') or 0)
+    UpdateStatBar('playerDeathsArena', CharacterStats:GetStat('playerDeathsArena') or 0)
     UpdateStatBar('blocks', CharacterStats:GetStat('blocks') or 0)
     UpdateStatBar('parries', CharacterStats:GetStat('parries') or 0)
     UpdateStatBar('dodges', CharacterStats:GetStat('dodges') or 0)

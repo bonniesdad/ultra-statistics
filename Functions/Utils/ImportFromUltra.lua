@@ -2,16 +2,9 @@
 -- UltraHardcoreDB is available as a global when the UltraHardcore addon is loaded
 -- (its TOC declares ## SavedVariables: UltraHardcoreDB).
 
-local LOWER_IS_BETTER = {
-  lowestHealth = true,
-  lowestHealthThisLevel = true,
-  lowestHealthThisSession = true,
-}
+local LOWER_IS_BETTER = {}
 
 local STAT_DISPLAY_NAMES = {
-  lowestHealth = 'Lowest Health (Total)',
-  lowestHealthThisLevel = 'Lowest Health (This Level)',
-  lowestHealthThisSession = 'Lowest Health (This Session)',
   closeEscapes = 'Close Escapes',
   enemiesSlain = 'Enemies Slain',
   elitesSlain = 'Elites Slain',
@@ -22,8 +15,6 @@ local STAT_DISPLAY_NAMES = {
   petDeaths = 'Pet Deaths',
   partyMemberDeaths = 'Party Deaths Witnessed',
   playerDeaths = 'Player Deaths',
-  playerDeathsThisSession = 'Deaths (This Session)',
-  playerDeathsThisLevel = 'Deaths (This Level)',
   blocks = 'Blocks',
   parries = 'Parries',
   dodges = 'Dodges',

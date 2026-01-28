@@ -1,52 +1,36 @@
--- Track player deaths (total / this session / this level)
+-- Track player deaths (total + per-context: open world / battleground / dungeon / raid / arena)
 
 local frame = CreateFrame('Frame')
 frame:RegisterEvent('PLAYER_DEAD')
-frame:RegisterEvent('PLAYER_LEVEL_UP')
-frame:RegisterEvent('PLAYER_LOGIN')
-frame:RegisterEvent('PLAYER_LOGOUT')
 
 local lastCountTime = 0
 local DEBOUNCE_SECONDS = 2.0
 
-local function IsNewSession()
-  if not CharacterStats then
-    return false
+local function GetDeathContextKey()
+  local inInstance, instanceType = IsInInstance()
+  if not inInstance or not instanceType then
+    return 'playerDeathsOpenWorld'
   end
-  local lastLogout = CharacterStats:GetStat('lastLogoutTime')
-  if not lastLogout then
-    return true
+
+  if instanceType == 'pvp' then
+    return 'playerDeathsBattleground'
   end
-  local now = GetServerTime and GetServerTime() or time()
-  return (now - lastLogout) > 1800
+  if instanceType == 'arena' then
+    return 'playerDeathsArena'
+  end
+  if instanceType == 'party' then
+    return 'playerDeathsDungeon'
+  end
+  if instanceType == 'raid' then
+    return 'playerDeathsRaid'
+  end
+
+  -- Fallback: treat unknown instance types as open world so we always count something.
+  return 'playerDeathsOpenWorld'
 end
 
 frame:SetScript('OnEvent', function(_, event)
   if not CharacterStats then return end
-
-  if event == 'PLAYER_LOGIN' then
-    -- Reset "this session" counters if we were logged out long enough.
-    if IsNewSession() then
-      if CharacterStats.ResetPlayerDeathsThisSession then
-        CharacterStats:ResetPlayerDeathsThisSession()
-      end
-    end
-    return
-  end
-
-  if event == 'PLAYER_LOGOUT' then
-    -- lastLogoutTime is handled by TrackLowestHealth, but keep it safe here too.
-    local now = GetServerTime and GetServerTime() or time()
-    CharacterStats:UpdateStat('lastLogoutTime', now)
-    return
-  end
-
-  if event == 'PLAYER_LEVEL_UP' then
-    if CharacterStats.ResetPlayerDeathsThisLevel then
-      CharacterStats:ResetPlayerDeathsThisLevel()
-    end
-    return
-  end
 
   if event == 'PLAYER_DEAD' then
     local nowT = GetTime and GetTime() or 0
@@ -54,11 +38,10 @@ frame:SetScript('OnEvent', function(_, event)
     lastCountTime = nowT
 
     local total = CharacterStats:GetStat('playerDeaths') or 0
-    local session = CharacterStats:GetStat('playerDeathsThisSession') or 0
-    local level = CharacterStats:GetStat('playerDeathsThisLevel') or 0
+    local contextKey = GetDeathContextKey()
+    local contextVal = CharacterStats:GetStat(contextKey) or 0
 
     CharacterStats:UpdateStat('playerDeaths', total + 1)
-    CharacterStats:UpdateStat('playerDeathsThisSession', session + 1)
-    CharacterStats:UpdateStat('playerDeathsThisLevel', level + 1)
+    CharacterStats:UpdateStat(contextKey, contextVal + 1)
   end
 end)

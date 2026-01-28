@@ -107,36 +107,6 @@ local totalManaValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHig
 totalManaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -38)
 totalManaValue:SetText(formatNumberWithCommas(UnitPowerMax('player', MANA_POWER_TYPE) or 0))
 totalManaValue:SetTextColor(0.3, 0.7, 1, 1) -- Blue tint for mana
-local lowestHealthLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-lowestHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -53)
-lowestHealthLabel:SetText('Lowest Health:')
-lowestHealthLabel:SetTextColor(1, 0.9, 0.5, 1)
-
-local lowestHealthValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-lowestHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -53)
-lowestHealthValue:SetText('100.0%')
-lowestHealthValue:SetTextColor(1, 0.3, 0.3, 1) -- Red tint for low health warning
-local sessionHealthLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-sessionHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -68)
-sessionHealthLabel:SetText('Session Lowest:')
-sessionHealthLabel:SetTextColor(1, 0.9, 0.5, 1)
-
-local sessionHealthValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-sessionHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -68)
-sessionHealthValue:SetText('100.0%')
-sessionHealthValue:SetTextColor(1, 1, 1, 1)
-
--- This Level (Beta) statistic
-local thisLevelLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-thisLevelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -83)
-thisLevelLabel:SetText('Level Lowest:')
-thisLevelLabel:SetTextColor(1, 0.9, 0.5, 1)
-
-local thisLevelValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-thisLevelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -83)
-thisLevelValue:SetText('100.0%')
-thisLevelValue:SetTextColor(1, 1, 1, 1)
-
 local enemiesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -98)
 enemiesLabel:SetText('Enemies Slain:')
@@ -255,25 +225,51 @@ playerDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -293)
 playerDeathsValue:SetText(formatNumberWithCommas(0))
 playerDeathsValue:SetTextColor(1, 0.2, 0.2, 1)
 
-local playerDeathsThisSessionLabel =
-  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsThisSessionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -308)
-playerDeathsThisSessionLabel:SetText('Deaths (Session):')
-playerDeathsThisSessionLabel:SetTextColor(1, 0.9, 0.5, 1)
-local playerDeathsThisSessionValue =
-  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsThisSessionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -308)
-playerDeathsThisSessionValue:SetText(formatNumberWithCommas(0))
-playerDeathsThisSessionValue:SetTextColor(1, 0.2, 0.2, 1)
+-- Player Deaths breakdown rows
+local playerDeathsOpenWorldLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsOpenWorldLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -308)
+playerDeathsOpenWorldLabel:SetText('Deaths (Open World):')
+playerDeathsOpenWorldLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerDeathsOpenWorldValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsOpenWorldValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -308)
+playerDeathsOpenWorldValue:SetText(formatNumberWithCommas(0))
+playerDeathsOpenWorldValue:SetTextColor(1, 0.2, 0.2, 1)
 
-local playerDeathsThisLevelLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsThisLevelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -323)
-playerDeathsThisLevelLabel:SetText('Deaths (Level):')
-playerDeathsThisLevelLabel:SetTextColor(1, 0.9, 0.5, 1)
-local playerDeathsThisLevelValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsThisLevelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -323)
-playerDeathsThisLevelValue:SetText(formatNumberWithCommas(0))
-playerDeathsThisLevelValue:SetTextColor(1, 0.2, 0.2, 1)
+local playerDeathsBattlegroundLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsBattlegroundLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -323)
+playerDeathsBattlegroundLabel:SetText('Deaths (Battleground):')
+playerDeathsBattlegroundLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerDeathsBattlegroundValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsBattlegroundValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -323)
+playerDeathsBattlegroundValue:SetText(formatNumberWithCommas(0))
+playerDeathsBattlegroundValue:SetTextColor(1, 0.2, 0.2, 1)
+
+local playerDeathsDungeonLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsDungeonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -338)
+playerDeathsDungeonLabel:SetText('Deaths (Dungeon):')
+playerDeathsDungeonLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerDeathsDungeonValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsDungeonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -338)
+playerDeathsDungeonValue:SetText(formatNumberWithCommas(0))
+playerDeathsDungeonValue:SetTextColor(1, 0.2, 0.2, 1)
+
+local playerDeathsRaidLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsRaidLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -353)
+playerDeathsRaidLabel:SetText('Deaths (Raid):')
+playerDeathsRaidLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerDeathsRaidValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsRaidValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -353)
+playerDeathsRaidValue:SetText(formatNumberWithCommas(0))
+playerDeathsRaidValue:SetTextColor(1, 0.2, 0.2, 1)
+
+local playerDeathsArenaLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsArenaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
+playerDeathsArenaLabel:SetText('Deaths (Arena):')
+playerDeathsArenaLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerDeathsArenaValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsArenaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
+playerDeathsArenaValue:SetText(formatNumberWithCommas(0))
+playerDeathsArenaValue:SetTextColor(1, 0.2, 0.2, 1)
 
 -- Avoidance rows
 local blocksLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
@@ -434,21 +430,6 @@ local statsElements = { -- Non-tier stats (no tier system)
   setting = 'showMainStatisticsPanelTotalMana',
   statKey = 'totalMana',
 }, {
-  label = lowestHealthLabel,
-  value = lowestHealthValue,
-  setting = 'showMainStatisticsPanelLowestHealth',
-  statKey = 'lowestHealth',
-}, {
-  label = thisLevelLabel,
-  value = thisLevelValue,
-  setting = 'showMainStatisticsPanelThisLevel',
-  statKey = 'lowestHealthThisLevel',
-}, {
-  label = sessionHealthLabel,
-  value = sessionHealthValue,
-  setting = 'showMainStatisticsPanelSessionHealth',
-  statKey = 'lowestHealthThisSession',
-}, {
   label = petDeathsLabel,
   value = petDeathsValue,
   setting = 'showMainStatisticsPanelPetDeaths',
@@ -464,15 +445,30 @@ local statsElements = { -- Non-tier stats (no tier system)
   setting = 'showMainStatisticsPanelPlayerDeaths',
   statKey = 'playerDeaths',
 }, {
-  label = playerDeathsThisSessionLabel,
-  value = playerDeathsThisSessionValue,
-  setting = 'showMainStatisticsPanelPlayerDeathsThisSession',
-  statKey = 'playerDeathsThisSession',
+  label = playerDeathsOpenWorldLabel,
+  value = playerDeathsOpenWorldValue,
+  setting = 'showMainStatisticsPanelPlayerDeathsOpenWorld',
+  statKey = 'playerDeathsOpenWorld',
 }, {
-  label = playerDeathsThisLevelLabel,
-  value = playerDeathsThisLevelValue,
-  setting = 'showMainStatisticsPanelPlayerDeathsThisLevel',
-  statKey = 'playerDeathsThisLevel',
+  label = playerDeathsBattlegroundLabel,
+  value = playerDeathsBattlegroundValue,
+  setting = 'showMainStatisticsPanelPlayerDeathsBattleground',
+  statKey = 'playerDeathsBattleground',
+}, {
+  label = playerDeathsDungeonLabel,
+  value = playerDeathsDungeonValue,
+  setting = 'showMainStatisticsPanelPlayerDeathsDungeon',
+  statKey = 'playerDeathsDungeon',
+}, {
+  label = playerDeathsRaidLabel,
+  value = playerDeathsRaidValue,
+  setting = 'showMainStatisticsPanelPlayerDeathsRaid',
+  statKey = 'playerDeathsRaid',
+}, {
+  label = playerDeathsArenaLabel,
+  value = playerDeathsArenaValue,
+  setting = 'showMainStatisticsPanelPlayerDeathsArena',
+  statKey = 'playerDeathsArena',
 }, {
   label = blocksLabel,
   value = blocksValue,
@@ -787,33 +783,6 @@ function UpdateStatistics()
     totalManaStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
   end
 
-  -- Update lowest health (percent stats don't use tier colors)
-  local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
-  local lowestHealthStat = getStat('lowestHealth')
-  if lowestHealthStat then
-    lowestHealthStat.value:SetText(string.format('%.1f', currentLowestHealth) .. '%')
-    lowestHealthStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    lowestHealthStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
-  end
-
-  -- Update session lowest health
-  local currentSessionLowestHealth = CharacterStats:GetStat('lowestHealthThisSession') or 100
-  local sessionHealthStat = getStat('lowestHealthThisSession')
-  if sessionHealthStat then
-    sessionHealthStat.value:SetText(string.format('%.1f', currentSessionLowestHealth) .. '%')
-    sessionHealthStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    sessionHealthStat.value:SetTextColor(1, 1, 1, 1)
-  end
-
-  -- Update this level lowest health
-  local currentThisLevelHealth = CharacterStats:GetStat('lowestHealthThisLevel') or 100
-  local thisLevelStat = getStat('lowestHealthThisLevel')
-  if thisLevelStat then
-    thisLevelStat.value:SetText(string.format('%.1f', currentThisLevelHealth) .. '%')
-    thisLevelStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    thisLevelStat.value:SetTextColor(1, 1, 1, 1)
-  end
-
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
   local enemiesStat = getStat('enemiesSlain')
@@ -945,20 +914,44 @@ function UpdateStatistics()
     playerDeathsStat.value:SetTextColor(1, 1, 1, 1)
   end
 
-  local playerDeathsThisSession = CharacterStats:GetStat('playerDeathsThisSession') or 0
-  local playerDeathsThisSessionStat = getStat('playerDeathsThisSession')
-  if playerDeathsThisSessionStat then
-    playerDeathsThisSessionStat.value:SetText(formatNumberWithCommas(playerDeathsThisSession))
-    playerDeathsThisSessionStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    playerDeathsThisSessionStat.value:SetTextColor(1, 1, 1, 1)
+  local playerDeathsOpenWorld = CharacterStats:GetStat('playerDeathsOpenWorld') or 0
+  local playerDeathsOpenWorldStat = getStat('playerDeathsOpenWorld')
+  if playerDeathsOpenWorldStat then
+    playerDeathsOpenWorldStat.value:SetText(formatNumberWithCommas(playerDeathsOpenWorld))
+    playerDeathsOpenWorldStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    playerDeathsOpenWorldStat.value:SetTextColor(1, 1, 1, 1)
   end
 
-  local playerDeathsThisLevel = CharacterStats:GetStat('playerDeathsThisLevel') or 0
-  local playerDeathsThisLevelStat = getStat('playerDeathsThisLevel')
-  if playerDeathsThisLevelStat then
-    playerDeathsThisLevelStat.value:SetText(formatNumberWithCommas(playerDeathsThisLevel))
-    playerDeathsThisLevelStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    playerDeathsThisLevelStat.value:SetTextColor(1, 1, 1, 1)
+  local playerDeathsBattleground = CharacterStats:GetStat('playerDeathsBattleground') or 0
+  local playerDeathsBattlegroundStat = getStat('playerDeathsBattleground')
+  if playerDeathsBattlegroundStat then
+    playerDeathsBattlegroundStat.value:SetText(formatNumberWithCommas(playerDeathsBattleground))
+    playerDeathsBattlegroundStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    playerDeathsBattlegroundStat.value:SetTextColor(1, 1, 1, 1)
+  end
+
+  local playerDeathsDungeon = CharacterStats:GetStat('playerDeathsDungeon') or 0
+  local playerDeathsDungeonStat = getStat('playerDeathsDungeon')
+  if playerDeathsDungeonStat then
+    playerDeathsDungeonStat.value:SetText(formatNumberWithCommas(playerDeathsDungeon))
+    playerDeathsDungeonStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    playerDeathsDungeonStat.value:SetTextColor(1, 1, 1, 1)
+  end
+
+  local playerDeathsRaid = CharacterStats:GetStat('playerDeathsRaid') or 0
+  local playerDeathsRaidStat = getStat('playerDeathsRaid')
+  if playerDeathsRaidStat then
+    playerDeathsRaidStat.value:SetText(formatNumberWithCommas(playerDeathsRaid))
+    playerDeathsRaidStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    playerDeathsRaidStat.value:SetTextColor(1, 1, 1, 1)
+  end
+
+  local playerDeathsArena = CharacterStats:GetStat('playerDeathsArena') or 0
+  local playerDeathsArenaStat = getStat('playerDeathsArena')
+  if playerDeathsArenaStat then
+    playerDeathsArenaStat.value:SetText(formatNumberWithCommas(playerDeathsArena))
+    playerDeathsArenaStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    playerDeathsArenaStat.value:SetTextColor(1, 1, 1, 1)
   end
 
   local blocks = CharacterStats:GetStat('blocks') or 0

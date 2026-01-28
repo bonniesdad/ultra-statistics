@@ -194,7 +194,7 @@ initializeTempSettings()
 
 local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraStatistics', {
   type = 'data source',
-  text = 'ULTRA STATISTICS',
+  text = 'ULTRASTATS',
   icon = 'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\playerJumps.png',
   OnClick = function(_, btn)
     if btn == 'LeftButton' then
