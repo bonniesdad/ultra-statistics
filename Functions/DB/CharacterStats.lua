@@ -117,21 +117,12 @@ function CharacterStats:LogStatsToChat()
   local playerName = UnitName('player') or 'Player'
   local playerLevel = UnitLevel('player') or 1
   local _, playerClass = UnitClass('player')
-  local msg = '[UltraStatistics] '
-    .. playerName
-    .. ' ('
-    .. (playerClass or 'Class')
-    .. ' L'
-    .. playerLevel
-    .. ') - '
-    .. 'Deaths: '
-    .. formatNumberWithCommas(stats.playerDeaths or 0)
-    .. ' - '
-    .. 'Enemies: '
-    .. formatNumberWithCommas(stats.enemiesSlain or 0)
-    .. ' - '
-    .. 'Elites: '
-    .. formatNumberWithCommas(stats.elitesSlain or 0)
+  local msg =
+    '[UltraStatistics] ' .. playerName .. ' (' .. (playerClass or 'Class') .. ' L' .. playerLevel .. ') - ' .. 'Deaths: ' .. formatNumberWithCommas(
+      stats.playerDeaths or 0
+    ) .. ' - ' .. 'Enemies: ' .. formatNumberWithCommas(
+      stats.enemiesSlain or 0
+    ) .. ' - ' .. 'Elites: ' .. formatNumberWithCommas(stats.elitesSlain or 0)
   DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 

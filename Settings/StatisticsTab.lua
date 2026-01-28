@@ -23,6 +23,8 @@ end
 local STATISTIC_TOOLTIPS = {
   -- Character Info section
   level = 'Your current character level',
+  totalHP = 'Your maximum health with current gear and buffs',
+  totalResource = 'Your maximum primary resource (mana/rage/energy/etc.) with current gear and buffs',
   -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
@@ -63,9 +65,6 @@ local STATISTIC_TOOLTIPS = {
   goldSpent = 'Total money spent (copper). Tracked via PLAYER_MONEY deltas.',
   -- Network section
   -- (removed in UltraStatistics)
-  -- Unused statistics
-  totalHP = 'Your maximum possible health with current gear and buffs',
-  totalMana = 'Your maximum possible mana with current gear and buffs',
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -102,6 +101,7 @@ local STAT_TIER_ICON_SIZE = 14
 local STAT_TIER_ICON_GAP = 12
 -- Death stats do not show an icon next to the toast button
 local STATS_WITHOUT_TOAST_ICON = {
+  level = true, -- no dedicated icon
   playerDeaths = true,
   playerDeathsOpenWorld = true,
   playerDeathsBattleground = true,
@@ -110,6 +110,8 @@ local STATS_WITHOUT_TOAST_ICON = {
   playerDeathsArena = true,
   petDeaths = true,
   partyMemberDeaths = true,
+  totalHP = true, -- no dedicated icon
+  maxResource = true, -- no dedicated icon
 }
 
 -- Some stats share the same icon art; map new keys to existing textures to avoid requiring new PNGs.
@@ -184,6 +186,14 @@ local STAT_BAR_CONFIG = {
   -- Numeric stats with individualized tier settings (all inherit default base/multiplier unless overridden)
   level = {
     max = 60, -- classic cap
+    valueOnly = true,
+    noTier = true,
+  },
+  totalHP = {
+    valueOnly = true,
+    noTier = true,
+  },
+  maxResource = {
     valueOnly = true,
     noTier = true,
   },
@@ -377,7 +387,39 @@ local STAT_BAR_CONFIG = {
 _G.ULTRA_STAT_BAR_CONFIG = STAT_BAR_CONFIG
 
 local statBars = {}
+local statLabels = {}
 local UpdateStatBar
+
+local function GetPlayerPrimaryResourceLabelAndType()
+  local powerType, powerToken = UnitPowerType('player')
+  local labelsByType = {
+    [0] = _G.MANA or 'Mana',
+    [1] = _G.RAGE or 'Rage',
+    [2] = _G.FOCUS or 'Focus',
+    [3] = _G.ENERGY or 'Energy',
+    [4] = _G.COMBO_POINTS or 'Combo Points',
+    [5] = _G.RUNES or 'Runes',
+    [6] = _G.RUNIC_POWER or 'Runic Power',
+  }
+
+  local label = labelsByType[powerType]
+  if type(label) == 'string' and label ~= '' then
+    return label, powerType
+  end
+
+  if type(powerToken) == 'string' and powerToken ~= '' then
+    local tokenLabel = _G[powerToken]
+    if type(tokenLabel) == 'string' and tokenLabel ~= '' then
+      return tokenLabel, powerType
+    end
+    local pretty = string.lower(powerToken):gsub('_', ' '):gsub('(%a)([%w_]*)', function(a, b)
+      return string.upper(a) .. b
+    end)
+    return pretty, powerType
+  end
+
+  return 'Resource', powerType
+end
 
 local function CreateStatBar(parent)
   local barFrame = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
@@ -824,6 +866,7 @@ local function CreateStatsGrid(parent, statsList, options)
       local label = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
       label:SetPoint('TOPLEFT', parent, 'TOPLEFT', labelLeft, yOffset + ROW_Y_ADJUST)
       label:SetText(stat.label or statKey)
+      statLabels[statKey] = label
       if stat.tooltipKey then
         AddStatisticTooltip(label, stat.tooltipKey)
       end
@@ -1566,6 +1609,27 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       return UnitLevel('player') or 1
     end,
     defaultValue = 1,
+  }, {
+    key = 'totalHP',
+    label = 'Max Health:',
+    tooltipKey = 'totalHP',
+    width = 1,
+    settingName = 'showMainStatisticsPanelTotalHP',
+    valueFunc = function()
+      return UnitHealthMax('player') or 0
+    end,
+    defaultValue = 0,
+  }, {
+    key = 'maxResource',
+    label = 'Max Resource:',
+    tooltipKey = 'totalResource',
+    width = 1,
+    settingName = 'showMainStatisticsPanelMaxResource',
+    valueFunc = function()
+      local _, powerType = GetPlayerPrimaryResourceLabelAndType()
+      return UnitPowerMax('player', powerType or 0) or 0
+    end,
+    defaultValue = 0,
   } }
   CreateStatsGrid(characterInfoContent, characterStatsConfig, {
     defaultWidth = 1,
@@ -1641,13 +1705,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     defaultValue = 0,
     width = 0.5,
   }, {
-    key = 'playerDeathsBattleground',
-    label = 'Deaths (Battleground):',
-    tooltipKey = 'playerDeathsBattleground',
-    settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
     key = 'playerDeathsDungeon',
     label = 'Deaths (Dungeon):',
     tooltipKey = 'playerDeathsDungeon',
@@ -1662,12 +1719,26 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     defaultValue = 0,
     width = 0.5,
   }, {
+    key = 'playerDeathsBattleground',
+    label = 'Deaths (Battleground):',
+    tooltipKey = 'playerDeathsBattleground',
+    settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
     key = 'playerDeathsArena',
     label = 'Deaths (Arena):',
     tooltipKey = 'playerDeathsArena',
     settingName = 'showMainStatisticsPanelPlayerDeathsArena',
     defaultValue = 0,
     width = 0.5,
+  }, {
+    key = 'partyMemberDeaths',
+    label = 'Party Deaths Witnessed:',
+    tooltipKey = 'partyDeathsWitnessed',
+    settingName = 'showMainStatisticsPanelPartyMemberDeaths',
+    defaultValue = 0,
+    width = 1,
   } }
   CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
 
@@ -1904,13 +1975,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     tooltipKey = 'resists',
     defaultValue = 0,
     width = 1,
-  }, {
-    key = 'partyMemberDeaths',
-    label = 'Party Deaths Witnessed:',
-    tooltipKey = 'partyDeathsWitnessed',
-    settingName = 'showMainStatisticsPanelPartyMemberDeaths',
-    defaultValue = 0,
-    width = 1,
   } }
 
   -- Only add Engineering-related stats if player has Engineering profession
@@ -2050,6 +2114,12 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     if not UltraStatisticsDB then return end
 
     UpdateStatBar('level', UnitLevel('player') or 1)
+    UpdateStatBar('totalHP', UnitHealthMax('player') or 0)
+    local resourceLabel, powerType = GetPlayerPrimaryResourceLabelAndType()
+    if statLabels.maxResource then
+      statLabels.maxResource:SetText('Max ' .. (resourceLabel or 'Resource') .. ':')
+    end
+    UpdateStatBar('maxResource', UnitPowerMax('player', powerType or 0) or 0)
 
     -- Only update pet deaths for pet classes (hunter and warlock)
     local _, playerClass = UnitClass('player')
@@ -2059,10 +2129,14 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
     UpdateStatBar('playerDeaths', CharacterStats:GetStat('playerDeaths') or 0)
     UpdateStatBar('playerDeathsOpenWorld', CharacterStats:GetStat('playerDeathsOpenWorld') or 0)
-    UpdateStatBar('playerDeathsBattleground', CharacterStats:GetStat('playerDeathsBattleground') or 0)
+    UpdateStatBar(
+      'playerDeathsBattleground',
+      CharacterStats:GetStat('playerDeathsBattleground') or 0
+    )
     UpdateStatBar('playerDeathsDungeon', CharacterStats:GetStat('playerDeathsDungeon') or 0)
     UpdateStatBar('playerDeathsRaid', CharacterStats:GetStat('playerDeathsRaid') or 0)
     UpdateStatBar('playerDeathsArena', CharacterStats:GetStat('playerDeathsArena') or 0)
+    UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
     UpdateStatBar('blocks', CharacterStats:GetStat('blocks') or 0)
     UpdateStatBar('parries', CharacterStats:GetStat('parries') or 0)
     UpdateStatBar('dodges', CharacterStats:GetStat('dodges') or 0)

@@ -29,6 +29,37 @@ statsBackground:SetColorTexture(0, 0, 0, 0.3)
 
 local MANA_POWER_TYPE = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
 
+local function GetPlayerPrimaryResourceLabelAndType()
+  local powerType, powerToken = UnitPowerType('player')
+  local labelsByType = {
+    [0] = _G.MANA or 'Mana',
+    [1] = _G.RAGE or 'Rage',
+    [2] = _G.FOCUS or 'Focus',
+    [3] = _G.ENERGY or 'Energy',
+    [4] = _G.COMBO_POINTS or 'Combo Points',
+    [5] = _G.RUNES or 'Runes',
+    [6] = _G.RUNIC_POWER or 'Runic Power',
+  }
+
+  local label = labelsByType[powerType]
+  if type(label) == 'string' and label ~= '' then
+    return label, powerType
+  end
+
+  if type(powerToken) == 'string' and powerToken ~= '' then
+    local tokenLabel = _G[powerToken]
+    if type(tokenLabel) == 'string' and tokenLabel ~= '' then
+      return tokenLabel, powerType
+    end
+    local pretty = string.lower(powerToken):gsub('_', ' '):gsub('(%a)([%w_]*)', function(a, b)
+      return string.upper(a) .. b
+    end)
+    return pretty, powerType
+  end
+
+  return 'Resource', powerType
+end
+
 local function ApplyStatsBackgroundOpacity()
   local alpha = 0.3
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.statisticsBackgroundOpacity ~= nil then
@@ -91,7 +122,7 @@ levelValue:SetText(formatNumberWithCommas(1))
 levelValue:SetTextColor(1, 1, 1, 1) -- White for values
 local totalHPLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 totalHPLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
-totalHPLabel:SetText('Total HP:')
+totalHPLabel:SetText('Max Health:')
 totalHPLabel:SetTextColor(1, 0.9, 0.5, 1)
 
 local totalHPValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
@@ -100,13 +131,18 @@ totalHPValue:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
 totalHPValue:SetTextColor(1, 0.2, 0.2, 1) -- Red tint for HP
 local totalManaLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 totalManaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -38)
-totalManaLabel:SetText('Total Mana:')
+totalManaLabel:SetText('Max Resource:')
 totalManaLabel:SetTextColor(1, 0.9, 0.5, 1)
 
 local totalManaValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 totalManaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -38)
-totalManaValue:SetText(formatNumberWithCommas(UnitPowerMax('player', MANA_POWER_TYPE) or 0))
-totalManaValue:SetTextColor(0.3, 0.7, 1, 1) -- Blue tint for mana
+do
+  local _, powerType = GetPlayerPrimaryResourceLabelAndType()
+  totalManaValue:SetText(
+    formatNumberWithCommas(UnitPowerMax('player', powerType or MANA_POWER_TYPE) or 0)
+  )
+end
+totalManaValue:SetTextColor(1, 1, 1, 1)
 local enemiesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -98)
 enemiesLabel:SetText('Enemies Slain:')
@@ -235,11 +271,13 @@ playerDeathsOpenWorldValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -30
 playerDeathsOpenWorldValue:SetText(formatNumberWithCommas(0))
 playerDeathsOpenWorldValue:SetTextColor(1, 0.2, 0.2, 1)
 
-local playerDeathsBattlegroundLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+local playerDeathsBattlegroundLabel =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 playerDeathsBattlegroundLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -323)
 playerDeathsBattlegroundLabel:SetText('Deaths (Battleground):')
 playerDeathsBattlegroundLabel:SetTextColor(1, 0.9, 0.5, 1)
-local playerDeathsBattlegroundValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+local playerDeathsBattlegroundValue =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 playerDeathsBattlegroundValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -323)
 playerDeathsBattlegroundValue:SetText(formatNumberWithCommas(0))
 playerDeathsBattlegroundValue:SetTextColor(1, 0.2, 0.2, 1)
@@ -427,8 +465,8 @@ local statsElements = { -- Non-tier stats (no tier system)
 }, {
   label = totalManaLabel,
   value = totalManaValue,
-  setting = 'showMainStatisticsPanelTotalMana',
-  statKey = 'totalMana',
+  setting = 'showMainStatisticsPanelMaxResource',
+  statKey = 'maxResource',
 }, {
   label = petDeathsLabel,
   value = petDeathsValue,
@@ -766,7 +804,7 @@ function UpdateStatistics()
     levelStat.value:SetTextColor(1, 1, 1, 1)
   end
 
-  -- Update total HP and Mana (these don't use tier colors)
+  -- Update total HP and Max Resource (these don't use tier colors)
   local maxHealth = UnitHealthMax('player') or 0
   local totalHPStat = getStat('totalHP')
   if totalHPStat then
@@ -775,12 +813,14 @@ function UpdateStatistics()
     totalHPStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
   end
 
-  local maxMana = UnitPowerMax('player', MANA_POWER_TYPE) or 0
-  local totalManaStat = getStat('totalMana')
-  if totalManaStat then
-    totalManaStat.value:SetText(formatNumberWithCommas(maxMana))
-    totalManaStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    totalManaStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  local resourceLabel, powerType = GetPlayerPrimaryResourceLabelAndType()
+  local maxResource = UnitPowerMax('player', powerType or MANA_POWER_TYPE) or 0
+  local maxResourceStat = getStat('maxResource')
+  if maxResourceStat then
+    maxResourceStat.value:SetText(formatNumberWithCommas(maxResource))
+    maxResourceStat.label:SetText('Max ' .. (resourceLabel or 'Resource') .. ':')
+    maxResourceStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    maxResourceStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
   end
 
   -- Update enemies slain

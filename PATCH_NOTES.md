@@ -4,7 +4,7 @@
 **Date:** 2026-01-28  
 **Expansion:** TBC
 
----
+---s
 
 Initial release of Ultra Statistics.
 
@@ -15,10 +15,15 @@ Initial release of Ultra Statistics.
 
 ## NEW STATISTICS
 
-- Deaths
-- Deaths this session
-- Deaths this level
-- Blocks
-- Dodges
-- Parries
-- Resists
+    - Deaths
+    - Deaths (Open World)
+    - Deaths (Battleground)
+    - Deaths (Dungeon)
+    - Deaths (Raid)
+    - Deaths (Arena)
+    - Max Health
+    - Max Resource
+    - Blocks
+    - Dodges
+    - Parries
+    - Resists
