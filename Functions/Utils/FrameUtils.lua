@@ -31,14 +31,18 @@ function MakeFrameDraggable(frame, dbKey)
 end
 
 function UltraStatistics_CreateInstanceAccordionList(opts)
-  if type(opts) ~= 'table' then return nil end
+  if type(opts) ~= 'table' then
+    return nil
+  end
 
   local scrollChild = opts.scrollChild
   local layout = opts.layout
   local instances = opts.instances
   local collapsedStateTable = opts.collapsedStateTable
 
-  if not scrollChild or not layout or type(instances) ~= 'table' or type(collapsedStateTable) ~= 'table' then
+  if not scrollChild or not layout or type(instances) ~= 'table' or type(
+    collapsedStateTable
+  ) ~= 'table' then
     return nil
   end
 
@@ -70,7 +74,8 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
   local sections = {}
 
   local function addSection(header, content, key)
-    local collapsedByDefault = defaultCollapsed and (collapsedStateTable[key] ~= false) or (collapsedStateTable[key] == true)
+    local collapsedByDefault =
+      defaultCollapsed and (collapsedStateTable[key] ~= false) or (collapsedStateTable[key] == true)
     local section = {
       header = header,
       content = content,
@@ -169,7 +174,12 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
       tile = true,
       tileSize = 8,
       edgeSize = 12,
-      insets = { left = 3, right = 3, top = 3, bottom = 3 },
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
     })
     header:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
     header:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
@@ -189,7 +199,12 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
       tile = true,
       tileSize = 8,
       edgeSize = 10,
-      insets = { left = 3, right = 3, top = 3, bottom = 3 },
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
     })
     content:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
     content:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
@@ -242,10 +257,8 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     local statusIcon = header:CreateTexture(nil, 'ARTWORK')
     statusIcon:SetSize(20, 20)
     statusIcon:SetPoint('RIGHT', header, 'RIGHT', -8, 0)
-    local completeTexture =
-      'Interface\\AddOns\\UltraStatistics\\Textures\\complete.png'
-    local incompleteTexture =
-      'Interface\\AddOns\\UltraStatistics\\Textures\\incomplete.png'
+    local completeTexture = 'Interface\\AddOns\\UltraStatistics\\Textures\\complete.png'
+    local incompleteTexture = 'Interface\\AddOns\\UltraStatistics\\Textures\\incomplete.png'
     statusIcon:SetTexture(isCleared and completeTexture or incompleteTexture)
 
     local summaryLabel = content:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
@@ -287,20 +300,27 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     local summaryLine1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     summaryLine1:SetPoint('TOPLEFT', summaryLabel, 'BOTTOMLEFT', 0, -4)
     summaryLine1:SetText(
-      string.format('|cffb0b0b0First attempt deaths:|r |cffffffff%s|r', formatStat(firstClearDeaths))
+      string.format(
+        '|cffb0b0b0First attempt deaths:|r |cffffffff%s|r',
+        formatStat(firstClearDeaths)
+      )
     )
     summaryLine1:SetShadowOffset(1, -1)
     summaryLine1:SetShadowColor(0, 0, 0, 0.8)
 
     local summaryLine2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     summaryLine2:SetPoint('TOPLEFT', summaryLine1, 'BOTTOMLEFT', 0, -summaryGap)
-    summaryLine2:SetText(string.format('|cffb0b0b0Clears:|r |cffffffff%s|r', formatStat(totalClears)))
+    summaryLine2:SetText(
+      string.format('|cffb0b0b0Clears:|r |cffffffff%s|r', formatStat(totalClears))
+    )
     summaryLine2:SetShadowOffset(1, -1)
     summaryLine2:SetShadowColor(0, 0, 0, 0.8)
 
     local summaryLine3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     summaryLine3:SetPoint('TOPLEFT', summaryLine2, 'BOTTOMLEFT', 0, -summaryGap)
-    summaryLine3:SetText(string.format('|cffb0b0b0Deaths:|r |cffffffff%s|r', formatStat(totalDeaths)))
+    summaryLine3:SetText(
+      string.format('|cffb0b0b0Deaths:|r |cffffffff%s|r', formatStat(totalDeaths))
+    )
     summaryLine3:SetShadowOffset(1, -1)
     summaryLine3:SetShadowColor(0, 0, 0, 0.8)
 
@@ -343,7 +363,12 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
             tile = true,
             tileSize = 8,
             edgeSize = 10,
-            insets = { left = 2, right = 2, top = 2, bottom = 2 },
+            insets = {
+              left = 2,
+              right = 2,
+              top = 2,
+              bottom = 2,
+            },
           })
           row:SetBackdropColor(0, 0, 0, 0.25)
           row:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
@@ -361,8 +386,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
 
           local bossSlug = SlugifyName(bossName)
           local bossTexturePath =
-            'Interface\\AddOns\\UltraStatistics\\Textures\\' ..
-            texturesRoot .. '\\' .. folderSlug .. '\\' .. bossSlug .. '.png'
+            'Interface\\AddOns\\UltraStatistics\\Textures\\' .. texturesRoot .. '\\' .. folderSlug .. '\\' .. bossSlug .. '.png'
           icon:SetTexture(bossTexturePath)
           icon:SetTexCoord(0, 1, 0, 1)
 
@@ -383,7 +407,6 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           -- Table-like layout: labels left-aligned, values right-aligned
           local statsGap = 2
           local labelWidth = 140 -- Fixed width for labels so values align
-
           -- First attempt deaths row
           local label1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
           label1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -8)

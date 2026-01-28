@@ -406,7 +406,7 @@ function IsDungeonBoss(unitGUID)
     [18836] = true,
     [18834] = true,
     [18832] = true,
-    -- Karazhan 
+    -- Karazhan
     [16152] = true, -- Attumen the Huntsman
     [15687] = true, -- Moroes
     [16457] = true, -- Maiden of Virtue
