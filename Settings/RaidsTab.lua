@@ -1,5 +1,3 @@
--- Info Tab Content
--- Initialize Info Tab when called
 function UltraStatistics_InitializeRaidsTab(tabContents)
   if not tabContents or not tabContents[3] then return end
 
@@ -9,70 +7,503 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
   -- Mark as initialized
   tabContents[3].initialized = true
 
-  -- Philosophy text (at top, moved down by 30)
-  local philosophyText = tabContents[3]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  philosophyText:SetPoint('TOP', tabContents[3], 'TOP', 0, -70)
-  philosophyText:SetWidth(475)
-  philosophyText:SetText(
-    'Ultra Statistics\nVersion: ' .. (C_AddOns.GetAddOnMetadata(
-      'UltraStatistics',
-      'Version'
-    ) or '?')
-  )
-  philosophyText:SetJustifyH('CENTER')
-  philosophyText:SetNonSpaceWrap(true)
+  local parent = tabContents[3]
 
-  -- Bug report text
-  local bugReportText = tabContents[3]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  bugReportText:SetPoint('TOP', philosophyText, 'BOTTOM', 0, -10)
-  bugReportText:SetText(
-    'Found a bug or have suggestions?\n\nJoin the developers discord community to have your say on the future of this addon!'
-  )
-  bugReportText:SetJustifyH('CENTER')
-  bugReportText:SetTextColor(0.95, 0.95, 0.9)
-  bugReportText:SetWidth(475)
-  bugReportText:SetNonSpaceWrap(true)
+  -- Fallback layout (LAYOUT is defined globally in Settings/Settings.lua)
+  local layout = _G.LAYOUT or {
+    SECTION_HEADER_HEIGHT = 28,
+    SECTION_SPACING = 10,
+    CONTENT_INDENT = 20,
+    CONTENT_PADDING = 8,
+  }
 
-  -- Discord invite button (opens dialog with copyable invite link)
-  local discordButton = CreateFrame('Button', nil, tabContents[3], 'UIPanelButtonTemplate')
-  discordButton:SetSize(220, 24)
-  discordButton:SetPoint('TOP', bugReportText, 'BOTTOM', 0, -10)
-  discordButton:SetText('Discord Invite Link')
-  discordButton:SetScript('OnClick', function()
-    if _G.UHC_DiscordInvite_ShowDialog then
-      _G.UHC_DiscordInvite_ShowDialog()
-    end
-  end)
+  if type(GLOBAL_SETTINGS) ~= 'table' then
+    GLOBAL_SETTINGS = {}
+  end
+  if type(GLOBAL_SETTINGS.collapsedRaidsSections) ~= 'table' then
+    GLOBAL_SETTINGS.collapsedRaidsSections = {}
+  end
 
-  -- Patch Notes Section (at bottom, bigger to fill space)
-  local patchNotesTitle = tabContents[3]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  patchNotesTitle:SetPoint('TOP', discordButton, 'BOTTOM', 0, -30)
-  patchNotesTitle:SetText('Patch Notes')
-  patchNotesTitle:SetJustifyH('CENTER')
-  patchNotesTitle:SetTextColor(1, 1, 0.5)
-
-  -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
-  local patchNotesFrame = CreateFrame('Frame', nil, tabContents[3], 'BackdropTemplate')
-  patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -17)
-  patchNotesFrame:SetPoint('LEFT', tabContents[3], 'LEFT', 10, 0)
-  patchNotesFrame:SetPoint('RIGHT', tabContents[3], 'RIGHT', -10, 0)
-  patchNotesFrame:SetHeight(380)
-  patchNotesFrame:SetBackdrop({
+  -- Outer frame (matches style used in Heroics tab)
+  local raidsFrame = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
+  raidsFrame:SetPoint('TOP', parent, 'TOP', 0, -55)
+  raidsFrame:SetPoint('LEFT', parent, 'LEFT', 10, 0)
+  raidsFrame:SetPoint('RIGHT', parent, 'RIGHT', -10, 0)
+  raidsFrame:SetHeight(535)
+  raidsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
     tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5,
     },
   })
-  patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
-  patchNotesFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
+  raidsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
+  raidsFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
 
-  -- Create patch notes display using reusable component (larger to fill new space)
-  CreatePatchNotesDisplay(patchNotesFrame, 560, 360, 10, -10)
+  -- Scroll frame (many raids)
+  local scrollFrame = CreateFrame('ScrollFrame', nil, raidsFrame, 'UIPanelScrollFrameTemplate')
+  scrollFrame:SetPoint('TOPLEFT', raidsFrame, 'TOPLEFT', 10, -10)
+  scrollFrame:SetPoint('BOTTOMRIGHT', raidsFrame, 'BOTTOMRIGHT', -30, 10)
+
+  local scrollChild = CreateFrame('Frame', nil, scrollFrame)
+  scrollChild:SetSize(435, 300)
+  scrollFrame:SetScrollChild(scrollChild)
+
+  local raidsInstances = { -- Classic raids
+  -- {
+  --   key = 'moltenCore',
+  --   title = 'Molten Core',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'Lucifron', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Magmadar', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Gehennas', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Garr', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Baron Geddon', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Shazzrah', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Sulfuron Harbinger', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Golemagg the Incinerator', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Majordomo Executus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Ragnaros', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+  -- {
+  --   key = 'onyxia',
+  --   title = 'Onyxia',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'Onyxia', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+  -- {
+  --   key = 'blackwingLair',
+  --   title = 'Blackwing Lair',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'Razorgore the Untamed', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Vaelastrasz the Corrupt', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Broodlord Lashlayer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Firemaw', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Ebonroc', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Flamegor', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Chromaggus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Nefarian', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+  -- {
+  --   key = 'zulGurub',
+  --   title = 'Zul\'Gurub',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'High Priestess Jeklik', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'High Priest Venoxis', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'High Priestess Mar\'li', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'High Priest Thekal', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'High Priestess Arlokk', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Jin\'do the Hexxer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Hakkar', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+  -- {
+  --   key = 'aq20',
+  --   title = 'Ruins of Ahn\'Qiraj',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'Kurinnaxx', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'General Rajaxx', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Moam', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Buru the Gorger', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Ayamiss the Hunter', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Ossirian the Unscarred', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+  -- {
+  --   key = 'aq40',
+  --   title = 'Temple of Ahn\'Qiraj',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'The Prophet Skeram', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Battleguard Sartura', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Fankriss the Unyielding', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Princess Huhuran', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Twin Emperors', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Ouro', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'C\'Thun', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+  -- {
+  --   key = 'naxxramas',
+  --   title = 'Naxxramas',
+  --   totalClears = 0,
+  --   totalDeaths = 0,
+  --   firstClearDeaths = 0,
+  --   bosses = {
+  --     { name = 'Anub\'Rekhan', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Grand Widow Faerlina', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Maexxna', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Noth the Plaguebringer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Heigan the Unclean', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Loatheb', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Instructor Razuvious', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Gothik the Harvester', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'The Four Horsemen', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Patchwerk', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Grobbulus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Gluth', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Thaddius', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Sapphiron', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+  --     { name = 'Kel\'Thuzad', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+  --   },
+  -- },
+
+  -- TBC raids
+  {
+    key = 'gruulsLair',
+    title = "Gruul's Lair",
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'High King Maulgar',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Gruul the Dragonkiller',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'karazhan',
+    title = 'Karazhan',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'Attumen the Huntsman',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Moroes',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Maiden of Virtue',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Opera Event',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'The Curator',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Terestian Illhoof',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Shade of Aran',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Netherspite',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Nightbane',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Prince Malchezaar',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'magtheridonsLair',
+    title = "Magtheridon's Lair",
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'Magtheridon',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'serpentshrineCavern',
+    title = 'Serpentshrine Cavern',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'Hydross the Unstable',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'The Lurker Below',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Leotheras the Blind',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Fathom-Lord Karathress',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Morogrim Tidewalker',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Lady Vashj',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'tempestKeep',
+    title = 'Tempest Keep: The Eye',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = "Al'ar",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Void Reaver',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'High Astromancer Solarian',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = "Kael'thas Sunstrider",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'hyjal',
+    title = 'The Battle for Mount Hyjal',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'Rage Winterchill',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Anetheron',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = "Kaz'rogal",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Azgalor',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Archimonde',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'blackTemple',
+    title = 'Black Temple',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = "High Warlord Naj'entus",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Supremus',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Shade of Akama',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Teron Gorefiend',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Gurtogg Bloodboil',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Reliquary of Souls',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Mother Shahraz',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Illidari Council',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Illidan Stormrage',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'zulAman',
+    title = "Zul'Aman",
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = "Akil'zon",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Nalorakk',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = "Jan'alai",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Halazzi',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Hex Lord Malacrass',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = "Zul'jin",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
+    key = 'sunwellPlateau',
+    title = 'Sunwell Plateau',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'Kalecgos',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Brutallus',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Felmyst',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Eredar Twins',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = "M'uru",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = "Kil'jaeden",
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  } }
+
+  UltraStatistics_CreateInstanceAccordionList({
+    scrollChild = scrollChild,
+    layout = layout,
+    instances = raidsInstances,
+    collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
+    width = 435,
+    texturesRoot = 'raids',
+    bgHeight = 200,
+    bgInsetX = 2,
+    bgInsetY = -2,
+    defaultCollapsed = true,
+  })
 end

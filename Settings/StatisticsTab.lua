@@ -58,13 +58,11 @@ local STATISTIC_TOOLTIPS = {
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
   -- Misc section
-  playerJumps = 'Number of jumps you have performed.  Work that jump key!',
+  playerJumps = 'Number of jumps you have performed.',
   player360s = 'Number of times you did a full 360 spin during a jump',
   -- Economy section
-  goldGained = 'Total money gained (copper). Tracked via PLAYER_MONEY deltas.',
-  goldSpent = 'Total money spent (copper). Tracked via PLAYER_MONEY deltas.',
-  -- Network section
-  -- (removed in UltraStatistics)
+  goldGained = 'Total money gained (copper).',
+  goldSpent = 'Total money spent (copper).',
 }
 
 -- Helper function to attach tooltip to a statistic label
