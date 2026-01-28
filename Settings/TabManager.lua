@@ -1,12 +1,14 @@
-local TAB_WIDTH = 167
+local TAB_WIDTH = 103
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
-local MAX_TABS = 3 -- Stats / Settings / Info
+local MAX_TABS = 5 -- Stats / Settings / Info
 local TAB_WIDTHS = {
   [1] = TAB_WIDTH, -- Stats
-  [2] = TAB_WIDTH, -- Settings
-  [3] = TAB_WIDTH, -- Info
+  [2] = TAB_WIDTH, -- Heroics
+  [3] = TAB_WIDTH, -- Raids
+  [4] = TAB_WIDTH, -- Settings
+  [5] = TAB_WIDTH, -- Info
 }
 
 local BASE_TEXT_COLOR = {
@@ -110,10 +112,14 @@ function UltraStatistics_InitializeTabs(settingsFrame)
 
   tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
   tabContents[1] = createTabContent(1, settingsFrame)
-  tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
+  tabButtons[2] = createTabButton('Heroics', 2, settingsFrame)
   tabContents[2] = createTabContent(2, settingsFrame)
-  tabButtons[3] = createTabButton('Info', 3, settingsFrame)
+  tabButtons[3] = createTabButton('Raids', 3, settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame)
+  tabButtons[4] = createTabButton('Settings', 4, settingsFrame)
+  tabContents[4] = createTabContent(4, settingsFrame)
+  tabButtons[5] = createTabButton('Info', 5, settingsFrame)
+  tabContents[5] = createTabContent(5, settingsFrame)
 end
 
 function UltraStatistics_SwitchToTab(index)
@@ -196,9 +202,13 @@ function UltraStatistics_SwitchToTab(index)
         UpdateLowestHealthDisplay()
       end
     end
-  elseif index == 2 and UltraStatistics_InitializeSettingsTab then
+  elseif index == 2 and UltraStatistics_InitializeHeroicsTab then
+    UltraStatistics_InitializeHeroicsTab(tabContents)
+  elseif index == 3 and UltraStatistics_InitializeRaidsTab then
+    UltraStatistics_InitializeRaidsTab(tabContents)
+  elseif index == 4 and UltraStatistics_InitializeSettingsTab then
     UltraStatistics_InitializeSettingsTab(tabContents)
-  elseif index == 3 and UltraStatistics_InitializeInfoTab then
+  elseif index == 5 and UltraStatistics_InitializeInfoTab then
     UltraStatistics_InitializeInfoTab(tabContents)
   end
 end

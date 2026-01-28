@@ -54,6 +54,8 @@ Settings/Settings.lua
 Settings/StatisticsTab.lua
 Settings/SettingsTab.lua
 Settings/InfoTab.lua
+Settings/HeroicsTab.lua
+Settings/RaidsTab.lua
 
 Functions/Overlays/StatisticsTrackingToast.lua
 Functions/Overlays/MainScreenStatistics.lua
