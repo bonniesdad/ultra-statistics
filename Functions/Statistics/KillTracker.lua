@@ -63,6 +63,21 @@ function KillTracker.HandlePartyKill(destGUID)
     if isDungeonFinalBoss then
       local currentDungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
       CharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
+
+      -- Classic dungeon clears: we may not have per-boss mapping in DungeonRaidBossInfo,
+      -- so record the clear at the instance level by name.
+      if type(GetInstanceInfo) == 'function' then
+        local name, instanceType, difficultyID = GetInstanceInfo()
+        if instanceType == 'party' then
+          local hasBossMapping =
+            (DungeonRaidBossInfo and DungeonRaidBossInfo.GetBossInfoByGUID and DungeonRaidBossInfo.GetBossInfoByGUID(
+              destGUID
+            )) ~= nil
+          if not hasBossMapping and DungeonRaidStats and DungeonRaidStats.RecordDungeonClearByName then
+            DungeonRaidStats.RecordDungeonClearByName(name, difficultyID)
+          end
+        end
+      end
     end
   end
 

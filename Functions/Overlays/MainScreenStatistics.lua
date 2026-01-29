@@ -1156,6 +1156,9 @@ function UpdateStatistics()
   if _G and _G.UltraStatistics_RefreshHeroicsTab then
     _G.UltraStatistics_RefreshHeroicsTab()
   end
+  if _G and _G.UltraStatistics_RefreshDungeonsTab then
+    _G.UltraStatistics_RefreshDungeonsTab()
+  end
 end
 
 -- Register events to update statistics when they change

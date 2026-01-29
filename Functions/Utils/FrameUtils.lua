@@ -36,6 +36,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
   local layout = opts.layout
   local instances = opts.instances
   local collapsedStateTable = opts.collapsedStateTable
+  local onLayoutUpdated = (type(opts.onLayoutUpdated) == 'function') and opts.onLayoutUpdated or nil
 
   if not scrollChild or not layout or type(instances) ~= 'table' or type(
     collapsedStateTable
@@ -114,6 +115,9 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     end
 
     scrollChild:SetHeight(math.max(1, -y + 20))
+    if onLayoutUpdated then
+      onLayoutUpdated(scrollChild:GetHeight() or 0)
+    end
   end
 
   local function makeHeaderClickable(section)
@@ -353,7 +357,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     local rowSpacing = 6
     local previousRow = nil
 
-    if type(bosses) == 'table' then
+    if type(bosses) == 'table' and #bosses > 0 then
       for _, boss in ipairs(bosses) do
         local bossName
         local totalBossKills = 0
@@ -486,6 +490,18 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
       end
     end
 
+    -- If a dungeon/instance has no boss list, show a friendly placeholder so the panel doesn't look "empty".
+    if bossCount == 0 then
+      local emptyBosses = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+      emptyBosses:SetPoint('TOPLEFT', bossesTitle, 'BOTTOMLEFT', 0, -8)
+      emptyBosses:SetPoint('RIGHT', content, 'RIGHT', -12, 0)
+      emptyBosses:SetJustifyH('LEFT')
+      emptyBosses:SetTextColor(0.8, 0.8, 0.8, 1)
+      emptyBosses:SetShadowOffset(1, -1)
+      emptyBosses:SetShadowColor(0, 0, 0, 0.8)
+      emptyBosses:SetText('Boss list not available yet for this instance.')
+    end
+
     local minHeight = 130
     local computedHeight = 100 + (bossCount * (rowHeight + rowSpacing))
     content:SetHeight(math.max(minHeight, computedHeight))
@@ -503,6 +519,9 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
 
   return {
     updateSectionPositions = updateSectionPositions,
+    getHeight = function()
+      return scrollChild and (scrollChild:GetHeight() or 0) or 0
+    end,
     sections = sections,
   }
 end

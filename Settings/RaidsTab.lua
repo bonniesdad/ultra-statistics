@@ -1,13 +1,13 @@
 function UltraStatistics_InitializeRaidsTab(tabContents)
-  if not tabContents or not tabContents[3] then return end
+  if not tabContents or not tabContents[4] then return end
 
   -- Check if already initialized to prevent duplicates
-  if tabContents[3].initialized then return end
+  if tabContents[4].initialized then return end
 
   -- Mark as initialized
-  tabContents[3].initialized = true
+  tabContents[4].initialized = true
 
-  local parent = tabContents[3]
+  local parent = tabContents[4]
 
   -- Fallback layout (LAYOUT is defined globally in Settings/Settings.lua)
   local layout = _G.LAYOUT or {
@@ -55,127 +55,194 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
   scrollChild:SetSize(435, 300)
   scrollFrame:SetScrollChild(scrollChild)
 
-  local defaultRaids = { -- Classic raids (commented) + TBC raids
-  -- {
-  --   key = 'moltenCore',
-  --   title = 'Molten Core',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'Lucifron', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Magmadar', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Gehennas', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Garr', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Baron Geddon', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Shazzrah', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Sulfuron Harbinger', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Golemagg the Incinerator', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Majordomo Executus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Ragnaros', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
-  -- {
-  --   key = 'onyxia',
-  --   title = 'Onyxia',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'Onyxia', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
-  -- {
-  --   key = 'blackwingLair',
-  --   title = 'Blackwing Lair',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'Razorgore the Untamed', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Vaelastrasz the Corrupt', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Broodlord Lashlayer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Firemaw', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Ebonroc', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Flamegor', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Chromaggus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Nefarian', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
-  -- {
-  --   key = 'zulGurub',
-  --   title = 'Zul\'Gurub',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'High Priestess Jeklik', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'High Priest Venoxis', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'High Priestess Mar\'li', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'High Priest Thekal', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'High Priestess Arlokk', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Jin\'do the Hexxer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Hakkar', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
-  -- {
-  --   key = 'aq20',
-  --   title = 'Ruins of Ahn\'Qiraj',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'Kurinnaxx', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'General Rajaxx', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Moam', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Buru the Gorger', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Ayamiss the Hunter', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Ossirian the Unscarred', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
-  -- {
-  --   key = 'aq40',
-  --   title = 'Temple of Ahn\'Qiraj',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'The Prophet Skeram', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Battleguard Sartura', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Fankriss the Unyielding', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Princess Huhuran', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Twin Emperors', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Ouro', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'C\'Thun', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
-  -- {
-  --   key = 'naxxramas',
-  --   title = 'Naxxramas',
-  --   totalClears = 0,
-  --   totalDeaths = 0,
-  --   firstClearDeaths = 0,
-  --   bosses = {
-  --     { name = 'Anub\'Rekhan', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Grand Widow Faerlina', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Maexxna', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Noth the Plaguebringer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Heigan the Unclean', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Loatheb', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Instructor Razuvious', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Gothik the Harvester', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'The Four Horsemen', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Patchwerk', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Grobbulus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Gluth', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Thaddius', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Sapphiron', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
-  --     { name = 'Kel\'Thuzad', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
-  --   },
-  -- },
+  -- Section headers + containers (Classic / The Burning Crusade)
+  local SECTION_TITLE_HEIGHT = 22
+  local DIVIDER_GAP = 6
+  local AFTER_DIVIDER_GAP = 10
+  local BETWEEN_SECTIONS_GAP = 18
+  local BOTTOM_PADDING = 20
+
+  local classicHeader = CreateFrame('Frame', nil, scrollChild)
+  classicHeader:SetSize(435, SECTION_TITLE_HEIGHT)
+  classicHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 0, -2)
+  classicHeader:SetPoint('TOPRIGHT', scrollChild, 'TOPRIGHT', 0, -2)
+  local classicTitle = classicHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  classicTitle:SetPoint('LEFT', classicHeader, 'LEFT', 4, 0)
+  classicTitle:SetText('Classic')
+  classicTitle:SetTextColor(1, 0.82, 0, 1)
+
+  local classicDivider = scrollChild:CreateTexture(nil, 'BACKGROUND')
+  classicDivider:SetColorTexture(1, 1, 1, 0.15)
+  classicDivider:SetHeight(1)
+  classicDivider:SetPoint('TOPLEFT', classicHeader, 'BOTTOMLEFT', 0, -DIVIDER_GAP)
+  classicDivider:SetPoint('TOPRIGHT', classicHeader, 'BOTTOMRIGHT', 0, -DIVIDER_GAP)
+
+  local classicContainer = CreateFrame('Frame', nil, scrollChild)
+  classicContainer:SetPoint('TOPLEFT', classicDivider, 'BOTTOMLEFT', 0, -AFTER_DIVIDER_GAP)
+  classicContainer:SetPoint('TOPRIGHT', classicDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
+  classicContainer:SetSize(435, 1)
+
+  local tbcHeader = CreateFrame('Frame', nil, scrollChild)
+  tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
+  local tbcTitle = tbcHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  tbcTitle:SetPoint('LEFT', tbcHeader, 'LEFT', 4, 0)
+  tbcTitle:SetText('The Burning Crusade')
+  tbcTitle:SetTextColor(1, 0.82, 0, 1)
+
+  local tbcDivider = scrollChild:CreateTexture(nil, 'BACKGROUND')
+  tbcDivider:SetColorTexture(1, 1, 1, 0.15)
+  tbcDivider:SetHeight(1)
+
+  local tbcContainer = CreateFrame('Frame', nil, scrollChild)
+  tbcContainer:SetSize(435, 1)
+
+  local function ReflowSections()
+    if not (classicContainer and tbcHeader and tbcDivider and tbcContainer) then
+      return
+    end
+
+    -- Reposition TBC section under the Classic list (Classic height changes when collapsing/expanding).
+    tbcHeader:ClearAllPoints()
+    tbcHeader:SetPoint('TOPLEFT', classicContainer, 'BOTTOMLEFT', 0, -BETWEEN_SECTIONS_GAP)
+    tbcHeader:SetPoint('TOPRIGHT', classicContainer, 'BOTTOMRIGHT', 0, -BETWEEN_SECTIONS_GAP)
+
+    tbcDivider:ClearAllPoints()
+    tbcDivider:SetPoint('TOPLEFT', tbcHeader, 'BOTTOMLEFT', 0, -DIVIDER_GAP)
+    tbcDivider:SetPoint('TOPRIGHT', tbcHeader, 'BOTTOMRIGHT', 0, -DIVIDER_GAP)
+
+    tbcContainer:ClearAllPoints()
+    tbcContainer:SetPoint('TOPLEFT', tbcDivider, 'BOTTOMLEFT', 0, -AFTER_DIVIDER_GAP)
+    tbcContainer:SetPoint('TOPRIGHT', tbcDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
+
+    local totalHeight =
+      2 + -- top padding
+      (classicHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
+      DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
+      (classicContainer:GetHeight() or 0) +
+      BETWEEN_SECTIONS_GAP +
+      (tbcHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
+      DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
+      (tbcContainer:GetHeight() or 0) +
+      BOTTOM_PADDING
+
+    scrollChild:SetHeight(math.max(1, totalHeight))
+  end
+
+  -- Classic raids
+  local defaultClassicRaids = { {
+    key = 'moltenCore',
+    title = 'Molten Core',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = 'Lucifron', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Magmadar', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Gehennas', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Garr', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Baron Geddon', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Shazzrah', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Sulfuron Harbinger', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Golemagg the Incinerator', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Majordomo Executus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Ragnaros', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  }, {
+    key = 'onyxia',
+    title = 'Onyxia',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = 'Onyxia', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  }, {
+    key = 'blackwingLair',
+    title = 'Blackwing Lair',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = 'Razorgore the Untamed', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Vaelastrasz the Corrupt', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Broodlord Lashlayer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Firemaw', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Ebonroc', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Flamegor', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Chromaggus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Nefarian', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  }, {
+    key = 'zulGurub',
+    title = "Zul'Gurub",
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = 'High Priestess Jeklik', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'High Priest Venoxis', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = "High Priestess Mar'li", totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'High Priest Thekal', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'High Priestess Arlokk', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = "Jin'do the Hexxer", totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Hakkar', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  }, {
+    key = 'aq20',
+    title = "Ruins of Ahn'Qiraj",
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = 'Kurinnaxx', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'General Rajaxx', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Moam', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Buru the Gorger', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Ayamiss the Hunter', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Ossirian the Unscarred', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  }, {
+    key = 'aq40',
+    title = "Temple of Ahn'Qiraj",
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = 'The Prophet Skeram', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Battleguard Sartura', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Fankriss the Unyielding', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Princess Huhuran', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Twin Emperors', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Ouro', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = "C'Thun", totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  }, {
+    key = 'naxxramas',
+    title = 'Naxxramas',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = {
+      { name = "Anub'Rekhan", totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Grand Widow Faerlina', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Maexxna', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Noth the Plaguebringer', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Heigan the Unclean', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Loatheb', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Instructor Razuvious', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Gothik the Harvester', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'The Four Horsemen', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Patchwerk', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Grobbulus', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Gluth', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Thaddius', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = 'Sapphiron', totalKills = 0, totalDeaths = 0, firstClearDeaths = 0 },
+      { name = "Kel'Thuzad", totalKills = 0, totalDeaths = 0, firstClearDeaths = 0, isFinal = true },
+    },
+  } }
 
   -- TBC raids
-  {
+  local defaultTBCRaids = { {
     key = 'gruulsLair',
     title = "Gruul's Lair",
     totalClears = 0,
@@ -494,16 +561,22 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     } },
   } }
 
-  local raidsInstances =
+  local classicInstances =
     (DungeonRaidStats and DungeonRaidStats.MergeWithStored) and DungeonRaidStats.MergeWithStored(
       'raids',
-      defaultRaids
-    ) or defaultRaids
+      defaultClassicRaids
+    ) or defaultClassicRaids
+
+  local tbcInstances =
+    (DungeonRaidStats and DungeonRaidStats.MergeWithStored) and DungeonRaidStats.MergeWithStored(
+      'raids',
+      defaultTBCRaids
+    ) or defaultTBCRaids
 
   UltraStatistics_CreateInstanceAccordionList({
-    scrollChild = scrollChild,
+    scrollChild = classicContainer,
     layout = layout,
-    instances = raidsInstances,
+    instances = classicInstances,
     collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
@@ -511,5 +584,27 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     bgInsetX = 2,
     bgInsetY = -2,
     defaultCollapsed = true,
+    onLayoutUpdated = function()
+      ReflowSections()
+    end,
   })
+
+  UltraStatistics_CreateInstanceAccordionList({
+    scrollChild = tbcContainer,
+    layout = layout,
+    instances = tbcInstances,
+    collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
+    width = 435,
+    texturesRoot = 'raids',
+    bgHeight = 200,
+    bgInsetX = 2,
+    bgInsetY = -2,
+    defaultCollapsed = true,
+    onLayoutUpdated = function()
+      ReflowSections()
+    end,
+  })
+
+  -- Initial placement (after both lists have computed their heights).
+  ReflowSections()
 end

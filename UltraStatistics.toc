@@ -57,6 +57,7 @@ Settings/Settings.lua
 Settings/StatisticsTab.lua
 Settings/SettingsTab.lua
 Settings/InfoTab.lua
+Settings/DungeonsTab.lua
 Settings/HeroicsTab.lua
 Settings/RaidsTab.lua
 

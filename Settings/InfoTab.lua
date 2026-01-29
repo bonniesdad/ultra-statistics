@@ -1,17 +1,17 @@
 -- Info Tab Content
 -- Initialize Info Tab when called
 function UltraStatistics_InitializeInfoTab(tabContents)
-  if not tabContents or not tabContents[5] then return end
+  if not tabContents or not tabContents[6] then return end
 
   -- Check if already initialized to prevent duplicates
-  if tabContents[5].initialized then return end
+  if tabContents[6].initialized then return end
 
   -- Mark as initialized
-  tabContents[5].initialized = true
+  tabContents[6].initialized = true
 
   -- Philosophy text (at top, moved down by 30)
-  local philosophyText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  philosophyText:SetPoint('TOP', tabContents[5], 'TOP', 0, -70)
+  local philosophyText = tabContents[6]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  philosophyText:SetPoint('TOP', tabContents[6], 'TOP', 0, -70)
   philosophyText:SetWidth(475)
   philosophyText:SetText(
     'Ultra Statistics\nVersion: ' .. (C_AddOns.GetAddOnMetadata(
@@ -23,7 +23,7 @@ function UltraStatistics_InitializeInfoTab(tabContents)
   philosophyText:SetNonSpaceWrap(true)
 
   -- Bug report text
-  local bugReportText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local bugReportText = tabContents[6]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   bugReportText:SetPoint('TOP', philosophyText, 'BOTTOM', 0, -10)
   bugReportText:SetText(
     'Found a bug or have suggestions?\n\nJoin the developers discord community to have your say on the future of this addon!'
@@ -34,7 +34,7 @@ function UltraStatistics_InitializeInfoTab(tabContents)
   bugReportText:SetNonSpaceWrap(true)
 
   -- Discord invite button (opens dialog with copyable invite link)
-  local discordButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
+  local discordButton = CreateFrame('Button', nil, tabContents[6], 'UIPanelButtonTemplate')
   discordButton:SetSize(220, 24)
   discordButton:SetPoint('TOP', bugReportText, 'BOTTOM', 0, -10)
   discordButton:SetText('Discord Invite Link')
@@ -45,17 +45,17 @@ function UltraStatistics_InitializeInfoTab(tabContents)
   end)
 
   -- Patch Notes Section (at bottom, bigger to fill space)
-  local patchNotesTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  local patchNotesTitle = tabContents[6]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   patchNotesTitle:SetPoint('TOP', discordButton, 'BOTTOM', 0, -30)
   patchNotesTitle:SetText('Patch Notes')
   patchNotesTitle:SetJustifyH('CENTER')
   patchNotesTitle:SetTextColor(1, 1, 0.5)
 
   -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
-  local patchNotesFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
+  local patchNotesFrame = CreateFrame('Frame', nil, tabContents[6], 'BackdropTemplate')
   patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -17)
-  patchNotesFrame:SetPoint('LEFT', tabContents[5], 'LEFT', 10, 0)
-  patchNotesFrame:SetPoint('RIGHT', tabContents[5], 'RIGHT', -10, 0)
+  patchNotesFrame:SetPoint('LEFT', tabContents[6], 'LEFT', 10, 0)
+  patchNotesFrame:SetPoint('RIGHT', tabContents[6], 'RIGHT', -10, 0)
   patchNotesFrame:SetHeight(380)
   patchNotesFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',

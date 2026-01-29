@@ -187,10 +187,10 @@ local STATISTICS_SECTIONS = { {
 } }
 
 function UltraStatistics_InitializeSettingsTab(tabContents)
-  -- Settings tab is tab index 4 in TabManager.lua
-  if not tabContents or not tabContents[4] then return end
-  if tabContents[4].initialized then return end
-  tabContents[4].initialized = true
+  -- Settings tab is tab index 5 in TabManager.lua
+  if not tabContents or not tabContents[5] then return end
+  if tabContents[5].initialized then return end
+  tabContents[5].initialized = true
 
   tempSettings = tempSettings or {}
   if not GLOBAL_SETTINGS.collapsedSettingsSections then
@@ -233,22 +233,22 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end
 
   -- Search row full width: [Search bar stretches] [Clear] [Collapse All], right edge lines up with panel below (LEFT 10, RIGHT -10)
-  local searchBox = CreateFrame('EditBox', nil, tabContents[4], 'InputBoxTemplate')
+  local searchBox = CreateFrame('EditBox', nil, tabContents[5], 'InputBoxTemplate')
   searchBox:SetHeight(24)
   searchBox:SetAutoFocus(false)
 
-  local clearSearchButton = CreateFrame('Button', nil, tabContents[4], 'UIPanelButtonTemplate')
+  local clearSearchButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
   clearSearchButton:SetSize(56, 22)
   clearSearchButton:SetText('Clear')
 
-  local collapseAllButton = CreateFrame('Button', nil, tabContents[4], 'UIPanelButtonTemplate')
+  local collapseAllButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
   collapseAllButton:SetSize(96, 22)
   collapseAllButton:SetText('Collapse')
-  collapseAllButton:SetPoint('TOPRIGHT', tabContents[4], 'TOPRIGHT', -40, -60)
+  collapseAllButton:SetPoint('TOPRIGHT', tabContents[5], 'TOPRIGHT', -40, -60)
 
   clearSearchButton:SetPoint('TOPRIGHT', collapseAllButton, 'TOPLEFT', -6, 0)
 
-  searchBox:SetPoint('TOPLEFT', tabContents[4], 'TOPLEFT', 20, -60)
+  searchBox:SetPoint('TOPLEFT', tabContents[5], 'TOPLEFT', 20, -60)
   searchBox:SetPoint('TOPRIGHT', clearSearchButton, 'TOPLEFT', -6, 0)
   searchBox:SetHeight(24)
 
@@ -256,11 +256,11 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
   searchPlaceholder:SetText('Search options...')
 
-  local optionsFrame = CreateFrame('Frame', nil, tabContents[4], 'BackdropTemplate')
+  local optionsFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
   optionsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
-  optionsFrame:SetPoint('LEFT', tabContents[4], 'LEFT', 10, 0)
-  optionsFrame:SetPoint('RIGHT', tabContents[4], 'RIGHT', -10, 0)
-  optionsFrame:SetPoint('BOTTOM', tabContents[4], 'BOTTOM', 0, 10)
+  optionsFrame:SetPoint('LEFT', tabContents[5], 'LEFT', 10, 0)
+  optionsFrame:SetPoint('RIGHT', tabContents[5], 'RIGHT', -10, 0)
+  optionsFrame:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, 10)
   optionsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -886,9 +886,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end)
 
   -- Save button
-  local saveButton = CreateFrame('Button', nil, tabContents[4], 'UIPanelButtonTemplate')
+  local saveButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
-  saveButton:SetPoint('BOTTOM', tabContents[4], 'BOTTOM', 0, -35)
+  saveButton:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, -35)
   saveButton:SetText('Save and Reload')
 
   local function updateSaveButtonState()
