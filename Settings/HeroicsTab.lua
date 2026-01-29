@@ -58,13 +58,41 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
   scrollFrame:SetScrollChild(scrollChild)
 
   -- TBC 5-man instances (boss list from IsDungeonBoss; stats merged from stored DungeonRaidStats)
+  -- NOTE: Ragefire Chasm is included for testing (it is NOT a TBC heroic).
   local defaultHeroics = { {
+    key = 'ragefireChasm',
+    title = 'Ragefire Chasm',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    bosses = { {
+      name = 'Taragaman the Hungerer',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Oggleflint',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Jergosh the Invoker',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Bazzalan',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+      isFinal = true,
+    } },
+  }, {
     key = 'hellfireRamparts',
     title = 'Hellfire Ramparts',
     totalClears = 0,
     totalDeaths = 0,
     firstClearDeaths = 0,
-    firstClearDate = '',
     bosses = { {
       name = 'Watchkeeper Gargolmar',
       totalKills = 0,

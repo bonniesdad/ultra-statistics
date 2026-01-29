@@ -1198,7 +1198,6 @@ local function ResetStatsFrameToSavedPosition()
   else
     statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
   end
-  print('UltraStatistics: Statistics panel moved to saved position')
 end
 
 -- Reset statistics frame to default position

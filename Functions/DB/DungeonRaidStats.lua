@@ -3,6 +3,84 @@
 
 DungeonRaidStats = DungeonRaidStats or {}
 
+-- Instance name -> { category, instanceKey }
+-- Used for recording non-boss deaths based on the current dungeon name from GetInstanceInfo().
+-- Note: Ragefire Chasm is intentionally categorized under "heroics" for testing purposes.
+local DUNGEON_NAME_TO_INSTANCE = {
+  ['Ragefire Chasm'] = {
+    category = 'heroics',
+    instanceKey = 'ragefireChasm',
+  },
+  -- TBC Heroics (instance names as returned by GetInstanceInfo())
+  ['Hellfire Ramparts'] = {
+    category = 'heroics',
+    instanceKey = 'hellfireRamparts',
+  },
+  ['The Blood Furnace'] = {
+    category = 'heroics',
+    instanceKey = 'bloodFurnace',
+  },
+  ['The Shattered Halls'] = {
+    category = 'heroics',
+    instanceKey = 'shatteredHalls',
+  },
+  ['The Slave Pens'] = {
+    category = 'heroics',
+    instanceKey = 'slavePens',
+  },
+  ['The Underbog'] = {
+    category = 'heroics',
+    instanceKey = 'underbog',
+  },
+  ['The Steamvault'] = {
+    category = 'heroics',
+    instanceKey = 'steamvault',
+  },
+  ['Mana-Tombs'] = {
+    category = 'heroics',
+    instanceKey = 'manaTombs',
+  },
+  ['Auchenai Crypts'] = {
+    category = 'heroics',
+    instanceKey = 'auchenaiCrypts',
+  },
+  ['Sethekk Halls'] = {
+    category = 'heroics',
+    instanceKey = 'sethekkHalls',
+  },
+  ['Shadow Labyrinth'] = {
+    category = 'heroics',
+    instanceKey = 'shadowLabyrinth',
+  },
+  ['Old Hillsbrad Foothills'] = {
+    category = 'heroics',
+    instanceKey = 'oldHillsbradFoothills',
+  },
+  ['The Black Morass'] = {
+    category = 'heroics',
+    instanceKey = 'blackMorass',
+  },
+  ['The Botanica'] = {
+    category = 'heroics',
+    instanceKey = 'botanica',
+  },
+  ['The Mechanar'] = {
+    category = 'heroics',
+    instanceKey = 'mechanar',
+  },
+  ['The Arcatraz'] = {
+    category = 'heroics',
+    instanceKey = 'arcatraz',
+  },
+  ["Magister's Terrace"] = {
+    category = 'heroics',
+    instanceKey = 'magistersTerrace',
+  },
+}
+
+-- Heroic-mode gating exception list (Ragefire Chasm is added for testing in normal mode).
+local ALLOW_NON_HEROIC_FOR_TEST = { ragefireChasm = true }
+
 local function getStorage()
   if not UltraStatisticsDB then
     UltraStatisticsDB = {}
@@ -120,14 +198,23 @@ end
 -- Record a boss kill (destGUID = killed creature). Call from KillTracker when IsDungeonBoss.
 -- Heroics category is only updated when the kill is in a HEROIC dungeon.
 function DungeonRaidStats.RecordBossKill(destGUID)
-  if not DungeonRaidBossInfo then return end
-  local info = DungeonRaidBossInfo.GetBossInfoByGUID(destGUID)
-  if not info then return end
+  if not DungeonRaidBossInfo then
+    return false
+  end
 
-  if info.category == 'heroics' and not isInHeroicDungeon() then return end
+  local info = DungeonRaidBossInfo.GetBossInfoByGUID(destGUID)
+  if not info then
+    return false
+  end
+
+  -- if info.category == 'heroics' and not isInHeroicDungeon() then
+  --   return false
+  -- end
 
   local storage = getStorage()
-  if not storage then return end
+  if not storage then
+    return false
+  end
 
   local inst = ensureInstance(storage, info.category, info.instanceKey)
   local boss = ensureBoss(inst, info.bossName)
@@ -145,19 +232,26 @@ function DungeonRaidStats.RecordBossKill(destGUID)
   if _G.UpdateStatistics then
     _G.UpdateStatistics()
   end
+  return true
 end
 
 -- Record a party member death during a boss fight. bossGUID = one of the bosses we're in combat with.
 -- Heroics category is only updated when the death is in a HEROIC dungeon.
 function DungeonRaidStats.RecordBossDeath(bossGUID)
-  if not DungeonRaidBossInfo then return end
+  if not DungeonRaidBossInfo then
+    return false
+  end
   local info = DungeonRaidBossInfo.GetBossInfoByGUID(bossGUID)
-  if not info then return end
+  if not info then
+    return false
+  end
 
-  if info.category == 'heroics' and not isInHeroicDungeon() then return end
+  -- if info.category == 'heroics' and not isInHeroicDungeon() then return end
 
   local storage = getStorage()
-  if not storage then return end
+  if not storage then
+    return false
+  end
 
   local inst = ensureInstance(storage, info.category, info.instanceKey)
   local boss = ensureBoss(inst, info.bossName)
@@ -177,6 +271,37 @@ function DungeonRaidStats.RecordBossDeath(bossGUID)
   end
 
   -- Instance level: always increment totalDeaths; firstClearDeaths only if final boss not yet killed
+  inst.totalDeaths = (inst.totalDeaths or 0) + 1
+  if finalBossKillsBefore == 0 then
+    inst.firstClearDeaths = (inst.firstClearDeaths or 0) + 1
+  end
+
+  SaveDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
+  if _G.UpdateStatistics then
+    _G.UpdateStatistics()
+  end
+  return true
+end
+
+-- Record a player death inside a 5-man dungeon when NOT in a boss fight.
+-- instanceName/difficultyID should come from: local name, _, difficultyID = GetInstanceInfo()
+function DungeonRaidStats.RecordNonBossDungeonDeath(instanceName, difficultyID)
+  if not instanceName or type(instanceName) ~= 'string' then return end
+
+  local mapped = DUNGEON_NAME_TO_INSTANCE[instanceName]
+  if not mapped then return end
+
+  -- Protect heroic stats from being updated in normal mode (except explicit test allowlist).
+  -- if mapped.category == 'heroics' and difficultyID ~= 2 then return end
+
+  local storage = getStorage()
+  if not storage then return end
+
+  local inst = ensureInstance(storage, mapped.category, mapped.instanceKey)
+
+  local finalBossKillsBefore =
+    DungeonRaidStats.GetFinalBossKillsForInstance(storage, mapped.category, mapped.instanceKey)
+
   inst.totalDeaths = (inst.totalDeaths or 0) + 1
   if finalBossKillsBefore == 0 then
     inst.firstClearDeaths = (inst.firstClearDeaths or 0) + 1

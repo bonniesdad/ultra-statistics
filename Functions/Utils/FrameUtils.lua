@@ -13,10 +13,7 @@ end
 
 -- Make a frame draggable
 function MakeFrameDraggable(frame, dbKey)
-  if not frame or type(frame) ~= 'table' then
-    print('UltraStatistics: Invalid frame provided to MakeFrameDraggable')
-    return
-  end
+  if not frame or type(frame) ~= 'table' then return end
 
   frame:SetMovable(true)
   frame:EnableMouse(true)
@@ -479,8 +476,8 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           value3:SetShadowOffset(1, -1)
           value3:SetShadowColor(0, 0, 0, 0.8)
 
-          if totalBossKills > 1 then
-            -- Very pale green border for bosses with multiple kills
+          if totalBossKills > 0 then
+            -- Very pale green border for bosses with at least one kill
             row:SetBackdropBorderColor(0.7, 0.95, 0.7, 1)
           end
 

@@ -66,9 +66,11 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   CharacterStats:UpdateStat('partyMemberDeaths', current + 1)
 
   -- If this death was during a boss fight, record it for dungeon/raid stats.
-  if BossFightTracker and BossFightTracker.IsDeathDuringBossFight and BossFightTracker.IsDeathDuringBossFight(
-    destGUID
-  ) then
+  local inBossFight =
+    (BossFightTracker and BossFightTracker.IsDeathDuringBossFight and BossFightTracker.IsDeathDuringBossFight(
+      destGUID
+    )) or false
+  if inBossFight then
     local bossGUID =
       BossFightTracker.GetAnyBossGUIDInCombat and BossFightTracker.GetAnyBossGUIDInCombat()
     if bossGUID and DungeonRaidStats and DungeonRaidStats.RecordBossDeath then

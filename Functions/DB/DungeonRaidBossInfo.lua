@@ -6,6 +6,32 @@ local DungeonRaidBossInfo = {}
 
 -- [npcID] = { instanceKey = string, bossName = string, isFinal = bool, category = 'heroics'|'raids' }
 local NPC_ID_TO_BOSS = {
+  -- Test dungeon (Ragefire Chasm) - added under "heroics" for testing UI/tracking
+  -- Boss NPC IDs referenced from Functions/Checks/IsDungeonBoss.lua
+  [11520] = {
+    instanceKey = 'ragefireChasm',
+    bossName = 'Taragaman the Hungerer',
+    isFinal = false,
+    category = 'heroics',
+  },
+  [11517] = {
+    instanceKey = 'ragefireChasm',
+    bossName = 'Oggleflint',
+    isFinal = false,
+    category = 'heroics',
+  },
+  [11518] = {
+    instanceKey = 'ragefireChasm',
+    bossName = 'Jergosh the Invoker',
+    isFinal = false,
+    category = 'heroics',
+  },
+  [11519] = {
+    instanceKey = 'ragefireChasm',
+    bossName = 'Bazzalan',
+    isFinal = true,
+    category = 'heroics',
+  },
   -- TBC Heroics (Hellfire Ramparts)
   [17306] = {
     instanceKey = 'hellfireRamparts',

@@ -25,6 +25,12 @@ frame:SetScript('OnEvent', function()
     KillTracker.HandlePartyKill(destGUID)
   end
 
+  -- Some boss deaths do NOT fire PARTY_KILL for the player/party (no killing blow credit),
+  -- but they DO fire UNIT_DIED. Use this to count boss kills reliably.
+  if subEvent == 'UNIT_DIED' and KillTracker and KillTracker.HandleUnitDied then
+    KillTracker.HandleUnitDied(destGUID)
+  end
+
   if ItemTracker then
     ItemTracker.HandleItemUsage(subEvent, sourceGUID, destGUID, spellID)
   end
