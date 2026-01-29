@@ -28,6 +28,8 @@ Functions/Utils/ExpansionCheck.lua
 Functions/DB/SaveDBData.lua
 Functions/DB/LoadDBData.lua
 Functions/DB/CharacterStats.lua
+Functions/DB/DungeonRaidBossInfo.lua
+Functions/DB/DungeonRaidStats.lua
 Functions/Utils/ImportFromUltra.lua
 
 Functions/Checks/IsEnemyElite.lua
@@ -39,6 +41,7 @@ Functions/Statistics/ItemTracker.lua
 Functions/Statistics/KillTracker.lua
 Functions/Statistics/CritTracker.lua
 Functions/Statistics/PartyDeathTracker.lua
+Functions/Statistics/BossFightTracker.lua
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackPlayerDeaths.lua
 Functions/Statistics/TrackAvoidance.lua

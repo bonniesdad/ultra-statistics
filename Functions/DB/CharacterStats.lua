@@ -27,6 +27,7 @@ local CharacterStats = {
     playerDeathsOpenWorld = 0,
     playerDeathsBattleground = 0,
     playerDeathsDungeon = 0,
+    playerDeathsHeroicDungeon = 0,
     playerDeathsRaid = 0,
     playerDeathsArena = 0,
     -- Avoidance / mitigation
@@ -50,6 +51,8 @@ local CharacterStats = {
     goldGained = 0, -- COPPER
     goldSpent = 0, -- COPPER
     lastLogoutTime = 0,
+    maxHealthEver = 0,
+    maxResourceEver = 0,
     -- XP verification fields (safe to keep at 0 for now)
     xpTotal = 0,
   },

@@ -122,7 +122,7 @@ levelValue:SetText(formatNumberWithCommas(1))
 levelValue:SetTextColor(1, 1, 1, 1) -- White for values
 local totalHPLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 totalHPLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
-totalHPLabel:SetText('Max Health:')
+totalHPLabel:SetText('Highest Health:')
 totalHPLabel:SetTextColor(1, 0.9, 0.5, 1)
 
 local totalHPValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
@@ -131,7 +131,7 @@ totalHPValue:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
 totalHPValue:SetTextColor(1, 0.2, 0.2, 1) -- Red tint for HP
 local totalManaLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 totalManaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -38)
-totalManaLabel:SetText('Max Resource:')
+totalManaLabel:SetText('Highest Resource:')
 totalManaLabel:SetTextColor(1, 0.9, 0.5, 1)
 
 local totalManaValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
@@ -291,21 +291,32 @@ playerDeathsDungeonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -338)
 playerDeathsDungeonValue:SetText(formatNumberWithCommas(0))
 playerDeathsDungeonValue:SetTextColor(1, 0.2, 0.2, 1)
 
+local playerDeathsHeroicDungeonLabel =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsHeroicDungeonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -353)
+playerDeathsHeroicDungeonLabel:SetText('Deaths (Heroic Dungeon):')
+playerDeathsHeroicDungeonLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerDeathsHeroicDungeonValue =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerDeathsHeroicDungeonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -353)
+playerDeathsHeroicDungeonValue:SetText(formatNumberWithCommas(0))
+playerDeathsHeroicDungeonValue:SetTextColor(1, 0.2, 0.2, 1)
+
 local playerDeathsRaidLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsRaidLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -353)
+playerDeathsRaidLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
 playerDeathsRaidLabel:SetText('Deaths (Raid):')
 playerDeathsRaidLabel:SetTextColor(1, 0.9, 0.5, 1)
 local playerDeathsRaidValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsRaidValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -353)
+playerDeathsRaidValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
 playerDeathsRaidValue:SetText(formatNumberWithCommas(0))
 playerDeathsRaidValue:SetTextColor(1, 0.2, 0.2, 1)
 
 local playerDeathsArenaLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsArenaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
+playerDeathsArenaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -383)
 playerDeathsArenaLabel:SetText('Deaths (Arena):')
 playerDeathsArenaLabel:SetTextColor(1, 0.9, 0.5, 1)
 local playerDeathsArenaValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerDeathsArenaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
+playerDeathsArenaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -383)
 playerDeathsArenaValue:SetText(formatNumberWithCommas(0))
 playerDeathsArenaValue:SetTextColor(1, 0.2, 0.2, 1)
 
@@ -497,6 +508,11 @@ local statsElements = { -- Non-tier stats (no tier system)
   value = playerDeathsDungeonValue,
   setting = 'showMainStatisticsPanelPlayerDeathsDungeon',
   statKey = 'playerDeathsDungeon',
+}, {
+  label = playerDeathsHeroicDungeonLabel,
+  value = playerDeathsHeroicDungeonValue,
+  setting = 'showMainStatisticsPanelPlayerDeathsHeroicDungeon',
+  statKey = 'playerDeathsHeroicDungeon',
 }, {
   label = playerDeathsRaidLabel,
   value = playerDeathsRaidValue,
@@ -804,21 +820,31 @@ function UpdateStatistics()
     levelStat.value:SetTextColor(1, 1, 1, 1)
   end
 
-  -- Update total HP and Max Resource (these don't use tier colors)
-  local maxHealth = UnitHealthMax('player') or 0
+  -- Update total HP and Max Resource: show max *ever*, only update stored when current is higher
+  local currentMaxHealth = UnitHealthMax('player') or 0
+  local maxHealthEver = CharacterStats:GetStat('maxHealthEver') or 0
+  if currentMaxHealth > maxHealthEver then
+    CharacterStats:UpdateStat('maxHealthEver', currentMaxHealth)
+    maxHealthEver = currentMaxHealth
+  end
   local totalHPStat = getStat('totalHP')
   if totalHPStat then
-    totalHPStat.value:SetText(formatNumberWithCommas(maxHealth))
+    totalHPStat.value:SetText(formatNumberWithCommas(maxHealthEver))
     totalHPStat.label:SetTextColor(1, 0.9, 0.5, 1)
     totalHPStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
   end
 
   local resourceLabel, powerType = GetPlayerPrimaryResourceLabelAndType()
-  local maxResource = UnitPowerMax('player', powerType or MANA_POWER_TYPE) or 0
+  local currentMaxResource = UnitPowerMax('player', powerType or MANA_POWER_TYPE) or 0
+  local maxResourceEver = CharacterStats:GetStat('maxResourceEver') or 0
+  if currentMaxResource > maxResourceEver then
+    CharacterStats:UpdateStat('maxResourceEver', currentMaxResource)
+    maxResourceEver = currentMaxResource
+  end
   local maxResourceStat = getStat('maxResource')
   if maxResourceStat then
-    maxResourceStat.value:SetText(formatNumberWithCommas(maxResource))
-    maxResourceStat.label:SetText('Max ' .. (resourceLabel or 'Resource') .. ':')
+    maxResourceStat.value:SetText(formatNumberWithCommas(maxResourceEver))
+    maxResourceStat.label:SetText('Highest ' .. (resourceLabel or 'Resource') .. ':')
     maxResourceStat.label:SetTextColor(1, 0.9, 0.5, 1)
     maxResourceStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
   end

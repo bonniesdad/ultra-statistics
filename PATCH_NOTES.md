@@ -22,8 +22,8 @@ Initial release of Ultra Statistics.
     - Deaths (Dungeon)
     - Deaths (Raid)
     - Deaths (Arena)
-    - Max Health
-    - Max Resource
+    - Highest Health
+    - Highest Resource
     - Blocks
     - Dodges
     - Parries

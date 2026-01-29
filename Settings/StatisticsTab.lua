@@ -23,8 +23,8 @@ end
 local STATISTIC_TOOLTIPS = {
   -- Character Info section
   level = 'Your current character level',
-  totalHP = 'Your maximum health with current gear and buffs',
-  totalResource = 'Your maximum primary resource (mana/rage/energy/etc.) with current gear and buffs',
+  totalHP = 'The highest maximum health you have ever had',
+  totalResource = 'The highest maximum primary resource (mana/rage/energy/etc.) you have ever had',
   -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
@@ -46,7 +46,8 @@ local STATISTIC_TOOLTIPS = {
   playerDeaths = 'Total number of times your character has died',
   playerDeathsOpenWorld = 'Number of times your character has died in the open world (not in an instance)',
   playerDeathsBattleground = 'Number of times your character has died in a battleground',
-  playerDeathsDungeon = 'Number of times your character has died in a dungeon (5-man instance)',
+  playerDeathsDungeon = 'Number of times your character has died in a normal dungeon (5-man, non-heroic)',
+  playerDeathsHeroicDungeon = 'Number of times your character has died in a heroic dungeon (5-man heroic)',
   playerDeathsRaid = 'Number of times your character has died in a raid instance',
   playerDeathsArena = 'Number of times your character has died in an arena match',
   blocks = 'Number of times you blocked an incoming attack',
@@ -104,6 +105,7 @@ local STATS_WITHOUT_TOAST_ICON = {
   playerDeathsOpenWorld = true,
   playerDeathsBattleground = true,
   playerDeathsDungeon = true,
+  playerDeathsHeroicDungeon = true,
   playerDeathsRaid = true,
   playerDeathsArena = true,
   petDeaths = true,
@@ -117,6 +119,7 @@ local ICON_KEY_OVERRIDES = {
   playerDeathsOpenWorld = 'playerDeaths',
   playerDeathsBattleground = 'playerDeaths',
   playerDeathsDungeon = 'playerDeaths',
+  playerDeathsHeroicDungeon = 'playerDeaths',
   playerDeathsRaid = 'playerDeaths',
   playerDeathsArena = 'playerDeaths',
 }
@@ -296,6 +299,12 @@ local STAT_BAR_CONFIG = {
     noTier = true,
   },
   playerDeathsDungeon = {
+    base = 1,
+    multiplier = 2,
+    valueOnly = true,
+    noTier = true,
+  },
+  playerDeathsHeroicDungeon = {
     base = 1,
     multiplier = 2,
     valueOnly = true,
@@ -1609,7 +1618,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     defaultValue = 1,
   }, {
     key = 'totalHP',
-    label = 'Max Health:',
+    label = 'Highest Health:',
     tooltipKey = 'totalHP',
     width = 1,
     settingName = 'showMainStatisticsPanelTotalHP',
@@ -1619,7 +1628,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     defaultValue = 0,
   }, {
     key = 'maxResource',
-    label = 'Max Resource:',
+    label = 'Highest Resource:',
     tooltipKey = 'totalResource',
     width = 1,
     settingName = 'showMainStatisticsPanelMaxResource',
@@ -1707,6 +1716,13 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     label = 'Deaths (Dungeon):',
     tooltipKey = 'playerDeathsDungeon',
     settingName = 'showMainStatisticsPanelPlayerDeathsDungeon',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
+    key = 'playerDeathsHeroicDungeon',
+    label = 'Deaths (Heroic Dungeon):',
+    tooltipKey = 'playerDeathsHeroicDungeon',
+    settingName = 'showMainStatisticsPanelPlayerDeathsHeroicDungeon',
     defaultValue = 0,
     width = 0.5,
   }, {
@@ -2112,12 +2128,25 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     if not UltraStatisticsDB then return end
 
     UpdateStatBar('level', UnitLevel('player') or 1)
-    UpdateStatBar('totalHP', UnitHealthMax('player') or 0)
+    -- Max Health / Max Resource: show max *ever*, only update stored when current is higher
+    local currentMaxHealth = UnitHealthMax('player') or 0
+    local maxHealthEver = CharacterStats:GetStat('maxHealthEver') or 0
+    if currentMaxHealth > maxHealthEver then
+      CharacterStats:UpdateStat('maxHealthEver', currentMaxHealth)
+      maxHealthEver = currentMaxHealth
+    end
+    UpdateStatBar('totalHP', maxHealthEver)
     local resourceLabel, powerType = GetPlayerPrimaryResourceLabelAndType()
     if statLabels.maxResource then
-      statLabels.maxResource:SetText('Max ' .. (resourceLabel or 'Resource') .. ':')
+      statLabels.maxResource:SetText('Highest ' .. (resourceLabel or 'Resource') .. ':')
     end
-    UpdateStatBar('maxResource', UnitPowerMax('player', powerType or 0) or 0)
+    local currentMaxResource = UnitPowerMax('player', powerType or 0) or 0
+    local maxResourceEver = CharacterStats:GetStat('maxResourceEver') or 0
+    if currentMaxResource > maxResourceEver then
+      CharacterStats:UpdateStat('maxResourceEver', currentMaxResource)
+      maxResourceEver = currentMaxResource
+    end
+    UpdateStatBar('maxResource', maxResourceEver)
 
     -- Only update pet deaths for pet classes (hunter and warlock)
     local _, playerClass = UnitClass('player')
@@ -2132,6 +2161,10 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       CharacterStats:GetStat('playerDeathsBattleground') or 0
     )
     UpdateStatBar('playerDeathsDungeon', CharacterStats:GetStat('playerDeathsDungeon') or 0)
+    UpdateStatBar(
+      'playerDeathsHeroicDungeon',
+      CharacterStats:GetStat('playerDeathsHeroicDungeon') or 0
+    )
     UpdateStatBar('playerDeathsRaid', CharacterStats:GetStat('playerDeathsRaid') or 0)
     UpdateStatBar('playerDeathsArena', CharacterStats:GetStat('playerDeathsArena') or 0)
     UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)

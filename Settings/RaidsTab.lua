@@ -55,7 +55,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
   scrollChild:SetSize(435, 300)
   scrollFrame:SetScrollChild(scrollChild)
 
-  local raidsInstances = { -- Classic raids
+  local defaultRaids = { -- Classic raids (commented) + TBC raids
   -- {
   --   key = 'moltenCore',
   --   title = 'Molten Core',
@@ -493,6 +493,12 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
       isFinal = true,
     } },
   } }
+
+  local raidsInstances =
+    (DungeonRaidStats and DungeonRaidStats.MergeWithStored) and DungeonRaidStats.MergeWithStored(
+      'raids',
+      defaultRaids
+    ) or defaultRaids
 
   UltraStatistics_CreateInstanceAccordionList({
     scrollChild = scrollChild,

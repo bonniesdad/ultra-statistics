@@ -253,8 +253,12 @@ function IsDungeonBoss(unitGUID)
     [1853] = true,
     [14695] = true,
     -- TBC Dungeons
+    -- Hellfire Ramparts
+    [17306] = true,
+    [17308] = true,
+    [17307] = true,
     -- The Blood Furnace
-    [17666] = true,
+    [17381] = true,
     [17380] = true,
     [17377] = true,
     -- The Shattered Halls
@@ -525,6 +529,7 @@ function IsDungeonFinalBoss(unitGUID)
     [1853] = true,
     [10440] = true,
     [10813] = true,
+    [17307] = true, -- Hellfire Ramparts (Vazruden the Herald)
   }
 
   local raidFinalBossIDs = {

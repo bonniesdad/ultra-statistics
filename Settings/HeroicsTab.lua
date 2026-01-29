@@ -57,28 +57,28 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
   scrollChild:SetSize(435, 300)
   scrollFrame:SetScrollChild(scrollChild)
 
-  -- TBC 5-man instances (boss list derived from the IDs in Functions/Checks/IsDungeonBoss.lua)
-  local heroicsInstances = { {
+  -- TBC 5-man instances (boss list from IsDungeonBoss; stats merged from stored DungeonRaidStats)
+  local defaultHeroics = { {
     key = 'hellfireRamparts',
     title = 'Hellfire Ramparts',
-    totalClears = 2,
-    totalDeaths = 7,
-    firstClearDeaths = 4,
-    firstClearDate = '6th Feb 2026',
+    totalClears = 0,
+    totalDeaths = 0,
+    firstClearDeaths = 0,
+    firstClearDate = '',
     bosses = { {
       name = 'Watchkeeper Gargolmar',
-      totalKills = 2,
-      totalDeaths = 3,
-      firstClearDeaths = 2,
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
     }, {
       name = 'Omor the Unscarred',
-      totalKills = 2,
-      totalDeaths = 3,
-      firstClearDeaths = 3,
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
     }, {
       name = 'Vazruden the Herald',
-      totalKills = 2,
-      totalDeaths = 1,
+      totalKills = 0,
+      totalDeaths = 0,
       firstClearDeaths = 0,
       isFinal = true,
     } },
@@ -458,6 +458,12 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
       isFinal = true,
     } },
   } }
+
+  local heroicsInstances =
+    (DungeonRaidStats and DungeonRaidStats.MergeWithStored) and DungeonRaidStats.MergeWithStored(
+      'heroics',
+      defaultHeroics
+    ) or defaultHeroics
 
   -- Render using shared helper so RaidsTab can reuse the exact same UI.
   UltraStatistics_CreateInstanceAccordionList({

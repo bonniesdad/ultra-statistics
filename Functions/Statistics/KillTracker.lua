@@ -19,10 +19,13 @@ function KillTracker.HandlePartyKill(destGUID)
   end
 
   if IsDungeonBoss then
-    local isDungeonBoss = IsDungeonBoss(destGUID)
-    if isDungeonBoss then
+    local isDungeon, isRaid = IsDungeonBoss(destGUID)
+    if isDungeon or isRaid then
       local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
       CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
+      if DungeonRaidStats and DungeonRaidStats.RecordBossKill then
+        DungeonRaidStats.RecordBossKill(destGUID)
+      end
     end
   end
 

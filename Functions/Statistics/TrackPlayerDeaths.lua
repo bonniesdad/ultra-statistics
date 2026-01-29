@@ -1,5 +1,3 @@
--- Track player deaths (total + per-context: open world / battleground / dungeon / raid / arena)
-
 local frame = CreateFrame('Frame')
 frame:RegisterEvent('PLAYER_DEAD')
 
@@ -19,13 +17,18 @@ local function GetDeathContextKey()
     return 'playerDeathsArena'
   end
   if instanceType == 'party' then
+    if type(GetInstanceInfo) == 'function' then
+      local _, _, difficultyID = GetInstanceInfo()
+      if difficultyID == 2 then
+        return 'playerDeathsHeroicDungeon'
+      end
+    end
     return 'playerDeathsDungeon'
   end
   if instanceType == 'raid' then
     return 'playerDeathsRaid'
   end
 
-  -- Fallback: treat unknown instance types as open world so we always count something.
   return 'playerDeathsOpenWorld'
 end
 

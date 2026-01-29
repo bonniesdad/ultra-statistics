@@ -51,6 +51,7 @@ function LoadDBData()
     showMainStatisticsPanelPlayerDeathsOpenWorld = false,
     showMainStatisticsPanelPlayerDeathsBattleground = false,
     showMainStatisticsPanelPlayerDeathsDungeon = false,
+    showMainStatisticsPanelPlayerDeathsHeroicDungeon = false,
     showMainStatisticsPanelPlayerDeathsRaid = false,
     showMainStatisticsPanelPlayerDeathsArena = false,
     showMainStatisticsPanelBlocks = false,
@@ -90,11 +91,5 @@ function LoadDBData()
   end
   if type(GLOBAL_SETTINGS.collapsedStatsSections) ~= 'table' then
     GLOBAL_SETTINGS.collapsedStatsSections = {}
-  end
-
-  -- Migration: "Total Mana" on the overlay is now "Max Resource" (mana/rage/energy/etc.).
-  -- Preserve existing players' preference by copying the old setting over.
-  if GLOBAL_SETTINGS.showMainStatisticsPanelMaxResource == false and GLOBAL_SETTINGS.showMainStatisticsPanelTotalMana == true then
-    GLOBAL_SETTINGS.showMainStatisticsPanelMaxResource = true
   end
 end

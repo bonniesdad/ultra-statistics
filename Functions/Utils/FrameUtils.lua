@@ -264,7 +264,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     local summaryLabel = content:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
     summaryLabel:SetPoint('TOPLEFT', content, 'TOPLEFT', 12, -10)
     summaryLabel:SetText('Summary')
-    summaryLabel:SetTextColor(1, 0.95, 0.75, 1)
+    summaryLabel:SetTextColor(1, 0.82, 0, 1) -- WoW yellow/gold
     summaryLabel:SetShadowOffset(1, -1)
     summaryLabel:SetShadowColor(0, 0, 0, 0.9)
 
@@ -275,59 +275,79 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     contentStatusIcon:SetPoint('TOPRIGHT', content, 'TOPRIGHT', -16, -28)
     contentStatusIcon:SetTexture(isCleared and completeTexture or incompleteTexture)
 
-    -- Centered status text above the icon, e.g. "Incomplete" or "Cleared" + date.
+    -- Centered status text above the icon, e.g. "Incomplete" (white) or "Cleared" + date (yellow).
     local contentStatusLabel = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    -- Slightly above the icon; adjusted so two-line cleared text sits comfortably.
     contentStatusLabel:SetPoint('BOTTOM', contentStatusIcon, 'TOP', 0, 0)
     contentStatusLabel:SetJustifyH('CENTER')
-    contentStatusLabel:SetTextColor(1, 0.98, 0.9, 1)
     contentStatusLabel:SetShadowOffset(1, -1)
     contentStatusLabel:SetShadowColor(0, 0, 0, 0.9)
 
     local clearDateText = instance.firstClearDate
     if isCleared then
+      contentStatusLabel:SetTextColor(1, 0.82, 0, 1) -- WoW yellow/gold
       if type(clearDateText) == 'string' and clearDateText ~= '' then
-        -- Two-line text when we have a date: "Cleared" on first line, date on second.
         contentStatusLabel:SetText('Cleared\n' .. clearDateText)
       else
         contentStatusLabel:SetText('Cleared')
       end
     else
+      contentStatusLabel:SetTextColor(1, 1, 1, 1) -- White for Incomplete
       contentStatusLabel:SetText('Incomplete')
     end
 
+    -- Summary table: labels left, values right-aligned (same style as boss rows).
     local summaryGap = 2
-    local summaryLine1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    summaryLine1:SetPoint('TOPLEFT', summaryLabel, 'BOTTOMLEFT', 0, -4)
-    summaryLine1:SetText(
-      string.format(
-        '|cffb0b0b0First attempt deaths:|r |cffffffff%s|r',
-        formatStat(firstClearDeaths)
-      )
-    )
-    summaryLine1:SetShadowOffset(1, -1)
-    summaryLine1:SetShadowColor(0, 0, 0, 0.8)
+    local summaryLabelWidth = 140
 
-    local summaryLine2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    summaryLine2:SetPoint('TOPLEFT', summaryLine1, 'BOTTOMLEFT', 0, -summaryGap)
-    summaryLine2:SetText(
-      string.format('|cffb0b0b0Clears:|r |cffffffff%s|r', formatStat(totalClears))
-    )
-    summaryLine2:SetShadowOffset(1, -1)
-    summaryLine2:SetShadowColor(0, 0, 0, 0.8)
+    local sumLabel1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumLabel1:SetPoint('TOPLEFT', summaryLabel, 'BOTTOMLEFT', 0, -4)
+    sumLabel1:SetJustifyH('LEFT')
+    sumLabel1:SetWidth(summaryLabelWidth)
+    sumLabel1:SetText('|cffb0b0b0First attempt deaths:|r')
+    sumLabel1:SetShadowOffset(1, -1)
+    sumLabel1:SetShadowColor(0, 0, 0, 0.8)
 
-    local summaryLine3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    summaryLine3:SetPoint('TOPLEFT', summaryLine2, 'BOTTOMLEFT', 0, -summaryGap)
-    summaryLine3:SetText(
-      string.format('|cffb0b0b0Deaths:|r |cffffffff%s|r', formatStat(totalDeaths))
-    )
-    summaryLine3:SetShadowOffset(1, -1)
-    summaryLine3:SetShadowColor(0, 0, 0, 0.8)
+    local sumValue1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumValue1:SetPoint('LEFT', sumLabel1, 'RIGHT', 4, 0)
+    sumValue1:SetJustifyH('LEFT')
+    sumValue1:SetText('|cffffd100' .. formatStat(firstClearDeaths) .. '|r')
+    sumValue1:SetShadowOffset(1, -1)
+    sumValue1:SetShadowColor(0, 0, 0, 0.8)
+
+    local sumLabel2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumLabel2:SetPoint('TOPLEFT', sumLabel1, 'BOTTOMLEFT', 0, -summaryGap)
+    sumLabel2:SetJustifyH('LEFT')
+    sumLabel2:SetWidth(summaryLabelWidth)
+    sumLabel2:SetText('|cffb0b0b0Clears:|r')
+    sumLabel2:SetShadowOffset(1, -1)
+    sumLabel2:SetShadowColor(0, 0, 0, 0.8)
+
+    local sumValue2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumValue2:SetPoint('LEFT', sumLabel2, 'RIGHT', 4, 0)
+    sumValue2:SetJustifyH('LEFT')
+    sumValue2:SetText('|cffffd100' .. formatStat(totalClears) .. '|r')
+    sumValue2:SetShadowOffset(1, -1)
+    sumValue2:SetShadowColor(0, 0, 0, 0.8)
+
+    local sumLabel3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumLabel3:SetPoint('TOPLEFT', sumLabel2, 'BOTTOMLEFT', 0, -summaryGap)
+    sumLabel3:SetJustifyH('LEFT')
+    sumLabel3:SetWidth(summaryLabelWidth)
+    sumLabel3:SetText('|cffb0b0b0Deaths:|r')
+    sumLabel3:SetShadowOffset(1, -1)
+    sumLabel3:SetShadowColor(0, 0, 0, 0.8)
+
+    local sumValue3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumValue3:SetPoint('LEFT', sumLabel3, 'RIGHT', 4, 0)
+    sumValue3:SetJustifyH('LEFT')
+    sumValue3:SetText('|cffffd100' .. formatStat(totalDeaths) .. '|r')
+    sumValue3:SetShadowOffset(1, -1)
+    sumValue3:SetShadowColor(0, 0, 0, 0.8)
 
     local bossesTitle = content:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-    bossesTitle:SetPoint('TOPLEFT', content, 'TOPLEFT', 12, -78)
+    bossesTitle:SetPoint('TOPLEFT', sumLabel3, 'BOTTOMLEFT', 0, -10)
     bossesTitle:SetText('Bosses')
-    bossesTitle:SetTextColor(1, 0.95, 0.75, 1)
+    bossesTitle:SetTextColor(1, 0.82, 0, 1) -- WoW yellow/gold
     bossesTitle:SetShadowOffset(1, -1)
     bossesTitle:SetShadowColor(0, 0, 0, 0.9)
 
@@ -393,7 +413,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           local nameFS = row:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
           nameFS:SetPoint('TOPLEFT', icon, 'TOPRIGHT', 8, 0)
           nameFS:SetText(bossName)
-          nameFS:SetTextColor(1, 0.97, 0.9, 1)
+          nameFS:SetTextColor(1, 0.82, 0, 1) -- WoW yellow/gold
           nameFS:SetShadowOffset(1, -1)
           nameFS:SetShadowColor(0, 0, 0, 0.9)
 
@@ -404,23 +424,24 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           divider:SetPoint('TOPLEFT', nameFS, 'BOTTOMLEFT', 0, -titleToDividerGap)
           divider:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
 
-          -- Table-like layout: labels left-aligned, values right-aligned
+          -- Stats block below the title and divider: labels left, values next to labels
           local statsGap = 2
-          local labelWidth = 140 -- Fixed width for labels so values align
+          local labelWidth = 140
+          local statsTopGap = 8
           -- First attempt deaths row
           local label1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          label1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -8)
+          label1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -statsTopGap)
           label1:SetJustifyH('LEFT')
           label1:SetWidth(labelWidth)
-          label1:SetText('|cffa0a0a0First attempt deaths:|r')
+          label1:SetText('|cffb0b0b0First attempt deaths:|r')
           label1:SetShadowOffset(1, -1)
           label1:SetShadowColor(0, 0, 0, 0.8)
 
           local value1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
           value1:SetPoint('LEFT', label1, 'RIGHT', 4, 0)
-          value1:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
+          value1:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
           value1:SetJustifyH('RIGHT')
-          value1:SetText('|cffffffff' .. formatStat(firstBossDeaths) .. '|r')
+          value1:SetText('|cffffd100' .. formatStat(firstBossDeaths) .. '|r')
           value1:SetShadowOffset(1, -1)
           value1:SetShadowColor(0, 0, 0, 0.8)
 
@@ -429,15 +450,15 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           label2:SetPoint('TOPLEFT', label1, 'BOTTOMLEFT', 0, -statsGap)
           label2:SetJustifyH('LEFT')
           label2:SetWidth(labelWidth)
-          label2:SetText('|cffa0a0a0Kills:|r')
+          label2:SetText('|cffb0b0b0Kills:|r')
           label2:SetShadowOffset(1, -1)
           label2:SetShadowColor(0, 0, 0, 0.8)
 
           local value2 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
           value2:SetPoint('LEFT', label2, 'RIGHT', 4, 0)
-          value2:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
+          value2:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
           value2:SetJustifyH('RIGHT')
-          value2:SetText('|cffffffff' .. formatStat(totalBossKills) .. '|r')
+          value2:SetText('|cffffd100' .. formatStat(totalBossKills) .. '|r')
           value2:SetShadowOffset(1, -1)
           value2:SetShadowColor(0, 0, 0, 0.8)
 
@@ -446,15 +467,15 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           label3:SetPoint('TOPLEFT', label2, 'BOTTOMLEFT', 0, -statsGap)
           label3:SetJustifyH('LEFT')
           label3:SetWidth(labelWidth)
-          label3:SetText('|cffa0a0a0Deaths:|r')
+          label3:SetText('|cffb0b0b0Deaths:|r')
           label3:SetShadowOffset(1, -1)
           label3:SetShadowColor(0, 0, 0, 0.8)
 
           local value3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
           value3:SetPoint('LEFT', label3, 'RIGHT', 4, 0)
-          value3:SetPoint('RIGHT', row, 'RIGHT', -4, 0)
+          value3:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
           value3:SetJustifyH('RIGHT')
-          value3:SetText('|cffffffff' .. formatStat(totalBossDeaths) .. '|r')
+          value3:SetText('|cffffd100' .. formatStat(totalBossDeaths) .. '|r')
           value3:SetShadowOffset(1, -1)
           value3:SetShadowColor(0, 0, 0, 0.8)
 
