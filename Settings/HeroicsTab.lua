@@ -57,31 +57,150 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
   scrollChild:SetSize(435, 300)
   scrollFrame:SetScrollChild(scrollChild)
 
+  -- Rebuild the heroics list when stats change (called by UpdateStatistics()).
+  -- This avoids needing /reload to see updated boss kills/deaths.
+  _G.UltraStatisticsHeroicsTabState = {
+    parent = parent,
+    heroicsFrame = heroicsFrame,
+    scrollFrame = scrollFrame,
+    currentScrollChild = scrollChild,
+    layout = layout,
+    collapsedStateTable = GLOBAL_SETTINGS.collapsedHeroicsSections,
+    width = 435,
+    texturesRoot = 'heroics',
+    bgHeight = 200,
+    bgInsetX = 2,
+    bgInsetY = -2,
+    defaultCollapsed = true,
+    dirty = true,
+    refreshPending = false,
+    lastRefreshAt = 0,
+    refreshThrottleSeconds = 0.25,
+  }
+
+  function _G.UltraStatistics_RefreshHeroicsTab(force)
+    local state = _G.UltraStatisticsHeroicsTabState
+    if not state or not state.scrollFrame then
+      return
+    end
+
+    if force then
+      state.dirty = true
+    else
+      -- Any call without force is treated as "stats changed; please refresh when possible".
+      state.dirty = true
+    end
+
+    -- If the tab isn't effectively visible, just mark dirty and refresh on next open.
+    -- (IsShown() can remain true even when a parent frame is hidden.)
+    if not (state.parent and state.parent.IsVisible and state.parent:IsVisible()) then
+      state.dirty = true
+      return
+    end
+
+    -- Coalesce multiple refresh triggers into a single rebuild.
+    if state.refreshPending then
+      return
+    end
+    local now = (GetTime and GetTime()) or 0
+    local throttle = tonumber(state.refreshThrottleSeconds) or 0
+    local sinceLast = now - (state.lastRefreshAt or 0)
+    if not force and throttle > 0 and sinceLast < throttle then
+      state.refreshPending = true
+      local delay = throttle - sinceLast
+      if C_Timer and C_Timer.After then
+        C_Timer.After(delay, function()
+          state.refreshPending = false
+          _G.UltraStatistics_RefreshHeroicsTab(true)
+        end)
+      else
+        state.refreshPending = false
+        _G.UltraStatistics_RefreshHeroicsTab(true)
+      end
+      return
+    end
+
+    state.refreshPending = true
+
+    local function doRebuild()
+      state.refreshPending = false
+      state.lastRefreshAt = (GetTime and GetTime()) or 0
+
+      local instances =
+        (DungeonRaidStats and DungeonRaidStats.MergeWithStored) and DungeonRaidStats.MergeWithStored(
+          'heroics',
+          state.defaultHeroics or {}
+        ) or (state.defaultHeroics or {})
+
+      -- Replace the scroll child so we don't have to manually destroy old frames.
+      -- Important: hide the old scroll child to prevent duplicate rows.
+      if state.currentScrollChild and state.currentScrollChild.Hide then
+        state.currentScrollChild:Hide()
+      end
+
+      local newChild = CreateFrame('Frame', nil, state.scrollFrame)
+      newChild:SetSize(state.width, 300)
+      state.scrollFrame:SetScrollChild(newChild)
+      state.currentScrollChild = newChild
+
+      UltraStatistics_CreateInstanceAccordionList({
+        scrollChild = newChild,
+        layout = state.layout,
+        instances = instances,
+        collapsedStateTable = state.collapsedStateTable,
+        width = state.width,
+        texturesRoot = state.texturesRoot,
+        bgHeight = state.bgHeight,
+        bgInsetX = state.bgInsetX,
+        bgInsetY = state.bgInsetY,
+        defaultCollapsed = state.defaultCollapsed,
+      })
+
+      state.dirty = false
+    end
+
+    if C_Timer and C_Timer.After then
+      C_Timer.After(0, doRebuild)
+    else
+      doRebuild()
+    end
+  end
+
   -- TBC 5-man instances (boss list from IsDungeonBoss; stats merged from stored DungeonRaidStats)
-  -- NOTE: Ragefire Chasm is included for testing (it is NOT a TBC heroic).
+  -- NOTE: The Stockade is included for testing (it is NOT a TBC heroic).
   local defaultHeroics = { {
-    key = 'ragefireChasm',
-    title = 'Ragefire Chasm',
+    key = 'stockades',
+    title = 'The Stockade',
     totalClears = 0,
     totalDeaths = 0,
     firstClearDeaths = 0,
     bosses = { {
-      name = 'Taragaman the Hungerer',
+      name = 'Targorr the Dread',
       totalKills = 0,
       totalDeaths = 0,
       firstClearDeaths = 0,
     }, {
-      name = 'Oggleflint',
+      name = 'Kam Deepfury',
       totalKills = 0,
       totalDeaths = 0,
       firstClearDeaths = 0,
     }, {
-      name = 'Jergosh the Invoker',
+      name = 'Hamhock',
       totalKills = 0,
       totalDeaths = 0,
       firstClearDeaths = 0,
     }, {
-      name = 'Bazzalan',
+      name = 'Dextren Ward',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Bazil Thredd',
+      totalKills = 0,
+      totalDeaths = 0,
+      firstClearDeaths = 0,
+    }, {
+      name = 'Bruegal Ironknuckle',
       totalKills = 0,
       totalDeaths = 0,
       firstClearDeaths = 0,
@@ -493,6 +612,11 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
       defaultHeroics
     ) or defaultHeroics
 
+  -- Keep defaults in state for refreshes.
+  if _G.UltraStatisticsHeroicsTabState then
+    _G.UltraStatisticsHeroicsTabState.defaultHeroics = defaultHeroics
+  end
+
   -- Render using shared helper so RaidsTab can reuse the exact same UI.
   UltraStatistics_CreateInstanceAccordionList({
     scrollChild = scrollChild,
@@ -506,4 +630,9 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
     bgInsetY = -2,
     defaultCollapsed = true,
   })
+
+  -- Mark clean after initial render (refresh will mark dirty on future stat updates).
+  if _G.UltraStatisticsHeroicsTabState then
+    _G.UltraStatisticsHeroicsTabState.dirty = false
+  end
 end

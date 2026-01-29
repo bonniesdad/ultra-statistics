@@ -1151,6 +1151,11 @@ function UpdateStatistics()
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
+
+  -- Refresh settings-panel instance lists (Heroics tab) when stats change.
+  if _G and _G.UltraStatistics_RefreshHeroicsTab then
+    _G.UltraStatistics_RefreshHeroicsTab()
+  end
 end
 
 -- Register events to update statistics when they change

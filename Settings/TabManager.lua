@@ -204,6 +204,9 @@ function UltraStatistics_SwitchToTab(index)
     end
   elseif index == 2 and UltraStatistics_InitializeHeroicsTab then
     UltraStatistics_InitializeHeroicsTab(tabContents)
+    if _G and _G.UltraStatistics_RefreshHeroicsTab then
+      _G.UltraStatistics_RefreshHeroicsTab(true)
+    end
   elseif index == 3 and UltraStatistics_InitializeRaidsTab then
     UltraStatistics_InitializeRaidsTab(tabContents)
   elseif index == 4 and UltraStatistics_InitializeSettingsTab then

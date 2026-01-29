@@ -5,12 +5,8 @@ DungeonRaidStats = DungeonRaidStats or {}
 
 -- Instance name -> { category, instanceKey }
 -- Used for recording non-boss deaths based on the current dungeon name from GetInstanceInfo().
--- Note: Ragefire Chasm is intentionally categorized under "heroics" for testing purposes.
+-- Note: The Stockade is intentionally categorized under "heroics" for testing purposes.
 local DUNGEON_NAME_TO_INSTANCE = {
-  ['Ragefire Chasm'] = {
-    category = 'heroics',
-    instanceKey = 'ragefireChasm',
-  },
   -- TBC Heroics (instance names as returned by GetInstanceInfo())
   ['Hellfire Ramparts'] = {
     category = 'heroics',
@@ -78,8 +74,8 @@ local DUNGEON_NAME_TO_INSTANCE = {
   },
 }
 
--- Heroic-mode gating exception list (Ragefire Chasm is added for testing in normal mode).
-local ALLOW_NON_HEROIC_FOR_TEST = { ragefireChasm = true }
+-- Heroic-mode gating exception list (The Stockade is added for testing in normal mode).
+local ALLOW_NON_HEROIC_FOR_TEST = { stockades = true }
 
 local function getStorage()
   if not UltraStatisticsDB then
@@ -207,6 +203,7 @@ function DungeonRaidStats.RecordBossKill(destGUID)
     return false
   end
 
+  -- TODO: Uncomment
   -- if info.category == 'heroics' and not isInHeroicDungeon() then
   --   return false
   -- end
@@ -292,6 +289,7 @@ function DungeonRaidStats.RecordNonBossDungeonDeath(instanceName, difficultyID)
   if not mapped then return end
 
   -- Protect heroic stats from being updated in normal mode (except explicit test allowlist).
+  -- TODO: Uncomment
   -- if mapped.category == 'heroics' and difficultyID ~= 2 then return end
 
   local storage = getStorage()
