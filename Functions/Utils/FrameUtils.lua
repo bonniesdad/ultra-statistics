@@ -58,6 +58,27 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     return tostring(val)
   end
 
+  local function ShowSpellTooltip(owner, spellId)
+    if not owner or not spellId then
+      return
+    end
+    if not GameTooltip then
+      return
+    end
+
+    GameTooltip:SetOwner(owner, 'ANCHOR_RIGHT')
+
+    -- Prefer direct spell ID tooltip when available (Classic-era clients generally support this),
+    -- but fall back to a spell hyperlink to be safe across clients.
+    if GameTooltip.SetSpellByID then
+      GameTooltip:SetSpellByID(tonumber(spellId))
+    elseif GameTooltip.SetHyperlink then
+      GameTooltip:SetHyperlink('spell:' .. tostring(spellId))
+    end
+
+    GameTooltip:Show()
+  end
+
   local function SlugifyName(name)
     if not name or type(name) ~= 'string' then
       return ''
@@ -67,6 +88,49 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     slug = slug:gsub('["\'%.,!%?]', '')
     slug = slug:gsub('%-+', '-')
     return slug
+  end
+
+  local function AdjustSectionContentHeight(content)
+    if not content or not content.GetTop then
+      return
+    end
+
+    -- This only works once the content frame is positioned (GetTop/GetBottom are nil otherwise).
+    local contentTop = content:GetTop()
+    if not contentTop then
+      return
+    end
+
+    local minHeight = tonumber(content._ultraMinHeight) or 130
+    local paddingBottom = tonumber(content._ultraPaddingBottom) or 16
+
+    local lastBossRow = content._ultraLastBossRow
+    local emptyBosses = content._ultraEmptyBosses
+    local bossesTitle = content._ultraBossesTitle
+
+    local lowest = nil
+    if lastBossRow and lastBossRow.GetBottom then
+      lowest = lastBossRow:GetBottom()
+    elseif emptyBosses and emptyBosses.GetBottom then
+      lowest = emptyBosses:GetBottom()
+    elseif bossesTitle and bossesTitle.GetBottom then
+      lowest = bossesTitle:GetBottom()
+    end
+
+    if lowest then
+      local neededHeight = (contentTop - lowest) + paddingBottom
+      content:SetHeight(math.max(minHeight, neededHeight))
+    end
+
+    -- Keep the background texture from ever rendering outside the content frame.
+    local bg = content._ultraBg
+    local bgHeight = tonumber(content._ultraBgHeight)
+    if bg and bg.SetHeight and bgHeight then
+      local ch = content:GetHeight()
+      if ch then
+        bg:SetHeight(math.min(bgHeight, ch))
+      end
+    end
   end
 
   local sections = {}
@@ -106,6 +170,8 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           content:Show()
           content:ClearAllPoints()
           content:SetPoint('TOPLEFT', header, 'BOTTOMLEFT', 0, 0)
+          -- Recalculate height after positioning so dynamic boss ability rows never clip/spill.
+          AdjustSectionContentHeight(content)
           local contentHeight = content:GetHeight() or 0
           y = y - headerHeight - contentHeight - layout.SECTION_SPACING
         else
@@ -220,6 +286,10 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     bg:SetHeight(bgHeight)
     bg:SetTexture(baseTexturePath)
     bg:SetAlpha(0.8)
+    content._ultraBg = bg
+    content._ultraBgHeight = bgHeight
+    content._ultraMinHeight = 130
+    content._ultraPaddingBottom = 16
 
     local bosses = instance.bosses or {}
     local hasFinalBossKill = false
@@ -353,9 +423,10 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     bossesTitle:SetShadowColor(0, 0, 0, 0.9)
 
     local bossCount = 0
-    local rowHeight = 86
+    local baseRowHeight = 86
     local rowSpacing = 6
     local previousRow = nil
+    local lastBossRow = nil
 
     if type(bosses) == 'table' and #bosses > 0 then
       for _, boss in ipairs(bosses) do
@@ -363,18 +434,23 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
         local totalBossKills = 0
         local totalBossDeaths = 0
         local firstBossDeaths = 0
+        local spellIds = nil
 
         if type(boss) == 'table' then
           bossName = boss.name or boss.title
           totalBossKills = boss.totalKills or boss.kills or 0
           totalBossDeaths = boss.totalDeaths or boss.deaths or 0
           firstBossDeaths = boss.firstClearDeaths or boss.firstDeaths or 0
+          spellIds = boss.spellIds
         elseif type(boss) == 'string' then
           bossName = boss
         end
 
         if type(bossName) == 'string' and bossName ~= '' then
           bossCount = bossCount + 1
+
+          local hasAbilities = type(spellIds) == 'table' and #spellIds > 0
+          local rowHeight = baseRowHeight
 
           local row = CreateFrame('Frame', nil, content, 'BackdropTemplate')
           row:SetSize(width - 24, rowHeight)
@@ -480,19 +556,95 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           value3:SetShadowOffset(1, -1)
           value3:SetShadowColor(0, 0, 0, 0.8)
 
+          -- Boss Abilities (icons + in-game tooltip)
+          -- Shown below the boss image, wrapping to new lines as needed.
+          if hasAbilities then
+            local iconSize = 18
+            local iconSpacingX = 4
+            local iconSpacingY = 4
+            local abilitiesTopGap = 6
+            local abilitiesLeftPadding = 8
+            local rowBottomPadding = 10
+            local maxIcons = 40 -- safety cap; layout will wrap before this
+
+            local abilitiesFrame = CreateFrame('Frame', nil, row)
+            abilitiesFrame:SetPoint('TOPLEFT', icon, 'BOTTOMLEFT', abilitiesLeftPadding, -abilitiesTopGap)
+            abilitiesFrame:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
+            abilitiesFrame:SetHeight(1)
+
+            -- Compute wrapping based on available width.
+            local availableWidth = (row.GetWidth and row:GetWidth()) or (width - 24)
+            availableWidth = availableWidth - 4 - 12 -- left padding (icon x) + right padding
+            availableWidth = availableWidth - abilitiesLeftPadding
+            local perIconW = iconSize + iconSpacingX
+            local iconsPerRow = math.floor((availableWidth + iconSpacingX) / perIconW)
+            if not iconsPerRow or iconsPerRow < 1 then
+              iconsPerRow = 1
+            end
+
+            local shown = 0
+            for _, spellId in ipairs(spellIds) do
+              if shown >= maxIcons then
+                break
+              end
+              local sid = tonumber(spellId)
+              if sid then
+                shown = shown + 1
+
+                local col = (shown - 1) % iconsPerRow
+                local rowIdx = math.floor((shown - 1) / iconsPerRow)
+
+                local btn = CreateFrame('Button', nil, abilitiesFrame)
+                btn:SetSize(iconSize, iconSize)
+                btn:SetPoint('TOPLEFT', abilitiesFrame, 'TOPLEFT', col * perIconW, -rowIdx * (iconSize + iconSpacingY))
+
+                local tex = btn:CreateTexture(nil, 'ARTWORK')
+                tex:SetAllPoints(btn)
+                local iconTexture =
+                  (GetSpellTexture and GetSpellTexture(sid)) or (GetSpellInfo and select(3, GetSpellInfo(sid))) or nil
+                tex:SetTexture(iconTexture or 'Interface\\Icons\\INV_Misc_QuestionMark')
+
+                btn:SetScript('OnEnter', function(self)
+                  ShowSpellTooltip(self, sid)
+                end)
+                btn:SetScript('OnLeave', function()
+                  if GameTooltip then
+                    GameTooltip:Hide()
+                  end
+                end)
+              end
+            end
+
+            local rowsUsed = math.ceil(shown / iconsPerRow)
+            if rowsUsed < 1 then
+              rowsUsed = 1
+            end
+            local gridHeight = (rowsUsed * iconSize) + ((rowsUsed - 1) * iconSpacingY)
+            abilitiesFrame:SetHeight(gridHeight)
+
+            -- Expand row height so the wrapped icon grid doesn't clip.
+            local neededHeight = rowTopPadding + 64 + abilitiesTopGap + gridHeight + rowBottomPadding
+            if neededHeight > rowHeight then
+              rowHeight = neededHeight
+              row:SetHeight(rowHeight)
+            end
+          end
+
           if totalBossKills > 0 then
             -- Very pale green border for bosses with at least one kill
             row:SetBackdropBorderColor(0.7, 0.95, 0.7, 1)
           end
 
           previousRow = row
+          lastBossRow = row
         end
       end
     end
 
     -- If a dungeon/instance has no boss list, show a friendly placeholder so the panel doesn't look "empty".
+    local emptyBosses = nil
     if bossCount == 0 then
-      local emptyBosses = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+      emptyBosses = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
       emptyBosses:SetPoint('TOPLEFT', bossesTitle, 'BOTTOMLEFT', 0, -8)
       emptyBosses:SetPoint('RIGHT', content, 'RIGHT', -12, 0)
       emptyBosses:SetJustifyH('LEFT')
@@ -502,9 +654,12 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
       emptyBosses:SetText('Boss list not available yet for this instance.')
     end
 
-    local minHeight = 130
-    local computedHeight = 100 + (bossCount * (rowHeight + rowSpacing))
-    content:SetHeight(math.max(minHeight, computedHeight))
+    -- Height is finalized in updateSectionPositions() after this content frame is positioned.
+    -- Set a safe initial height so early renders don't look broken.
+    content:SetHeight(tonumber(content._ultraMinHeight) or 130)
+    content._ultraLastBossRow = lastBossRow
+    content._ultraEmptyBosses = emptyBosses
+    content._ultraBossesTitle = bossesTitle
 
     local section = addSection(header, content, dungeonKey)
     makeHeaderClickable(section)

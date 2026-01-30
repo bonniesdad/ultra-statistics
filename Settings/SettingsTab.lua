@@ -45,112 +45,82 @@ local ROW_BUTTON_PAD_H = 14
 local ROW_BUTTON_PAD_V = 10
 local OPTION_ROW_TOTAL = 58 -- height of each option row (button + gap between rows)
 local REPOSITION_ROW_HEIGHT = 32 -- smaller row for Reposition button (no description)
---- Create a full-width WoW-style option row: title, optional description, turns green when selected. Checkbox-compatible (SetChecked, GetChecked, Enable, Disable, .Text, SetDescription).
+--- Create a simple checkbox row (standard WoW checkbox + label + optional description).
+--- Returned object is click-compatible with older row-button code: SetChecked/GetChecked/Enable/Disable, plus .Text and .Description.
 local function CreateOptionRowButton(parent)
-  local btn = CreateFrame('Button', nil, parent, 'BackdropTemplate')
-  btn:SetHeight(ROW_BUTTON_HEIGHT)
-  btn:RegisterForClicks('LeftButtonUp')
+  local row = CreateFrame('Button', nil, parent)
+  row:SetHeight(ROW_BUTTON_HEIGHT)
+  row:RegisterForClicks('LeftButtonUp')
 
-  local checked = false
-  local disabled = false
+  local check = CreateFrame('CheckButton', nil, row, 'UICheckButtonTemplate')
+  check:SetPoint('TOPLEFT', row, 'TOPLEFT', 0, -6)
 
-  btn:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8x8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 8,
-    insets = {
-      left = 5,
-      right = 5,
-      top = 5,
-      bottom = 5,
-    },
-  })
+  -- Title
+  local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  label:SetPoint('TOPLEFT', check, 'TOPRIGHT', 4, -2)
+  label:SetPoint('RIGHT', row, 'RIGHT', 0, 0)
+  label:SetJustifyH('LEFT')
+  label:SetNonSpaceWrap(false)
+  row.Text = label
 
-  function btn:UpdateVisual()
-    if disabled then
-      self:SetBackdropColor(0.22, 0.22, 0.22, 0.95)
-      self:SetBackdropBorderColor(0.35, 0.35, 0.35, 0.9)
-    elseif checked then
-      self:SetBackdropColor(0.15, 0.42, 0.2, 0.95)
-      self:SetBackdropBorderColor(0.25, 0.6, 0.3, 1)
-    else
-      self:SetBackdropColor(0.32, 0.3, 0.26, 0.95)
-      self:SetBackdropBorderColor(0.5, 0.45, 0.38, 0.95)
-    end
-  end
+  -- Description
+  local desc = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  desc:SetPoint('TOPLEFT', label, 'BOTTOMLEFT', 0, -2)
+  desc:SetPoint('RIGHT', row, 'RIGHT', 0, 0)
+  desc:SetJustifyH('LEFT')
+  desc:SetWordWrap(true)
+  desc:SetNonSpaceWrap(false)
+  desc:SetTextColor(0.75, 0.72, 0.65, 1)
+  row.Description = desc
 
-  function btn:SetChecked(on)
-    if checked == on then return end
-    checked = on
-    self:UpdateVisual()
-  end
-
-  function btn:GetChecked()
-    return checked
-  end
-
-  function btn:SetDescription(text)
+  function row:SetDescription(text)
     if self.Description then
       self.Description:SetText(text or '')
       self.Description:SetShown(text and text ~= '')
     end
   end
 
+  function row:SetChecked(on)
+    check:SetChecked(on and true or false)
+  end
+
+  function row:GetChecked()
+    return check:GetChecked() and true or false
+  end
+
   do
-    local rawEnable, rawDisable = btn.Enable, btn.Disable
-    btn.Enable = function(self)
-      disabled = false
+    local rawEnable, rawDisable = row.Enable, row.Disable
+    row.Enable = function(self)
       if rawEnable then
         rawEnable(self)
       end
-      self:UpdateVisual()
+      check:Enable()
+      check:SetAlpha(1)
     end
-    btn.Disable = function(self)
-      disabled = true
+    row.Disable = function(self)
       if rawDisable then
         rawDisable(self)
       end
-      self:UpdateVisual()
+      check:Disable()
+      check:SetAlpha(0.6)
     end
   end
 
-  -- Title (top line)
-  local label = btn:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  label:SetPoint('TOPLEFT', btn, 'TOPLEFT', ROW_BUTTON_PAD_H, -ROW_BUTTON_PAD_V)
-  label:SetPoint('RIGHT', btn, 'RIGHT', -ROW_BUTTON_PAD_H, 0)
-  label:SetJustifyH('LEFT')
-  label:SetNonSpaceWrap(false)
-  btn.Text = label
-
-  -- Description (second line, smaller, below title)
-  local desc = btn:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  desc:SetPoint('TOPLEFT', label, 'BOTTOMLEFT', 0, -2)
-  desc:SetPoint('RIGHT', btn, 'RIGHT', -ROW_BUTTON_PAD_H, 0)
-  desc:SetJustifyH('LEFT')
-  desc:SetWordWrap(true)
-  desc:SetNonSpaceWrap(false)
-  desc:SetTextColor(0.75, 0.72, 0.65, 1)
-  btn.Description = desc
-
-  -- WoW-style hover
-  btn:SetScript('OnEnter', function(self)
-    if disabled then return end
-    if checked then
-      self:SetBackdropColor(0.2, 0.5, 0.28, 1)
-      self:SetBackdropBorderColor(0.35, 0.7, 0.4, 1)
-    else
-      self:SetBackdropColor(0.4, 0.37, 0.32, 1)
-      self:SetBackdropBorderColor(0.6, 0.55, 0.45, 1)
+  -- Clicking the row toggles the checkbox (preserves old behavior where the whole row was clickable).
+  row:SetScript('OnClick', function(self)
+    if not check:IsEnabled() then
+      return
+    end
+    self:SetChecked(not self:GetChecked())
+    local click = check:GetScript('OnClick')
+    if click then
+      click(self)
     end
   end)
-  btn:SetScript('OnLeave', function(self)
-    self:UpdateVisual()
-  end)
 
-  btn:SetChecked(false)
-  return btn
+  row:SetChecked(false)
+  row:SetDescription('')
+  return row
 end
 
 local function IsSearchMatch(searchBlob, query)

@@ -78,6 +78,49 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
     refreshThrottleSeconds = 0.25,
   }
 
+  local function AttachBossSpellIds(instances)
+    if type(instances) ~= 'table' then
+      return instances
+    end
+
+    local all = _G.UltraStatisticsHeroicBossSpells
+    if type(all) ~= 'table' then
+      return instances
+    end
+
+    -- Per-instance boss name aliases (because the text source and the in-game boss name sometimes differ).
+    local aliases = {
+      hellfireRamparts = {
+        ['Vazruden the Herald'] = 'Vazruden the Herald / Nazan',
+      },
+    }
+
+    for _, inst in ipairs(instances) do
+      local instanceKey = inst and inst.key
+      local bossMap = instanceKey and all[instanceKey]
+      local aliasMap = instanceKey and aliases[instanceKey]
+
+      if type(bossMap) == 'table' and type(inst.bosses) == 'table' then
+        for _, boss in ipairs(inst.bosses) do
+          if type(boss) == 'table' then
+            local name = boss.name or boss.title
+            if type(name) == 'string' and name ~= '' then
+              local ids = bossMap[name]
+              if not ids and aliasMap and aliasMap[name] then
+                ids = bossMap[aliasMap[name]]
+              end
+              if type(ids) == 'table' and #ids > 0 then
+                boss.spellIds = ids
+              end
+            end
+          end
+        end
+      end
+    end
+
+    return instances
+  end
+
   function _G.UltraStatistics_RefreshHeroicsTab(force)
     local state = _G.UltraStatisticsHeroicsTabState
     if not state or not state.scrollFrame then
@@ -131,6 +174,10 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
           'heroics',
           state.defaultHeroics or {}
         ) or (state.defaultHeroics or {})
+
+      -- MergeWithStored intentionally returns a *copy* that only includes known stat fields.
+      -- Attach ability spellIds after merging so the UI can render the ability guide.
+      instances = AttachBossSpellIds(instances)
 
       -- Replace the scroll child so we don't have to manually destroy old frames.
       -- Important: hide the old scroll child to prevent duplicate rows.
@@ -208,46 +255,7 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
   end
 
   -- TBC 5-man instances (boss list from IsDungeonBoss; stats merged from stored DungeonRaidStats)
-  -- NOTE: The Stockade is included for testing (it is NOT a TBC heroic).
   local defaultHeroics = { {
-    key = 'stockades',
-    title = 'The Stockade',
-    totalClears = 0,
-    totalDeaths = 0,
-    firstClearDeaths = 0,
-    bosses = { {
-      name = 'Targorr the Dread',
-      totalKills = 0,
-      totalDeaths = 0,
-      firstClearDeaths = 0,
-    }, {
-      name = 'Kam Deepfury',
-      totalKills = 0,
-      totalDeaths = 0,
-      firstClearDeaths = 0,
-    }, {
-      name = 'Hamhock',
-      totalKills = 0,
-      totalDeaths = 0,
-      firstClearDeaths = 0,
-    }, {
-      name = 'Dextren Ward',
-      totalKills = 0,
-      totalDeaths = 0,
-      firstClearDeaths = 0,
-    }, {
-      name = 'Bazil Thredd',
-      totalKills = 0,
-      totalDeaths = 0,
-      firstClearDeaths = 0,
-    }, {
-      name = 'Bruegal Ironknuckle',
-      totalKills = 0,
-      totalDeaths = 0,
-      firstClearDeaths = 0,
-      isFinal = true,
-    } },
-  }, {
     key = 'hellfireRamparts',
     title = 'Hellfire Ramparts',
     totalClears = 0,
@@ -652,6 +660,8 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
       'heroics',
       defaultHeroics
     ) or defaultHeroics
+
+  heroicsInstances = AttachBossSpellIds(heroicsInstances)
 
   -- Keep defaults in state for refreshes.
   if _G.UltraStatisticsHeroicsTabState then

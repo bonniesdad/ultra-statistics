@@ -8,6 +8,7 @@
 
 UltraStatistics.lua
 PatchNotes.lua
+Constants/HeroicBossSpells.lua
 
 ## Libs
 Libs/LibStub/LibStub.lua

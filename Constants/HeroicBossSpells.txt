@@ -1,0 +1,227 @@
+THE BURNING CRUSADE – HEROIC DUNGEON BOSS SPELLS
+(Spell ID + Short Description)
+
+======================
+HELLFIRE CITADEL
+======================
+
+Hellfire Ramparts (Heroic)
+
+Watchkeeper Gargolmar
+- Surge (34645): Increases attack speed and damage for a short time.
+- Mortal Wound (30641): Heavy physical hit that reduces healing received.
+- Retaliation (22857): Counterattacks melee hits for a short duration.
+
+Omor the Unscarred
+- Shadow Bolt (30686): Shadow damage to a single target.
+- Treacherous Aura (30695): Periodic shadow damage to nearby players.
+- Summon Fiendish Hound (30707): Summons a demon to assist Omor.
+- Bane of Treachery (30691): DoT that explodes when dispelled.
+
+Vazruden the Herald / Nazan
+- Fireball (30691): Fire damage to a ranged target.
+- Cone of Fire (30926): Frontal cone fire damage.
+- Bellowing Roar (39427): Fear effect on nearby players.
+
+The Blood Furnace (Heroic)
+
+The Maker
+- Exploding Beaker (30925): Poison DoT applied to random players.
+- Domination (30923): Mind controls a player.
+
+Broggok
+- Slime Spray (30913): Nature damage cone attack.
+- Poison Cloud (30916): Ground AoE poison damage.
+
+Keli'dan the Breaker
+- Shadow Bolt Volley (30510): Shadow damage to all players.
+- Burning Nova (30940): Massive fire AoE after cast.
+- Corruption (30938): Shadow DoT.
+
+The Shattered Halls (Heroic)
+
+Grand Warlock Nethekurse
+- Shadow Cleave (30495): Shadow damage cleave attack.
+- Death Coil (30500): Shadow damage and horror effect.
+- Dark Spin (30502): Whirlwind shadow damage.
+
+Blood Guard Porung
+- Cleave (15496): Heavy frontal cleave damage.
+- Fear (30584): Fears nearby players.
+
+Warbringer O'mrogg
+- Blast Wave (30600): Fire AoE knockback.
+- Thunderclap (30633): AoE damage and attack speed slow.
+- Beatdown (30618): Forces target switch between tanks.
+
+Warchief Kargath Bladefist
+- Blade Dance (30739): Rapidly strikes random players.
+- Charge (25821): Charges a distant target.
+
+======================
+COILFANG RESERVOIR
+======================
+
+The Slave Pens (Heroic)
+
+Mennu the Betrayer
+- Lightning Bolt (35010): Nature damage to a single target.
+- Tainted Stoneskin Totem (31985): Reduces damage taken by nearby allies.
+
+Rokmar the Crackler
+- Grievous Wound (31956): Bleed that reduces healing.
+- Ensnaring Moss (31948): Roots players in place.
+
+Quagmirran
+- Acid Spray (38153): Nature damage cone.
+- Cleave (40504): Heavy melee cleave.
+
+The Underbog (Heroic)
+
+Hungarfen
+- Foul Spores (31673): Spawns mushrooms that explode.
+- Acid Geyser (38739): Nature damage and knock-up.
+
+Ghaz'an
+- Acid Breath (34268): Frontal nature damage.
+- Tail Sweep (34267): Knockback behind the boss.
+
+Swamplord Musel'ek
+- Aimed Shot (31623): High physical damage shot.
+- Multi-Shot (34974): Hits multiple ranged targets.
+- Freezing Trap (31946): Roots players in ice.
+
+The Black Stalker
+- Levitate (31704): Lifts players into the air.
+- Chain Lightning (31717): Nature damage jumps between players.
+- Static Charge (31715): Nature DoT that damages nearby allies.
+
+The Steamvault (Heroic)
+
+Hydromancer Thespia
+- Lightning Cloud (25033): Nature AoE around players.
+- Frost Nova (15531): Freezes nearby players.
+
+Mekgineer Steamrigger
+- Super Shrink Ray (31485): Reduces player size and damage.
+- Saw Blade (31486): Bouncing physical damage.
+
+Warlord Kalithresh
+- Spell Reflection (31534): Reflects spells back to casters.
+- Impale (39061): Massive physical damage and bleed.
+
+======================
+AUCHINDOUN
+======================
+
+Mana-Tombs (Heroic)
+
+Pandemonius
+- Void Blast (32325): Arcane damage knockback.
+- Dark Shell (32358): Reflects spells while active.
+
+Tavarok
+- Earthquake (33919): AoE physical damage over time.
+- Crystal Prison (32361): Stuns a player in crystal.
+
+Nexus-Prince Shaffar
+- Frost Nova (32365): Roots nearby players.
+- Summon Ethereal Apprentice (32371): Summons caster adds.
+
+Auchenai Crypts (Heroic)
+
+Shirrak the Dead Watcher
+- Carnivorous Bite (36383): High physical damage bleed.
+- Inhibit Magic (32264): Increases mana costs and cast times.
+
+Exarch Maladaar
+- Soul Scream (32421): Shadow AoE damage.
+- Summon Avatar (32424): Summons an undead add.
+
+Sethekk Halls (Heroic)
+
+Darkweaver Syth
+- Chain Lightning (15659): Nature damage jumping spell.
+- Arcane Shock (38197): Arcane damage and silence.
+
+Talon King Ikiss
+- Arcane Explosion (38197): Massive arcane AoE.
+- Blink (1953): Teleports behind players.
+- Polymorph (12826): Transforms a player into a sheep.
+
+Shadow Labyrinth (Heroic)
+
+Ambassador Hellmaw
+- Fear (33547): Long-duration fear.
+- Corrosive Acid (33551): Nature DoT.
+
+Blackheart the Inciter
+- Incite Chaos (33676): Mind controls all players briefly.
+- Charge (24193): Rushes to a distant target.
+
+Grandmaster Vorpil
+- Shadow Bolt Volley (33841): Shadow damage to all players.
+- Summon Void Traveler (33582): Spawns adds that drain mana.
+
+Murmur
+- Sonic Boom (33923): Massive AoE damage after cast.
+- Murmur's Touch (33711): Delayed explosion on players.
+
+======================
+TEMPEST KEEP
+======================
+
+The Mechanar (Heroic)
+
+Mechano-Lord Capacitus
+- Polarity Shift (39096): Charges players to explode near opposites.
+- Nether Charge (37670): Arcane damage orb mechanic.
+
+Nethermancer Sepethrea
+- Frost Nova (35263): Roots nearby players.
+- Summon Raging Flames (35275): Fire elementals chase players.
+
+Pathaleon the Calculator
+- Domination (35280): Mind controls a player.
+- Arcane Torrent (35283): AoE arcane damage and silence.
+
+The Botanica (Heroic)
+
+Commander Sarannis
+- Arcane Resonance (34794): AoE arcane damage.
+- Heal (34775): Restores health to allies.
+
+High Botanist Freywinn
+- Tranquility (34550): Large healing over time.
+- Plant White Seedling (34759): Summons plant adds.
+
+Thorngrin the Tender
+- Hellfire (34659): Fire AoE damage.
+- Sacrifice (34661): Drains life from a player.
+
+Laj
+- Allergic Reaction (34697): Nature damage debuff.
+- Summon Lashers (34684): Summons plant adds.
+
+Warp Splinter
+- War Stomp (34716): AoE stun.
+- Arcane Volley (34722): Arcane damage to all players.
+
+The Arcatraz (Heroic)
+
+Zereketh the Unbound
+- Seed of Corruption (36123): Explodes for shadow AoE.
+- Shadow Nova (36127): Shadow AoE damage.
+
+Dalliah the Doomsayer
+- Whirlwind (36142): Spinning physical damage.
+- Heal (36144): Heals herself or allies.
+
+Wrath-Scryer Soccothrates
+- Charge (36512): Charges and stuns a target.
+- Knock Away (36517): Knockback reducing threat.
+
+Harbinger Skyriss
+- Mind Rend (36924): Shadow damage nuke.
+- Domination (37162): Mind controls a player.
+- Fear (39415): Fears nearby players.
