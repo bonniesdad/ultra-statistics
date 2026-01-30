@@ -320,6 +320,34 @@ playerDeathsArenaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -383)
 playerDeathsArenaValue:SetText(formatNumberWithCommas(0))
 playerDeathsArenaValue:SetTextColor(1, 0.2, 0.2, 1)
 
+-- Lowest Health rows
+local lowestHealthLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -398)
+lowestHealthLabel:SetText('Lowest HP:')
+lowestHealthLabel:SetTextColor(1, 0.9, 0.5, 1)
+local lowestHealthValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -398)
+lowestHealthValue:SetText('100%')
+lowestHealthValue:SetTextColor(0.85, 0.35, 0.3, 1)
+local lowestHealthThisLevelLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthThisLevelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -413)
+lowestHealthThisLevelLabel:SetText('Lowest HP (Level):')
+lowestHealthThisLevelLabel:SetTextColor(1, 0.9, 0.5, 1)
+local lowestHealthThisLevelValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthThisLevelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -413)
+lowestHealthThisLevelValue:SetText('100%')
+lowestHealthThisLevelValue:SetTextColor(0.85, 0.35, 0.3, 1)
+local lowestHealthThisSessionLabel =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthThisSessionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -428)
+lowestHealthThisSessionLabel:SetText('Lowest HP (Session):')
+lowestHealthThisSessionLabel:SetTextColor(1, 0.9, 0.5, 1)
+local lowestHealthThisSessionValue =
+  CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthThisSessionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -428)
+lowestHealthThisSessionValue:SetText('100%')
+lowestHealthThisSessionValue:SetTextColor(0.85, 0.35, 0.3, 1)
+
 -- Avoidance rows
 local blocksLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 blocksLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -338)
@@ -523,6 +551,21 @@ local statsElements = { -- Non-tier stats (no tier system)
   value = playerDeathsArenaValue,
   setting = 'showMainStatisticsPanelPlayerDeathsArena',
   statKey = 'playerDeathsArena',
+}, {
+  label = lowestHealthLabel,
+  value = lowestHealthValue,
+  setting = 'showMainStatisticsPanelLowestHealth',
+  statKey = 'lowestHealth',
+}, {
+  label = lowestHealthThisLevelLabel,
+  value = lowestHealthThisLevelValue,
+  setting = 'showMainStatisticsPanelLowestHealthThisLevel',
+  statKey = 'lowestHealthThisLevel',
+}, {
+  label = lowestHealthThisSessionLabel,
+  value = lowestHealthThisSessionValue,
+  setting = 'showMainStatisticsPanelLowestHealthThisSession',
+  statKey = 'lowestHealthThisSession',
 }, {
   label = blocksLabel,
   value = blocksValue,
@@ -1018,6 +1061,36 @@ function UpdateStatistics()
     playerDeathsArenaStat.value:SetText(formatNumberWithCommas(playerDeathsArena))
     playerDeathsArenaStat.label:SetTextColor(1, 0.9, 0.5, 1)
     playerDeathsArenaStat.value:SetTextColor(1, 1, 1, 1)
+  end
+
+  -- Lowest health (percent)
+  local function formatLowestHealthPercent(val)
+    local v = tonumber(val) or 100
+    if v % 1 == 0 then
+      return string.format('%d%%', v)
+    end
+    return string.format('%.1f%%', v)
+  end
+  local lowestHealth = CharacterStats:GetStat('lowestHealth') or 100
+  local lowestHealthStat = getStat('lowestHealth')
+  if lowestHealthStat then
+    lowestHealthStat.value:SetText(formatLowestHealthPercent(lowestHealth))
+    lowestHealthStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    lowestHealthStat.value:SetTextColor(0.85, 0.35, 0.3, 1)
+  end
+  local lowestHealthThisLevel = CharacterStats:GetStat('lowestHealthThisLevel') or 100
+  local lowestHealthThisLevelStat = getStat('lowestHealthThisLevel')
+  if lowestHealthThisLevelStat then
+    lowestHealthThisLevelStat.value:SetText(formatLowestHealthPercent(lowestHealthThisLevel))
+    lowestHealthThisLevelStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    lowestHealthThisLevelStat.value:SetTextColor(0.85, 0.35, 0.3, 1)
+  end
+  local lowestHealthThisSession = CharacterStats:GetStat('lowestHealthThisSession') or 100
+  local lowestHealthThisSessionStat = getStat('lowestHealthThisSession')
+  if lowestHealthThisSessionStat then
+    lowestHealthThisSessionStat.value:SetText(formatLowestHealthPercent(lowestHealthThisSession))
+    lowestHealthThisSessionStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    lowestHealthThisSessionStat.value:SetTextColor(0.85, 0.35, 0.3, 1)
   end
 
   local blocks = CharacterStats:GetStat('blocks') or 0

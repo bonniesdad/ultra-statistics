@@ -50,6 +50,9 @@ local STATISTIC_TOOLTIPS = {
   playerDeathsHeroicDungeon = 'Number of times your character has died in a heroic dungeon (5-man heroic)',
   playerDeathsRaid = 'Number of times your character has died in a raid instance',
   playerDeathsArena = 'Number of times your character has died in an arena match',
+  lowestHealth = 'The lowest health percentage you have ever reached (outside combat)',
+  lowestHealthThisLevel = 'The lowest health percentage you have reached at your current level',
+  lowestHealthThisSession = 'The lowest health percentage you have reached this login session',
   blocks = 'Number of times you blocked an incoming attack',
   parries = 'Number of times you parried an incoming attack',
   dodges = 'Number of times you dodged an incoming attack',
@@ -112,6 +115,9 @@ local STATS_WITHOUT_TOAST_ICON = {
   partyMemberDeaths = true,
   totalHP = true, -- no dedicated icon
   maxResource = true, -- no dedicated icon
+  lowestHealth = true,
+  lowestHealthThisLevel = true,
+  lowestHealthThisSession = true,
 }
 
 -- Some stats share the same icon art; map new keys to existing textures to avoid requiring new PNGs.
@@ -319,6 +325,30 @@ local STAT_BAR_CONFIG = {
   playerDeathsArena = {
     base = 1,
     multiplier = 2,
+    valueOnly = true,
+    noTier = true,
+  },
+  lowestHealth = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.35, 0.3, 0.95 },
+    bgColor = { 0.07, 0.07, 0.09, 0.75 },
+    valueOnly = true,
+    noTier = true,
+  },
+  lowestHealthThisLevel = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.35, 0.3, 0.95 },
+    bgColor = { 0.07, 0.07, 0.09, 0.75 },
+    valueOnly = true,
+    noTier = true,
+  },
+  lowestHealthThisSession = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.35, 0.3, 0.95 },
+    bgColor = { 0.07, 0.07, 0.09, 0.75 },
     valueOnly = true,
     noTier = true,
   },
@@ -1756,6 +1786,77 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   } }
   CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
 
+  -- Create Lowest Health section (accordion below Deaths)
+  local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  lowestHealthHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  lowestHealthHeader:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  lowestHealthHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  lowestHealthHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  local lowestHealthLabel =
+    lowestHealthHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  lowestHealthLabel:SetPoint('LEFT', lowestHealthHeader, 'LEFT', 24, 0)
+  lowestHealthLabel:SetText('Lowest Health')
+  lowestHealthLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  lowestHealthLabel:SetShadowOffset(1, -1)
+  lowestHealthLabel:SetShadowColor(0, 0, 0, 0.8)
+
+  local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  lowestHealthContent:SetSize(415, 3 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+  lowestHealthContent:Show()
+  local lowestHealthSection = addSection(lowestHealthHeader, lowestHealthContent, 'lowestHealth')
+  makeHeaderClickable(lowestHealthHeader, lowestHealthContent, 'lowestHealth', lowestHealthSection)
+  lowestHealthContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  lowestHealthContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  lowestHealthContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+
+  local lowestHealthStats = { {
+    key = 'lowestHealth',
+    label = 'Lowest Ever:',
+    tooltipKey = 'lowestHealth',
+    settingName = 'showMainStatisticsPanelLowestHealth',
+    defaultValue = 100,
+    width = 1,
+  }, {
+    key = 'lowestHealthThisLevel',
+    label = 'Lowest This Level:',
+    tooltipKey = 'lowestHealthThisLevel',
+    settingName = 'showMainStatisticsPanelLowestHealthThisLevel',
+    defaultValue = 100,
+    width = 1,
+  }, {
+    key = 'lowestHealthThisSession',
+    label = 'Lowest This Session:',
+    tooltipKey = 'lowestHealthThisSession',
+    settingName = 'showMainStatisticsPanelLowestHealthThisSession',
+    defaultValue = 100,
+    width = 1,
+  } }
+  CreateStatsGrid(lowestHealthContent, lowestHealthStats, { defaultWidth = 1 })
+
   -- Create modern WoW-style Combat section (collapsible)
   local combatHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   combatHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
@@ -2168,6 +2269,12 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     UpdateStatBar('playerDeathsRaid', CharacterStats:GetStat('playerDeathsRaid') or 0)
     UpdateStatBar('playerDeathsArena', CharacterStats:GetStat('playerDeathsArena') or 0)
     UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
+    UpdateStatBar('lowestHealth', CharacterStats:GetStat('lowestHealth') or 100)
+    UpdateStatBar('lowestHealthThisLevel', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
+    UpdateStatBar(
+      'lowestHealthThisSession',
+      CharacterStats:GetStat('lowestHealthThisSession') or 100
+    )
     UpdateStatBar('blocks', CharacterStats:GetStat('blocks') or 0)
     UpdateStatBar('parries', CharacterStats:GetStat('parries') or 0)
     UpdateStatBar('dodges', CharacterStats:GetStat('dodges') or 0)

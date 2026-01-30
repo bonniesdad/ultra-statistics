@@ -53,6 +53,10 @@ local CharacterStats = {
     lastLogoutTime = 0,
     maxHealthEver = 0,
     maxResourceEver = 0,
+    -- Lowest health % (100 = never dropped)
+    lowestHealth = 100,
+    lowestHealthThisLevel = 100,
+    lowestHealthThisSession = 100,
     -- XP verification fields (safe to keep at 0 for now)
     xpTotal = 0,
   },
@@ -112,6 +116,14 @@ end
 function CharacterStats:GetStat(statName)
   local stats = self:GetCurrentCharacterStats()
   return stats[statName]
+end
+
+function CharacterStats:ResetLowestHealthThisLevel()
+  self:UpdateStat('lowestHealthThisLevel', 100)
+end
+
+function CharacterStats:ResetLowestHealthThisSession()
+  self:UpdateStat('lowestHealthThisSession', 100)
 end
 
 -- Simple share-to-chat used by the Statistics tab "Share" button

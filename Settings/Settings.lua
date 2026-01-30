@@ -203,7 +203,7 @@ local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraStatistics', {
   end,
   OnTooltipShow = function(tooltip)
     if not tooltip or not tooltip.AddLine then return end
-    tooltip:AddLine('|cffffffffULTRA|r\n\nLeft-click to open stats', nil, nil, nil, nil)
+    tooltip:AddLine('|cffffffffStats|r\n\nLeft-click to open stats', nil, nil, nil, nil)
   end,
 })
 
