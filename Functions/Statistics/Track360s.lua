@@ -6,7 +6,8 @@ spinTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
   if not CharacterStats then return end
 
   local SpinCounter = {}
-  SpinCounter.count = CharacterStats:GetStat('player360s') or 0
+  -- Don't cache count at ADDON_LOADED: UnitGUID('player') may be nil. We sync from DB before each increment.
+  SpinCounter.count = 0
 
   SpinCounter.active = false
   SpinCounter.countedThisJump = false
@@ -69,6 +70,11 @@ spinTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
 
       if not SpinCounter.countedThisJump and SpinCounter.accumulated >= TWO_PI then
         SpinCounter.countedThisJump = true
+        -- Sync from DB so imported stats are not overwritten (avoid stale cache from ADDON_LOADED).
+        local current = CharacterStats:GetStat('player360s') or 0
+        if SpinCounter.count < current then
+          SpinCounter.count = current
+        end
         SpinCounter.count = SpinCounter.count + 1
         CharacterStats:UpdateStat('player360s', SpinCounter.count)
       end

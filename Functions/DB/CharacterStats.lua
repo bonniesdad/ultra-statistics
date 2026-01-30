@@ -90,6 +90,11 @@ function CharacterStats:GetCurrentCharacterStats()
   return UltraStatisticsDB.characterStats[characterGUID]
 end
 
+-- Call after import so the next GetCurrentCharacterStats() uses the updated DB (avoids stale refs).
+function CharacterStats:InvalidateCache()
+  statsInitialized = false
+end
+
 function CharacterStats:UpdateStat(statName, value)
   local stats = self:GetCurrentCharacterStats()
   local oldValue = stats[statName]

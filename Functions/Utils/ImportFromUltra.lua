@@ -344,6 +344,10 @@ function ShowImportFromUltraDialog()
     if _G.SaveDBData then
       _G.SaveDBData('characterStats', _G.UltraStatisticsDB.characterStats)
     end
+    -- Invalidate cache so all code uses the updated DB; prevents increments from being applied to pre-import values.
+    if _G.CharacterStats and _G.CharacterStats.InvalidateCache then
+      _G.CharacterStats:InvalidateCache()
+    end
     if _G.UpdateLowestHealthDisplay then
       _G.UpdateLowestHealthDisplay()
     end
