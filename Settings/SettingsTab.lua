@@ -26,6 +26,49 @@ local settingsCheckboxOptions = { {
 
 local settingsSliderOptions = {}
 
+local toastTrackingSettings = {
+  showStatisticsTracking = true,
+  minimalStatisticsTracking = true,
+  statisticsTrackingTierOnly = true,
+}
+
+local function ensureCharacterSettings()
+  if not UltraStatisticsDB then
+    UltraStatisticsDB = {}
+  end
+  if not UltraStatisticsDB.characterSettings then
+    UltraStatisticsDB.characterSettings = {}
+  end
+end
+
+local function persistStatisticsTrackingSettings()
+  if not GLOBAL_SETTINGS or not tempSettings then
+    return
+  end
+
+  GLOBAL_SETTINGS.showStatisticsTracking = tempSettings.showStatisticsTracking and true or false
+  GLOBAL_SETTINGS.minimalStatisticsTracking = tempSettings.minimalStatisticsTracking and true or false
+  GLOBAL_SETTINGS.statisticsTrackingTierOnly = tempSettings.statisticsTrackingTierOnly and true or false
+
+  ensureCharacterSettings()
+  local characterGUID = UnitGUID('player')
+  if characterGUID then
+    UltraStatisticsDB.characterSettings[characterGUID] = GLOBAL_SETTINGS
+  end
+
+  if SaveDBData and UltraStatisticsDB then
+    SaveDBData('characterSettings', UltraStatisticsDB.characterSettings)
+  elseif SaveCharacterSettings then
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
+end
+
+local function isToastSetting(settingName)
+  return settingName and toastTrackingSettings[settingName]
+end
+
+_G.UltraStatistics_PersistToastSettings = persistStatisticsTrackingSettings
+
 local LAYOUT = {
   PAGE_WIDTH = 395,
   ROW_WIDTH = 355,
@@ -54,6 +97,7 @@ local function CreateOptionRowButton(parent)
 
   local check = CreateFrame('CheckButton', nil, row, 'UICheckButtonTemplate')
   check:SetPoint('TOPLEFT', row, 'TOPLEFT', 0, -6)
+  row.CheckButton = check
 
   -- Title
   local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -81,11 +125,13 @@ local function CreateOptionRowButton(parent)
   end
 
   function row:SetChecked(on)
-    check:SetChecked(on and true or false)
+    if self.CheckButton then
+      self.CheckButton:SetChecked(on and true or false)
+    end
   end
 
   function row:GetChecked()
-    return check:GetChecked() and true or false
+    return (self.CheckButton and self.CheckButton:GetChecked() and true) or false
   end
 
   do
@@ -396,14 +442,20 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
         table.insert(sectionChildren[sectionIndex], checkbox)
         checkbox._updateDependency = updateDependencyState
 
-        checkbox:SetScript('OnClick', function(self)
+        local function handleCheckboxToggle()
           if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
           if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
-          local newVal = not self:GetChecked()
-          self:SetChecked(newVal)
+          local newVal = checkbox:GetChecked() and true or false
           tempSettings[checkboxItem.dbSettingsValueName] = newVal
           cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
-        end)
+          if isToastSetting(checkboxItem.dbSettingsValueName) then
+            persistStatisticsTrackingSettings()
+          end
+        end
+
+        if checkbox.CheckButton then
+          checkbox.CheckButton:SetScript('OnClick', handleCheckboxToggle)
+        end
 
         local rowHoverOnEnter, rowHoverOnLeave =
           checkbox:GetScript('OnEnter'),
