@@ -3,6 +3,9 @@ KillTracker = KillTracker or {}
 local recentBossKillTimes = {}
 local BOSS_KILL_DEDUPE_SECONDS = 2.0
 
+local recentKillTimes = {}
+local KILL_DEDUPE_SECONDS = 1.0
+
 local function getNow()
   return (GetTime and GetTime()) or 0
 end
@@ -17,6 +20,19 @@ local function shouldDedupeBossKill(destGUID)
     return true
   end
   recentBossKillTimes[destGUID] = now
+  return false
+end
+
+local function shouldDedupeKill(destGUID)
+  if not destGUID then
+    return false
+  end
+  local now = getNow()
+  local last = recentKillTimes[destGUID]
+  if last and (now - last) < KILL_DEDUPE_SECONDS then
+    return true
+  end
+  recentKillTimes[destGUID] = now
   return false
 end
 
@@ -42,6 +58,10 @@ function KillTracker.HandlePartyKill(destGUID)
 
   -- Boss kill tracking (PARTY_KILL only fires when someone in the party gets the killing blow)
   HandleBossDeathForKillTracking('PARTY_KILL', destGUID)
+
+  if shouldDedupeKill(destGUID) then
+    return
+  end
 
   if IsEnemyElite and IsEnemyElite(destGUID) then
     local currentElites = CharacterStats:GetStat('elitesSlain') or 0

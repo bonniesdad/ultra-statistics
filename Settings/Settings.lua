@@ -76,6 +76,17 @@ settingsFrame:SetFrameStrata('DIALOG')
 settingsFrame:SetFrameLevel(15)
 settingsFrame:SetClipsChildren(true)
 
+local function handleSettingsFrameHide()
+  if _G.UltraStatistics_PersistToastSettings then
+    _G.UltraStatistics_PersistToastSettings()
+  end
+  if UltraStatistics_ResetTabState then
+    UltraStatistics_ResetTabState()
+  end
+  initializeTempSettings()
+end
+settingsFrame:SetScript('OnHide', handleSettingsFrameHide)
+
 local settingsFrameBackground = settingsFrame:CreateTexture(nil, 'BACKGROUND')
 settingsFrameBackground:SetPoint('CENTER', settingsFrame, 'CENTER')
 settingsFrameBackground:SetTexCoord(0, 1, 0, 1)
@@ -139,10 +150,6 @@ local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 4)
 closeButton:SetSize(12, 12)
 closeButton:SetScript('OnClick', function()
-  if UltraStatistics_ResetTabState then
-    UltraStatistics_ResetTabState()
-  end
-  initializeTempSettings()
   settingsFrame:Hide()
 end)
 closeButton:SetNormalTexture('Interface\\AddOns\\UltraStatistics\\Textures\\header-x.png')
