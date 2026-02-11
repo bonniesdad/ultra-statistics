@@ -10,6 +10,11 @@ Initial release of Ultra Statistics.
 
 ## FEATURES
 
+- Dungeon statistics
+- Heroic statistics
+- Raid statistics
+- Show total kills and deaths to every instance and individual boss
+- Show total kills and deaths for every first time clearing an instance of killing a boss
 - Port over all existing functionality from Ultra.
 - Import button to import stats from Ultra.
 - Added Raid and Dungeon Boss IDs for TBC.

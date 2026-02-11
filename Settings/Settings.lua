@@ -116,7 +116,7 @@ titleBarBackground:SetTexCoord(0, 1, 0, 1)
 local titleBarLeftIcon = titleBar:CreateTexture(nil, 'OVERLAY')
 titleBarLeftIcon:SetSize(36, 36)
 titleBarLeftIcon:SetPoint('LEFT', titleBar, 'LEFT', 15, 3)
-titleBarLeftIcon:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\bonnie0.png')
+titleBarLeftIcon:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\bonnie-round.png')
 titleBarLeftIcon:SetTexCoord(0, 1, 0, 1)
 
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')

@@ -54,6 +54,8 @@ local function CreateOptionRowButton(parent)
 
   local check = CreateFrame('CheckButton', nil, row, 'UICheckButtonTemplate')
   check:SetPoint('TOPLEFT', row, 'TOPLEFT', 0, -6)
+  -- Expose the underlying CheckButton so callers can safely attach OnClick to it.
+  row.Check = check
 
   -- Title
   local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -111,11 +113,8 @@ local function CreateOptionRowButton(parent)
     if not check:IsEnabled() then
       return
     end
-    self:SetChecked(not self:GetChecked())
-    local click = check:GetScript('OnClick')
-    if click then
-      click(self)
-    end
+    -- Delegate to the actual CheckButton so its OnClick handler (set by the caller) runs.
+    check:Click()
   end)
 
   row:SetChecked(false)
@@ -396,11 +395,11 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
         table.insert(sectionChildren[sectionIndex], checkbox)
         checkbox._updateDependency = updateDependencyState
 
-        checkbox:SetScript('OnClick', function(self)
+        checkbox.Check:SetScript('OnClick', function(btn)
           if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
           if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
-          local newVal = not self:GetChecked()
-          self:SetChecked(newVal)
+          local newVal = btn:GetChecked() and true or false
+          checkbox:SetChecked(newVal)
           tempSettings[checkboxItem.dbSettingsValueName] = newVal
           cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
         end)
@@ -613,9 +612,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     onScreenRow:SetDescription(onScreenCheckboxItem.tooltip)
     onScreenRow:SetChecked(tempSettings.showOnScreenStatistics and true or false)
     checkboxes['showOnScreenStatistics'] = onScreenRow
-    onScreenRow:SetScript('OnClick', function(self)
-      local newVal = not self:GetChecked()
-      self:SetChecked(newVal)
+    onScreenRow.Check:SetScript('OnClick', function(btn)
+      local newVal = btn:GetChecked() and true or false
+      onScreenRow:SetChecked(newVal)
       tempSettings.showOnScreenStatistics = newVal
       cascadeDependencyUpdates('showOnScreenStatistics')
     end)

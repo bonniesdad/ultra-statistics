@@ -576,6 +576,13 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     return
   end
 
+  -- Player deaths are tracked in multiple buckets (open world / dungeon / raid / etc) and are
+  -- updated together on a single death event. Only show ONE toast for the generic "playerDeaths"
+  -- stat, and suppress the context bucket toasts to avoid duplicates.
+  if type(statKey) == 'string' and statKey ~= 'playerDeaths' and string.find(statKey, '^playerDeaths') ~= nil then
+    return
+  end
+
   local cfg, defCfg = GetStatBarConfig(statKey)
   if not cfg or statKey == 'default' or statKey == 'percent' then return end
 

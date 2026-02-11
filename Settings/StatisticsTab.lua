@@ -13,7 +13,7 @@ local function HasEngineering()
       local name, _, _, _, _, _, skillLine = GetProfessionInfo(profIndex)
       if skillLine == 202 then -- Engineering skill line ID
         return true
-      end
+      end 
     end
   end
   return false
