@@ -1,6 +1,6 @@
 ## Interface: 11508, 20505
 ## Title: Ultra Statistics
-## Version: 1.0.0
+## Version: 1.0.1
 ## Author: BonniesDad
 ## Notes: Statistis for WoW Classic characters.
 ## IconTexture: Interface\AddOns\UltraStatistics\Textures\stats-icons\playerJumps.png
