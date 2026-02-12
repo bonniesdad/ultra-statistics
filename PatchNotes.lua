@@ -1,5 +1,14 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '1.0.2',
+  date = '2026-02-12',
+  notes = { 'BUG FIXES:', '• Fix: files not included in upload zip' },
+}, {
+  version = '1.0.2',
+  date = '2026-02-12',
+  expansion = 'TBC',
+  notes = { 'BUG FIXES:', '• Fix: files not included in upload zip' },
+}, {
   version = '1.0.1',
   date = '2026-02-12',
   notes = { 'BUG FIXES:', '• Fix toggling of options' },
