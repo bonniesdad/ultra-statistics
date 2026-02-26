@@ -57,6 +57,7 @@ local STATISTIC_TOOLTIPS = {
   parries = 'Number of times you parried an incoming attack',
   dodges = 'Number of times you dodged an incoming attack',
   resists = 'Number of times you fully resisted a spell attack',
+  playerKills = 'Number of enemy players you have killed (PvP)',
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
@@ -122,6 +123,7 @@ local STATS_WITHOUT_TOAST_ICON = {
 
 -- Some stats share the same icon art; map new keys to existing textures to avoid requiring new PNGs.
 local ICON_KEY_OVERRIDES = {
+  playerKills = 'enemiesSlain',
   playerDeathsOpenWorld = 'playerDeaths',
   playerDeathsBattleground = 'playerDeaths',
   playerDeathsDungeon = 'playerDeaths',
@@ -242,6 +244,12 @@ local STAT_BAR_CONFIG = {
     base = 25,
     multiplier = 2,
     valueOnly = true,
+  },
+  playerKills = {
+    base = 10,
+    multiplier = 2,
+    valueOnly = true,
+    noTier = true,
   },
   highestCritValue = {
     base = 500,
@@ -1673,189 +1681,193 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     rowHeight = 36,
   })
 
-  -- Create Health Tracking section
-  local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  -- Create Health Tracking section (Deaths) - TBC only; Classic Era has no death context breakdown
+  if IsTBC and IsTBC() then
+    local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+    healthTrackingHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
 
-  healthTrackingHeader:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 12,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  healthTrackingHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-  healthTrackingHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
-  local healthTrackingLabel =
-    healthTrackingHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  healthTrackingLabel:SetPoint('LEFT', healthTrackingHeader, 'LEFT', 24, 0)
-  healthTrackingLabel:SetText('Deaths')
-  healthTrackingLabel:SetTextColor(0.9, 0.85, 0.75, 1)
-  healthTrackingLabel:SetShadowOffset(1, -1)
-  healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
+    healthTrackingHeader:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 12,
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
+    })
+    healthTrackingHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+    healthTrackingHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+    local healthTrackingLabel =
+      healthTrackingHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+    healthTrackingLabel:SetPoint('LEFT', healthTrackingHeader, 'LEFT', 24, 0)
+    healthTrackingLabel:SetText('Deaths')
+    healthTrackingLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+    healthTrackingLabel:SetShadowOffset(1, -1)
+    healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
 
-  local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingContent:SetSize(415, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
-  healthTrackingContent:Show()
-  local healthTrackingSection =
-    addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
-  makeHeaderClickable(
-    healthTrackingHeader,
-    healthTrackingContent,
-    'healthTracking',
-    healthTrackingSection
-  )
-  healthTrackingContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 10,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  healthTrackingContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
-  healthTrackingContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+    local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+    healthTrackingContent:SetSize(415, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
+    healthTrackingContent:Show()
+    local healthTrackingSection =
+      addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
+    makeHeaderClickable(
+      healthTrackingHeader,
+      healthTrackingContent,
+      'healthTracking',
+      healthTrackingSection
+    )
+    healthTrackingContent:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 10,
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
+    })
+    healthTrackingContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+    healthTrackingContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
-  local healthStats = { {
-    key = 'playerDeaths',
-    label = 'Deaths (Total):',
-    tooltipKey = 'playerDeaths',
-    settingName = 'showMainStatisticsPanelPlayerDeaths',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'playerDeathsOpenWorld',
-    label = 'Deaths (Open World):',
-    tooltipKey = 'playerDeathsOpenWorld',
-    settingName = 'showMainStatisticsPanelPlayerDeathsOpenWorld',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'playerDeathsDungeon',
-    label = 'Deaths (Dungeon):',
-    tooltipKey = 'playerDeathsDungeon',
-    settingName = 'showMainStatisticsPanelPlayerDeathsDungeon',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'playerDeathsHeroicDungeon',
-    label = 'Deaths (Heroic Dungeon):',
-    tooltipKey = 'playerDeathsHeroicDungeon',
-    settingName = 'showMainStatisticsPanelPlayerDeathsHeroicDungeon',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'playerDeathsRaid',
-    label = 'Deaths (Raid):',
-    tooltipKey = 'playerDeathsRaid',
-    settingName = 'showMainStatisticsPanelPlayerDeathsRaid',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'playerDeathsBattleground',
-    label = 'Deaths (Battleground):',
-    tooltipKey = 'playerDeathsBattleground',
-    settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'playerDeathsArena',
-    label = 'Deaths (Arena):',
-    tooltipKey = 'playerDeathsArena',
-    settingName = 'showMainStatisticsPanelPlayerDeathsArena',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'partyMemberDeaths',
-    label = 'Party Deaths Witnessed:',
-    tooltipKey = 'partyDeathsWitnessed',
-    settingName = 'showMainStatisticsPanelPartyMemberDeaths',
-    defaultValue = 0,
-    width = 1,
-  } }
-  CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
+    local healthStats = { {
+      key = 'playerDeaths',
+      label = 'Deaths (Total):',
+      tooltipKey = 'playerDeaths',
+      settingName = 'showMainStatisticsPanelPlayerDeaths',
+      defaultValue = 0,
+      width = 1,
+    }, {
+      key = 'playerDeathsOpenWorld',
+      label = 'Deaths (Open World):',
+      tooltipKey = 'playerDeathsOpenWorld',
+      settingName = 'showMainStatisticsPanelPlayerDeathsOpenWorld',
+      defaultValue = 0,
+      width = 0.5,
+    }, {
+      key = 'playerDeathsDungeon',
+      label = 'Deaths (Dungeon):',
+      tooltipKey = 'playerDeathsDungeon',
+      settingName = 'showMainStatisticsPanelPlayerDeathsDungeon',
+      defaultValue = 0,
+      width = 0.5,
+    }, {
+      key = 'playerDeathsHeroicDungeon',
+      label = 'Deaths (Heroic Dungeon):',
+      tooltipKey = 'playerDeathsHeroicDungeon',
+      settingName = 'showMainStatisticsPanelPlayerDeathsHeroicDungeon',
+      defaultValue = 0,
+      width = 0.5,
+    }, {
+      key = 'playerDeathsRaid',
+      label = 'Deaths (Raid):',
+      tooltipKey = 'playerDeathsRaid',
+      settingName = 'showMainStatisticsPanelPlayerDeathsRaid',
+      defaultValue = 0,
+      width = 0.5,
+    }, {
+      key = 'playerDeathsBattleground',
+      label = 'Deaths (Battleground):',
+      tooltipKey = 'playerDeathsBattleground',
+      settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
+      defaultValue = 0,
+      width = 0.5,
+    }, {
+      key = 'playerDeathsArena',
+      label = 'Deaths (Arena):',
+      tooltipKey = 'playerDeathsArena',
+      settingName = 'showMainStatisticsPanelPlayerDeathsArena',
+      defaultValue = 0,
+      width = 0.5,
+    }, {
+      key = 'partyMemberDeaths',
+      label = 'Party Deaths Witnessed:',
+      tooltipKey = 'partyDeathsWitnessed',
+      settingName = 'showMainStatisticsPanelPartyMemberDeaths',
+      defaultValue = 0,
+      width = 1,
+    } }
+    CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
+  end
 
-  -- Create Lowest Health section (accordion below Deaths)
-  local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
-  lowestHealthHeader:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 12,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  lowestHealthHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-  lowestHealthHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
-  local lowestHealthLabel =
-    lowestHealthHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  lowestHealthLabel:SetPoint('LEFT', lowestHealthHeader, 'LEFT', 24, 0)
-  lowestHealthLabel:SetText('Lowest Health')
-  lowestHealthLabel:SetTextColor(0.9, 0.85, 0.75, 1)
-  lowestHealthLabel:SetShadowOffset(1, -1)
-  lowestHealthLabel:SetShadowColor(0, 0, 0, 0.8)
+  -- Create Lowest Health section - Classic Era only; TBC shows Deaths instead
+  if not (IsTBC and IsTBC()) then
+    local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+    lowestHealthHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+    lowestHealthHeader:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 12,
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
+    })
+    lowestHealthHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+    lowestHealthHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+    local lowestHealthLabel =
+      lowestHealthHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+    lowestHealthLabel:SetPoint('LEFT', lowestHealthHeader, 'LEFT', 24, 0)
+    lowestHealthLabel:SetText('Lowest Health')
+    lowestHealthLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+    lowestHealthLabel:SetShadowOffset(1, -1)
+    lowestHealthLabel:SetShadowColor(0, 0, 0, 0.8)
 
-  local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthContent:SetSize(415, 3 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
-  lowestHealthContent:Show()
-  local lowestHealthSection = addSection(lowestHealthHeader, lowestHealthContent, 'lowestHealth')
-  makeHeaderClickable(lowestHealthHeader, lowestHealthContent, 'lowestHealth', lowestHealthSection)
-  lowestHealthContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 10,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  lowestHealthContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
-  lowestHealthContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+    local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+    lowestHealthContent:SetSize(415, 3 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+    lowestHealthContent:Show()
+    local lowestHealthSection = addSection(lowestHealthHeader, lowestHealthContent, 'lowestHealth')
+    makeHeaderClickable(lowestHealthHeader, lowestHealthContent, 'lowestHealth', lowestHealthSection)
+    lowestHealthContent:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 10,
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
+    })
+    lowestHealthContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+    lowestHealthContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
-  local lowestHealthStats = { {
-    key = 'lowestHealth',
-    label = 'Lowest Ever:',
-    tooltipKey = 'lowestHealth',
-    settingName = 'showMainStatisticsPanelLowestHealth',
-    defaultValue = 100,
-    width = 1,
-  }, {
-    key = 'lowestHealthThisLevel',
-    label = 'Lowest This Level:',
-    tooltipKey = 'lowestHealthThisLevel',
-    settingName = 'showMainStatisticsPanelLowestHealthThisLevel',
-    defaultValue = 100,
-    width = 1,
-  }, {
-    key = 'lowestHealthThisSession',
-    label = 'Lowest This Session:',
-    tooltipKey = 'lowestHealthThisSession',
-    settingName = 'showMainStatisticsPanelLowestHealthThisSession',
-    defaultValue = 100,
-    width = 1,
-  } }
-  CreateStatsGrid(lowestHealthContent, lowestHealthStats, { defaultWidth = 1 })
+    local lowestHealthStats = { {
+      key = 'lowestHealth',
+      label = 'Lowest Ever:',
+      tooltipKey = 'lowestHealth',
+      settingName = 'showMainStatisticsPanelLowestHealth',
+      defaultValue = 100,
+      width = 1,
+    }, {
+      key = 'lowestHealthThisLevel',
+      label = 'Lowest This Level:',
+      tooltipKey = 'lowestHealthThisLevel',
+      settingName = 'showMainStatisticsPanelLowestHealthThisLevel',
+      defaultValue = 100,
+      width = 1,
+    }, {
+      key = 'lowestHealthThisSession',
+      label = 'Lowest This Session:',
+      tooltipKey = 'lowestHealthThisSession',
+      settingName = 'showMainStatisticsPanelLowestHealthThisSession',
+      defaultValue = 100,
+      width = 1,
+    } }
+    CreateStatsGrid(lowestHealthContent, lowestHealthStats, { defaultWidth = 1 })
+  end
 
   -- Create modern WoW-style Combat section (collapsible)
   local combatHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
@@ -2111,6 +2123,90 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   end
   CreateStatsGrid(survivalContent, survivalStats, { defaultWidth = 0.5 })
 
+  -- Create PvP section (duel stats)
+  local pvpHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  pvpHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  pvpHeader:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  pvpHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  pvpHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  local pvpLabel = pvpHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  pvpLabel:SetPoint('LEFT', pvpHeader, 'LEFT', 24, 0)
+  pvpLabel:SetText('PvP')
+  pvpLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  pvpLabel:SetShadowOffset(1, -1)
+  pvpLabel:SetShadowColor(0, 0, 0, 0.8)
+
+  local pvpContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  pvpContent:SetSize(415, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+  pvpContent:Show()
+  local pvpSection = addSection(pvpHeader, pvpContent, 'pvp')
+  makeHeaderClickable(pvpHeader, pvpContent, 'pvp', pvpSection)
+  pvpContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  pvpContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  pvpContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+
+  local pvpStats = { {
+    key = 'playerKills',
+    label = 'Player Kills:',
+    tooltipKey = 'playerKills',
+    settingName = 'showMainStatisticsPanelPlayerKills',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+    settingName = 'showMainStatisticsPanelDuelsTotal',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+    settingName = 'showMainStatisticsPanelDuelsWon',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+    settingName = 'showMainStatisticsPanelDuelsLost',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
+    settingName = 'showMainStatisticsPanelDuelsWinPercent',
+    defaultValue = 0,
+    width = 1,
+  } }
+  CreateStatsGrid(pvpContent, pvpStats, { defaultWidth = 0.5 })
+
   -- Create modern WoW-style Misc section (collapsible)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   miscHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
@@ -2141,7 +2237,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Misc breakdown
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscContent:SetSize(415, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
+  miscContent:SetSize(415, 2 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- 4 stats in 2-column grid
   -- Position will be set by updateSectionPositions
   miscContent:Show()
 
@@ -2165,7 +2261,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   miscContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
   miscContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
-  -- Create misc statistics display inside the content frame (includes former Social stats)
+  -- Create misc statistics display inside the content frame
   local miscStats = { {
     key = 'playerJumps',
     label = 'Jumps Performed:',
@@ -2188,30 +2284,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     key = 'goldSpent',
     label = 'Gold Spent:',
     tooltipKey = 'goldSpent',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsTotal',
-    label = 'Duels Total:',
-    tooltipKey = 'duelsTotal',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsWon',
-    label = 'Duels Won:',
-    tooltipKey = 'duelsWon',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsLost',
-    label = 'Duels Lost:',
-    tooltipKey = 'duelsLost',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'duelsWinPercent',
-    label = 'Duel Win Percent:',
-    tooltipKey = 'duelsWinPercent',
     defaultValue = 0,
     width = 1,
   } }
@@ -2291,6 +2363,10 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue') or 0)
 
     for _, stat in ipairs(survivalStats) do
+      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
+    end
+
+    for _, stat in ipairs(pvpStats) do
       UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
     end
 

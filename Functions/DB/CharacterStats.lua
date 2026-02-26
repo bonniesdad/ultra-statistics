@@ -42,6 +42,7 @@ local CharacterStats = {
     grenadesUsed = 0,
     highestCritValue = 0,
     highestHealCritValue = 0,
+    playerKills = 0,
     duelsTotal = 0,
     duelsWon = 0,
     duelsLost = 0,

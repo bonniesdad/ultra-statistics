@@ -59,6 +59,13 @@ function KillTracker.HandlePartyKill(destGUID)
   -- Dedupe: PARTY_KILL can fire twice for the same mob in some cases
   if shouldDedupePartyKill(destGUID) then return end
 
+  -- Player kills (PvP): destGUID starts with "Player-" for enemy players
+  if destGUID:sub(1, 7) == 'Player-' then
+    local currentPlayerKills = CharacterStats:GetStat('playerKills') or 0
+    CharacterStats:UpdateStat('playerKills', currentPlayerKills + 1)
+    return -- Don't count players as enemies slain
+  end
+
   -- Boss kill tracking (PARTY_KILL only fires when someone in the party gets the killing blow)
   HandleBossDeathForKillTracking('PARTY_KILL', destGUID)
 

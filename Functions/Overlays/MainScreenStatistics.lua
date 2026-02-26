@@ -411,77 +411,86 @@ local closeEscapesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFont
 closeEscapesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -323)
 closeEscapesValue:SetText(formatNumberWithCommas(0))
 closeEscapesValue:SetTextColor(0.5, 1, 0.5, 1) -- Light green for escapes
+-- Player Kills (PvP) row
+local playerKillsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerKillsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -338)
+playerKillsLabel:SetText('Player Kills:')
+playerKillsLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerKillsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerKillsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -338)
+playerKillsValue:SetText(formatNumberWithCommas(0))
+playerKillsValue:SetTextColor(0.2, 1, 0.2, 1) -- Green for PvP kills
 -- Duels Total value row
 local duelsTotalLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsTotalLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -338)
+duelsTotalLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -353)
 duelsTotalLabel:SetText('Duels Total:')
 duelsTotalLabel:SetTextColor(1, 0.9, 0.5, 1)
 local duelsTotalValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsTotalValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -338)
+duelsTotalValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -353)
 duelsTotalValue:SetText(formatNumberWithCommas(0))
 duelsTotalValue:SetTextColor(1, 1, 1, 1)
 -- Duels Won value row
 local duelsWonLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsWonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -353)
+duelsWonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
 duelsWonLabel:SetText('Duels Won:')
 duelsWonLabel:SetTextColor(1, 0.9, 0.5, 1)
 local duelsWonValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsWonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -353)
+duelsWonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
 duelsWonValue:SetText(formatNumberWithCommas(0))
 duelsWonValue:SetTextColor(0.2, 1, 0.2, 1) -- Green for wins
 -- Duels Lost value row
 local duelsLostLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsLostLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
+duelsLostLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -383)
 duelsLostLabel:SetText('Duels Lost:')
 duelsLostLabel:SetTextColor(1, 0.9, 0.5, 1)
 local duelsLostValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsLostValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
+duelsLostValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -383)
 duelsLostValue:SetText(formatNumberWithCommas(0))
 duelsLostValue:SetTextColor(1, 0.3, 0.3, 1) -- Red for losses
 -- Duels Win Percentage
 local duelsWinPercentLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsWinPercentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -383)
+duelsWinPercentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -398)
 duelsWinPercentLabel:SetText('Duel Win Percent:')
 duelsWinPercentLabel:SetTextColor(1, 0.9, 0.5, 1)
 local duelsWinPercentValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-duelsWinPercentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -383)
+duelsWinPercentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -398)
 duelsWinPercentValue:SetText('100%')
 duelsWinPercentValue:SetTextColor(1, 1, 1, 1)
 -- Player Jumps because who doesn't want to know how much they jump. ;)
 local playerJumpsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerJumpsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -398)
+playerJumpsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -413)
 playerJumpsLabel:SetText('Jumps:')
 playerJumpsLabel:SetTextColor(1, 0.9, 0.5, 1)
 local playerJumpsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -398)
+playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -413)
 playerJumpsValue:SetText(formatNumberWithCommas(0))
 playerJumpsValue:SetTextColor(1, 1, 1, 1)
 -- Player 360s (full spins during jumps)
 local player360sLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-player360sLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -413)
+player360sLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -428)
 player360sLabel:SetText('Jump 360s:')
 player360sLabel:SetTextColor(1, 0.9, 0.5, 1)
 local player360sValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-player360sValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -413)
+player360sValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -428)
 player360sValue:SetText(formatNumberWithCommas(0))
 player360sValue:SetTextColor(1, 1, 1, 1)
 
 -- Economy statistics
 local goldGainedLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-goldGainedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -443)
+goldGainedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -458)
 goldGainedLabel:SetText('Gold Gained:')
 goldGainedLabel:SetTextColor(1, 0.9, 0.5, 1)
 local goldGainedValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-goldGainedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -443)
+goldGainedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -458)
 goldGainedValue:SetText('-')
 goldGainedValue:SetTextColor(1, 1, 1, 1)
 
 local goldSpentLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-goldSpentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -458)
+goldSpentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -473)
 goldSpentLabel:SetText('Gold Spent:')
 goldSpentLabel:SetTextColor(1, 0.9, 0.5, 1)
 local goldSpentValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-goldSpentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -458)
+goldSpentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -473)
 goldSpentValue:SetText('-')
 goldSpentValue:SetTextColor(1, 1, 1, 1)
 
@@ -596,6 +605,11 @@ local statsElements = { -- Non-tier stats (no tier system)
   value = highestHealCritValue,
   setting = 'showMainStatisticsPanelHighestHealCritValue',
   statKey = 'highestHealCritValue',
+}, {
+  label = playerKillsLabel,
+  value = playerKillsValue,
+  setting = 'showMainStatisticsPanelPlayerKills',
+  statKey = 'playerKills',
 }, {
   label = duelsTotalLabel,
   value = duelsTotalValue,
@@ -1149,6 +1163,15 @@ function UpdateStatistics()
   if closeEscapesStat then
     closeEscapesStat.value:SetText(formatNumberWithCommas(closeEscapes))
     ApplyTierColor('closeEscapes', closeEscapes, closeEscapesStat.label, closeEscapesStat.value)
+  end
+
+  -- Update Player Kills value (PvP)
+  local playerKills = CharacterStats:GetStat('playerKills') or 0
+  local playerKillsStat = getStat('playerKills')
+  if playerKillsStat then
+    playerKillsStat.value:SetText(formatNumberWithCommas(playerKills))
+    playerKillsStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    playerKillsStat.value:SetTextColor(1, 1, 1, 1)
   end
 
   -- Update Duels Total value (noTier flag)

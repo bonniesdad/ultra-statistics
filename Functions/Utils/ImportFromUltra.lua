@@ -26,6 +26,7 @@ local STAT_DISPLAY_NAMES = {
   grenadesUsed = 'Grenades Used',
   highestCritValue = 'Highest Crit Value',
   highestHealCritValue = 'Highest Heal Crit Value',
+  playerKills = 'Player Kills',
   duelsTotal = 'Duels Total',
   duelsWon = 'Duels Won',
   duelsLost = 'Duels Lost',
