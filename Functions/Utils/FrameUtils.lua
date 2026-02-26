@@ -50,6 +50,10 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
   local bgInsetY = tonumber(opts.bgInsetY) or 0
   local texturesRoot = opts.texturesRoot or 'heroics'
   local defaultCollapsed = opts.defaultCollapsed ~= false
+  local showDeaths = opts.showDeaths
+  if showDeaths == nil then
+    showDeaths = (IsTBC and IsTBC())
+  end
 
   local function formatStat(val)
     if val == nil or val == 0 then
@@ -370,53 +374,64 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
     local summaryGap = 2
     local summaryLabelWidth = 140
 
-    local sumLabel1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    sumLabel1:SetPoint('TOPLEFT', summaryLabel, 'BOTTOMLEFT', 0, -4)
-    sumLabel1:SetJustifyH('LEFT')
-    sumLabel1:SetWidth(summaryLabelWidth)
-    sumLabel1:SetText('|cffb0b0b0First attempt deaths:|r')
-    sumLabel1:SetShadowOffset(1, -1)
-    sumLabel1:SetShadowColor(0, 0, 0, 0.8)
+    local anchorForSummary = summaryLabel
+    local sumLabel1, sumValue1, sumLabel2, sumValue2, sumLabel3, sumValue3
 
-    local sumValue1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    sumValue1:SetPoint('LEFT', sumLabel1, 'RIGHT', 4, 0)
-    sumValue1:SetJustifyH('LEFT')
-    sumValue1:SetText('|cffffd100' .. formatStat(firstClearDeaths) .. '|r')
-    sumValue1:SetShadowOffset(1, -1)
-    sumValue1:SetShadowColor(0, 0, 0, 0.8)
+    if showDeaths then
+      sumLabel1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+      sumLabel1:SetPoint('TOPLEFT', summaryLabel, 'BOTTOMLEFT', 0, -4)
+      sumLabel1:SetJustifyH('LEFT')
+      sumLabel1:SetWidth(summaryLabelWidth)
+      sumLabel1:SetText('|cffb0b0b0First attempt deaths:|r')
+      sumLabel1:SetShadowOffset(1, -1)
+      sumLabel1:SetShadowColor(0, 0, 0, 0.8)
 
-    local sumLabel2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    sumLabel2:SetPoint('TOPLEFT', sumLabel1, 'BOTTOMLEFT', 0, -summaryGap)
+      sumValue1 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+      sumValue1:SetPoint('LEFT', sumLabel1, 'RIGHT', 4, 0)
+      sumValue1:SetJustifyH('LEFT')
+      sumValue1:SetText('|cffffd100' .. formatStat(firstClearDeaths) .. '|r')
+      sumValue1:SetShadowOffset(1, -1)
+      sumValue1:SetShadowColor(0, 0, 0, 0.8)
+      anchorForSummary = sumLabel1
+    end
+
+    sumLabel2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumLabel2:SetPoint('TOPLEFT', anchorForSummary, 'BOTTOMLEFT', 0, showDeaths and -summaryGap or -4)
     sumLabel2:SetJustifyH('LEFT')
     sumLabel2:SetWidth(summaryLabelWidth)
     sumLabel2:SetText('|cffb0b0b0Clears:|r')
     sumLabel2:SetShadowOffset(1, -1)
     sumLabel2:SetShadowColor(0, 0, 0, 0.8)
 
-    local sumValue2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    sumValue2 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     sumValue2:SetPoint('LEFT', sumLabel2, 'RIGHT', 4, 0)
     sumValue2:SetJustifyH('LEFT')
     sumValue2:SetText('|cffffd100' .. formatStat(totalClears) .. '|r')
     sumValue2:SetShadowOffset(1, -1)
     sumValue2:SetShadowColor(0, 0, 0, 0.8)
 
-    local sumLabel3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    sumLabel3:SetPoint('TOPLEFT', sumLabel2, 'BOTTOMLEFT', 0, -summaryGap)
-    sumLabel3:SetJustifyH('LEFT')
-    sumLabel3:SetWidth(summaryLabelWidth)
-    sumLabel3:SetText('|cffb0b0b0Deaths:|r')
-    sumLabel3:SetShadowOffset(1, -1)
-    sumLabel3:SetShadowColor(0, 0, 0, 0.8)
+    local bossesTitleAnchor = sumLabel2
+    if showDeaths then
+      sumLabel3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+      sumLabel3:SetPoint('TOPLEFT', sumLabel2, 'BOTTOMLEFT', 0, -summaryGap)
+      sumLabel3:SetJustifyH('LEFT')
+      sumLabel3:SetWidth(summaryLabelWidth)
+      sumLabel3:SetText('|cffb0b0b0Deaths:|r')
+      sumLabel3:SetShadowOffset(1, -1)
+      sumLabel3:SetShadowColor(0, 0, 0, 0.8)
 
-    local sumValue3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    sumValue3:SetPoint('LEFT', sumLabel3, 'RIGHT', 4, 0)
-    sumValue3:SetJustifyH('LEFT')
-    sumValue3:SetText('|cffffd100' .. formatStat(totalDeaths) .. '|r')
-    sumValue3:SetShadowOffset(1, -1)
-    sumValue3:SetShadowColor(0, 0, 0, 0.8)
+      sumValue3 = content:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+      sumValue3:SetPoint('LEFT', sumLabel3, 'RIGHT', 4, 0)
+      sumValue3:SetJustifyH('LEFT')
+      sumValue3:SetText('|cffffd100' .. formatStat(totalDeaths) .. '|r')
+      sumValue3:SetShadowOffset(1, -1)
+      sumValue3:SetShadowColor(0, 0, 0, 0.8)
+      bossesTitleAnchor = sumLabel3
+    end
 
     local bossesTitle = content:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-    bossesTitle:SetPoint('TOPLEFT', sumLabel3, 'BOTTOMLEFT', 0, -10)
+    local bossesTitleGap = showDeaths and -10 or -40 -- Extra padding below summary when deaths hidden to avoid overlap with complete/incomplete icon
+    bossesTitle:SetPoint('TOPLEFT', bossesTitleAnchor, 'BOTTOMLEFT', 0, bossesTitleGap)
     bossesTitle:SetText('Bosses')
     bossesTitle:SetTextColor(1, 0.82, 0, 1) -- WoW yellow/gold
     bossesTitle:SetShadowOffset(1, -1)
@@ -505,26 +520,32 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           local statsGap = 2
           local labelWidth = 140
           local statsTopGap = 8
-          -- First attempt deaths row
-          local label1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          label1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -statsTopGap)
-          label1:SetJustifyH('LEFT')
-          label1:SetWidth(labelWidth)
-          label1:SetText('|cffb0b0b0First attempt deaths:|r')
-          label1:SetShadowOffset(1, -1)
-          label1:SetShadowColor(0, 0, 0, 0.8)
+          local killsAnchor = divider
+          local killsAnchorOffset = -statsTopGap
 
-          local value1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          value1:SetPoint('LEFT', label1, 'RIGHT', 4, 0)
-          value1:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
-          value1:SetJustifyH('RIGHT')
-          value1:SetText('|cffffd100' .. formatStat(firstBossDeaths) .. '|r')
-          value1:SetShadowOffset(1, -1)
-          value1:SetShadowColor(0, 0, 0, 0.8)
+          if showDeaths then
+            local label1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+            label1:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 0, -statsTopGap)
+            label1:SetJustifyH('LEFT')
+            label1:SetWidth(labelWidth)
+            label1:SetText('|cffb0b0b0First attempt deaths:|r')
+            label1:SetShadowOffset(1, -1)
+            label1:SetShadowColor(0, 0, 0, 0.8)
+
+            local value1 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+            value1:SetPoint('LEFT', label1, 'RIGHT', 4, 0)
+            value1:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
+            value1:SetJustifyH('RIGHT')
+            value1:SetText('|cffffd100' .. formatStat(firstBossDeaths) .. '|r')
+            value1:SetShadowOffset(1, -1)
+            value1:SetShadowColor(0, 0, 0, 0.8)
+            killsAnchor = label1
+            killsAnchorOffset = -statsGap
+          end
 
           -- Kills row
           local label2 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          label2:SetPoint('TOPLEFT', label1, 'BOTTOMLEFT', 0, -statsGap)
+          label2:SetPoint('TOPLEFT', killsAnchor, 'BOTTOMLEFT', 0, killsAnchorOffset)
           label2:SetJustifyH('LEFT')
           label2:SetWidth(labelWidth)
           label2:SetText('|cffb0b0b0Kills:|r')
@@ -539,22 +560,23 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
           value2:SetShadowOffset(1, -1)
           value2:SetShadowColor(0, 0, 0, 0.8)
 
-          -- Deaths row
-          local label3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          label3:SetPoint('TOPLEFT', label2, 'BOTTOMLEFT', 0, -statsGap)
-          label3:SetJustifyH('LEFT')
-          label3:SetWidth(labelWidth)
-          label3:SetText('|cffb0b0b0Deaths:|r')
-          label3:SetShadowOffset(1, -1)
-          label3:SetShadowColor(0, 0, 0, 0.8)
+          if showDeaths then
+            local label3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+            label3:SetPoint('TOPLEFT', label2, 'BOTTOMLEFT', 0, -statsGap)
+            label3:SetJustifyH('LEFT')
+            label3:SetWidth(labelWidth)
+            label3:SetText('|cffb0b0b0Deaths:|r')
+            label3:SetShadowOffset(1, -1)
+            label3:SetShadowColor(0, 0, 0, 0.8)
 
-          local value3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-          value3:SetPoint('LEFT', label3, 'RIGHT', 4, 0)
-          value3:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
-          value3:SetJustifyH('RIGHT')
-          value3:SetText('|cffffd100' .. formatStat(totalBossDeaths) .. '|r')
-          value3:SetShadowOffset(1, -1)
-          value3:SetShadowColor(0, 0, 0, 0.8)
+            local value3 = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+            value3:SetPoint('LEFT', label3, 'RIGHT', 4, 0)
+            value3:SetPoint('RIGHT', row, 'RIGHT', -12, 0)
+            value3:SetJustifyH('RIGHT')
+            value3:SetText('|cffffd100' .. formatStat(totalBossDeaths) .. '|r')
+            value3:SetShadowOffset(1, -1)
+            value3:SetShadowColor(0, 0, 0, 0.8)
+          end
 
           -- Boss Abilities (icons + in-game tooltip)
           -- Shown below the boss image, wrapping to new lines as needed.

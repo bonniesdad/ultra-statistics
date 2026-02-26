@@ -111,12 +111,21 @@ end
 function UltraStatistics_InitializeTabs(settingsFrame)
   if tabButtons[1] then return end
 
+  local isTBC = IsTBC and IsTBC()
+  if not isTBC then
+    TAB_WIDTHS[3] = 0 -- Collapse Heroics so other tabs reflow (set before createTabButton)
+  end
+
   tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
   tabContents[1] = createTabContent(1, settingsFrame)
   tabButtons[2] = createTabButton('Dungeons', 2, settingsFrame)
   tabContents[2] = createTabContent(2, settingsFrame)
   tabButtons[3] = createTabButton('Heroics', 3, settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame)
+  if not isTBC then
+    tabButtons[3]:Hide()
+    tabContents[3]:Hide()
+  end
   tabButtons[4] = createTabButton('Raids', 4, settingsFrame)
   tabContents[4] = createTabContent(4, settingsFrame)
   tabButtons[5] = createTabButton('Settings', 5, settingsFrame)

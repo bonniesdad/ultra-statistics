@@ -85,8 +85,13 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
   classicContainer:SetPoint('TOPRIGHT', classicDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
   classicContainer:SetSize(435, 1)
 
+  local isTBC = IsTBC and IsTBC()
+
   local tbcHeader = CreateFrame('Frame', nil, scrollChild)
   tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
+  if not isTBC then
+    tbcHeader:Hide()
+  end
   local tbcTitle = tbcHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   tbcTitle:SetPoint('LEFT', tbcHeader, 'LEFT', 4, 0)
   tbcTitle:SetText('The Burning Crusade')
@@ -98,6 +103,12 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
 
   local tbcContainer = CreateFrame('Frame', nil, scrollChild)
   tbcContainer:SetSize(435, 1)
+  if not isTBC then
+    tbcContainer:Hide()
+  end
+  if not isTBC and tbcDivider and tbcDivider.Hide then
+    tbcDivider:Hide()
+  end
 
   local function ReflowSections()
     local state = _G.UltraStatisticsDungeonsTabState
@@ -105,32 +116,36 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     local tbc = (state and state.tbcContainer) or tbcContainer
     local root = (state and state.currentScrollChild) or scrollChild
 
-    if not (classic and tbc and tbcHeader and tbcDivider and root) then
+    if not (classic and root) then
       return
     end
-
-    tbcHeader:ClearAllPoints()
-    tbcHeader:SetPoint('TOPLEFT', classic, 'BOTTOMLEFT', 0, -BETWEEN_SECTIONS_GAP)
-    tbcHeader:SetPoint('TOPRIGHT', classic, 'BOTTOMRIGHT', 0, -BETWEEN_SECTIONS_GAP)
-
-    tbcDivider:ClearAllPoints()
-    tbcDivider:SetPoint('TOPLEFT', tbcHeader, 'BOTTOMLEFT', 0, -DIVIDER_GAP)
-    tbcDivider:SetPoint('TOPRIGHT', tbcHeader, 'BOTTOMRIGHT', 0, -DIVIDER_GAP)
-
-    tbc:ClearAllPoints()
-    tbc:SetPoint('TOPLEFT', tbcDivider, 'BOTTOMLEFT', 0, -AFTER_DIVIDER_GAP)
-    tbc:SetPoint('TOPRIGHT', tbcDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
 
     local totalHeight =
       2 +
       (classicHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
       DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
       (classic:GetHeight() or 0) +
-      BETWEEN_SECTIONS_GAP +
-      (tbcHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
-      DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
-      (tbc:GetHeight() or 0) +
       BOTTOM_PADDING
+
+    if isTBC and tbc and tbcHeader and tbcDivider then
+      tbcHeader:ClearAllPoints()
+      tbcHeader:SetPoint('TOPLEFT', classic, 'BOTTOMLEFT', 0, -BETWEEN_SECTIONS_GAP)
+      tbcHeader:SetPoint('TOPRIGHT', classic, 'BOTTOMRIGHT', 0, -BETWEEN_SECTIONS_GAP)
+
+      tbcDivider:ClearAllPoints()
+      tbcDivider:SetPoint('TOPLEFT', tbcHeader, 'BOTTOMLEFT', 0, -DIVIDER_GAP)
+      tbcDivider:SetPoint('TOPRIGHT', tbcHeader, 'BOTTOMRIGHT', 0, -DIVIDER_GAP)
+
+      tbc:ClearAllPoints()
+      tbc:SetPoint('TOPLEFT', tbcDivider, 'BOTTOMLEFT', 0, -AFTER_DIVIDER_GAP)
+      tbc:SetPoint('TOPRIGHT', tbcDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
+
+      totalHeight = totalHeight +
+        BETWEEN_SECTIONS_GAP +
+        (tbcHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
+        DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
+        (tbc:GetHeight() or 0)
+    end
 
     root:SetHeight(math.max(1, totalHeight))
   end
@@ -230,8 +245,11 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
       newTBC:SetSize(state.width, 1)
       state.tbcContainer = newTBC
 
+      local showDeaths = (IsTBC and IsTBC())
+
       UltraStatistics_CreateInstanceAccordionList({
         scrollChild = newClassic,
+        showDeaths = showDeaths,
         layout = state.layout,
         instances = instances,
         collapsedStateTable = state.collapsedStateTable,
@@ -248,10 +266,12 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
         end,
       })
 
+      if isTBC then
       UltraStatistics_CreateInstanceAccordionList({
         scrollChild = newTBC,
         layout = state.layout,
         instances = tbcInstances,
+        showDeaths = showDeaths,
         collapsedStateTable = state.collapsedStateTable,
         width = state.width,
         texturesRoot = state.texturesRoot,
@@ -265,6 +285,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
           end
         end,
       })
+      end
 
       if state.reflow then
         state.reflow()
@@ -839,6 +860,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     scrollChild = classicContainer,
     layout = layout,
     instances = classicInstances,
+    showDeaths = isTBC,
     collapsedStateTable = GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'heroics',
@@ -851,10 +873,12 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     end,
   })
 
+  if isTBC then
   UltraStatistics_CreateInstanceAccordionList({
     scrollChild = tbcContainer,
     layout = layout,
     instances = tbcInstances,
+    showDeaths = true,
     collapsedStateTable = GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'heroics',
@@ -866,6 +890,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
       ReflowSections()
     end,
   })
+  end
 
   -- Initial placement (after both lists have computed their heights).
   ReflowSections()
