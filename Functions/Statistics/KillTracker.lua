@@ -3,8 +3,24 @@ KillTracker = KillTracker or {}
 local recentBossKillTimes = {}
 local BOSS_KILL_DEDUPE_SECONDS = 2.0
 
+local recentPartyKillGUIDs = {}
+local PARTY_KILL_DEDUPE_SECONDS = 2.0
+
 local function getNow()
   return (GetTime and GetTime()) or 0
+end
+
+local function shouldDedupePartyKill(destGUID)
+  if not destGUID then
+    return false
+  end
+  local now = getNow()
+  local last = recentPartyKillGUIDs[destGUID]
+  if last and (now - last) < PARTY_KILL_DEDUPE_SECONDS then
+    return true
+  end
+  recentPartyKillGUIDs[destGUID] = now
+  return false
 end
 
 local function shouldDedupeBossKill(destGUID)
@@ -39,6 +55,9 @@ end
 
 function KillTracker.HandlePartyKill(destGUID)
   if not destGUID or not CharacterStats then return end
+
+  -- Dedupe: PARTY_KILL can fire twice for the same mob in some cases
+  if shouldDedupePartyKill(destGUID) then return end
 
   -- Boss kill tracking (PARTY_KILL only fires when someone in the party gets the killing blow)
   HandleBossDeathForKillTracking('PARTY_KILL', destGUID)
