@@ -82,8 +82,13 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
   classicContainer:SetPoint('TOPRIGHT', classicDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
   classicContainer:SetSize(435, 1)
 
+  local isTBC = IsTBC and IsTBC()
+
   local tbcHeader = CreateFrame('Frame', nil, scrollChild)
   tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
+  if not isTBC then
+    tbcHeader:Hide()
+  end
   local tbcTitle = tbcHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   tbcTitle:SetPoint('LEFT', tbcHeader, 'LEFT', 4, 0)
   tbcTitle:SetText('The Burning Crusade')
@@ -95,35 +100,42 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
 
   local tbcContainer = CreateFrame('Frame', nil, scrollChild)
   tbcContainer:SetSize(435, 1)
+  if not isTBC then
+    tbcContainer:Hide()
+    tbcDivider:Hide()
+  end
 
   local function ReflowSections()
-    if not (classicContainer and tbcHeader and tbcDivider and tbcContainer) then
+    if not classicContainer then
       return
     end
-
-    -- Reposition TBC section under the Classic list (Classic height changes when collapsing/expanding).
-    tbcHeader:ClearAllPoints()
-    tbcHeader:SetPoint('TOPLEFT', classicContainer, 'BOTTOMLEFT', 0, -BETWEEN_SECTIONS_GAP)
-    tbcHeader:SetPoint('TOPRIGHT', classicContainer, 'BOTTOMRIGHT', 0, -BETWEEN_SECTIONS_GAP)
-
-    tbcDivider:ClearAllPoints()
-    tbcDivider:SetPoint('TOPLEFT', tbcHeader, 'BOTTOMLEFT', 0, -DIVIDER_GAP)
-    tbcDivider:SetPoint('TOPRIGHT', tbcHeader, 'BOTTOMRIGHT', 0, -DIVIDER_GAP)
-
-    tbcContainer:ClearAllPoints()
-    tbcContainer:SetPoint('TOPLEFT', tbcDivider, 'BOTTOMLEFT', 0, -AFTER_DIVIDER_GAP)
-    tbcContainer:SetPoint('TOPRIGHT', tbcDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
 
     local totalHeight =
       2 + -- top padding
       (classicHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
       DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
       (classicContainer:GetHeight() or 0) +
-      BETWEEN_SECTIONS_GAP +
-      (tbcHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
-      DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
-      (tbcContainer:GetHeight() or 0) +
       BOTTOM_PADDING
+
+    if isTBC and tbcHeader and tbcDivider and tbcContainer then
+      tbcHeader:ClearAllPoints()
+      tbcHeader:SetPoint('TOPLEFT', classicContainer, 'BOTTOMLEFT', 0, -BETWEEN_SECTIONS_GAP)
+      tbcHeader:SetPoint('TOPRIGHT', classicContainer, 'BOTTOMRIGHT', 0, -BETWEEN_SECTIONS_GAP)
+
+      tbcDivider:ClearAllPoints()
+      tbcDivider:SetPoint('TOPLEFT', tbcHeader, 'BOTTOMLEFT', 0, -DIVIDER_GAP)
+      tbcDivider:SetPoint('TOPRIGHT', tbcHeader, 'BOTTOMRIGHT', 0, -DIVIDER_GAP)
+
+      tbcContainer:ClearAllPoints()
+      tbcContainer:SetPoint('TOPLEFT', tbcDivider, 'BOTTOMLEFT', 0, -AFTER_DIVIDER_GAP)
+      tbcContainer:SetPoint('TOPRIGHT', tbcDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
+
+      totalHeight = totalHeight +
+        BETWEEN_SECTIONS_GAP +
+        (tbcHeader:GetHeight() or SECTION_TITLE_HEIGHT) +
+        DIVIDER_GAP + 1 + AFTER_DIVIDER_GAP +
+        (tbcContainer:GetHeight() or 0)
+    end
 
     scrollChild:SetHeight(math.max(1, totalHeight))
   end
@@ -577,6 +589,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     scrollChild = classicContainer,
     layout = layout,
     instances = classicInstances,
+    showDeaths = isTBC,
     collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
@@ -589,10 +602,12 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     end,
   })
 
+  if isTBC then
   UltraStatistics_CreateInstanceAccordionList({
     scrollChild = tbcContainer,
     layout = layout,
     instances = tbcInstances,
+    showDeaths = true,
     collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
@@ -604,6 +619,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
       ReflowSections()
     end,
   })
+  end
 
   -- Initial placement (after both lists have computed their heights).
   ReflowSections()
