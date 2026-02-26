@@ -153,7 +153,12 @@ local function GetTierDisplayName(tier)
   return tostring(name)
 end
 
-local EXCLUDED_STATS = { duelsWinPercent = true }
+local EXCLUDED_STATS = {
+  duelsWinPercent = true,
+  lowestHealth = true,
+  lowestHealthThisLevel = true,
+  lowestHealthThisSession = true,
+}
 
 local function formatNumber(n)
   if _G.formatNumberWithCommas then
