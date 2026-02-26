@@ -20,6 +20,7 @@ local TOAST_PUSH_REDUCTION_PX = 1
 local STAT_ICON_SIZE = 14
 
 local ICON_KEY_OVERRIDES = {
+  playerKills = 'enemiesSlain',
   playerDeathsOpenWorld = 'playerDeaths',
   playerDeathsBattleground = 'playerDeaths',
   playerDeathsDungeon = 'playerDeaths',
@@ -639,6 +640,10 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     shouldShowCustomMessage = true
   elseif statKey == 'partyMemberDeaths' then
     customMessage = 'You have witnessed a party member death'
+    shouldShowCustomMessage = true
+  elseif statKey == 'playerKills' then
+    local newVal = tonumber(newValue) or 0
+    customMessage = string.format('Player kill (%s total)', formatNumber(newVal))
     shouldShowCustomMessage = true
   elseif statKey == 'duelsTotal' then
     local newVal = tonumber(newValue) or 0

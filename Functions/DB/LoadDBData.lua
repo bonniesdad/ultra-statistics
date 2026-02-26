@@ -62,6 +62,7 @@ function LoadDBData()
     showMainStatisticsPanelDodges = false,
     showMainStatisticsPanelResists = false,
     showMainStatisticsPanelCloseEscapes = false,
+    showMainStatisticsPanelPlayerKills = false,
     showMainStatisticsPanelDuelsTotal = false,
     showMainStatisticsPanelDuelsWon = false,
     showMainStatisticsPanelDuelsLost = false,
