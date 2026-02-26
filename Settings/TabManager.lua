@@ -2,7 +2,7 @@ local TAB_WIDTH = 86
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
-local MAX_TABS = 6 -- Stats / Dungeons / Heroics / Raids / Settings / Info
+local MAX_TABS = 7 -- Stats / Dungeons / Heroics / Raids / Settings / Info / Credits
 local TAB_WIDTHS = {
   [1] = TAB_WIDTH, -- Stats
   [2] = TAB_WIDTH, -- Dungeons
@@ -10,6 +10,7 @@ local TAB_WIDTHS = {
   [4] = TAB_WIDTH, -- Raids
   [5] = TAB_WIDTH, -- Settings
   [6] = TAB_WIDTH, -- Info
+  [7] = TAB_WIDTH, -- Credits
 }
 
 local BASE_TEXT_COLOR = {
@@ -132,6 +133,8 @@ function UltraStatistics_InitializeTabs(settingsFrame)
   tabContents[5] = createTabContent(5, settingsFrame)
   tabButtons[6] = createTabButton('Info', 6, settingsFrame)
   tabContents[6] = createTabContent(6, settingsFrame)
+  tabButtons[7] = createTabButton('Credits', 7, settingsFrame)
+  tabContents[7] = createTabContent(7, settingsFrame)
 end
 
 function UltraStatistics_SwitchToTab(index)
@@ -230,6 +233,8 @@ function UltraStatistics_SwitchToTab(index)
     UltraStatistics_InitializeSettingsTab(tabContents)
   elseif index == 6 and UltraStatistics_InitializeInfoTab then
     UltraStatistics_InitializeInfoTab(tabContents)
+  elseif index == 7 and UltraStatistics_InitializeCreditsTab then
+    UltraStatistics_InitializeCreditsTab(tabContents)
   end
 end
 
