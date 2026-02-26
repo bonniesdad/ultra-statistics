@@ -121,7 +121,7 @@ titleBarLeftIcon:SetTexCoord(0, 1, 0, 1)
 
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
-settingsTitleLabel:SetText('ULTRA STATISTICS')
+settingsTitleLabel:SetText('Ultra Statistics')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
