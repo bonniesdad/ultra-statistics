@@ -7,7 +7,7 @@ local pvpPauseLowestHealthCloseEscape = false
 -- A health drop below this percentage is considered a close escape
 closeEscapeHealthPercent = 15
 
-GLOBAL_SETTINGS.isDueling = false
+ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling = false
 
 local combatLowest = nil
 
@@ -26,17 +26,17 @@ end
 
 local function UpdateLowestHealthStat(stat, value)
   if not UnitIsDeadOrGhost('player') and value ~= nil and value > 0 then
-    CharacterStats:UpdateStat(stat, value)
+    UltraStatisticsCharacterStats:UpdateStat(stat, value)
   end
 end
 
 local function leftCombat()
   if combatLowest == nil then return end
 
-  local currentLowestHealth = CharacterStats:GetStat('lowestHealth')
-  local currentLowestHealthThisLevel = CharacterStats:GetStat('lowestHealthThisLevel')
-  local currentLowestHealthThisSession = CharacterStats:GetStat('lowestHealthThisSession')
-  local currentCloseEscapes = CharacterStats:GetStat('closeEscapes')
+  local currentLowestHealth = UltraStatisticsCharacterStats:GetStat('lowestHealth')
+  local currentLowestHealthThisLevel = UltraStatisticsCharacterStats:GetStat('lowestHealthThisLevel')
+  local currentLowestHealthThisSession = UltraStatisticsCharacterStats:GetStat('lowestHealthThisSession')
+  local currentCloseEscapes = UltraStatisticsCharacterStats:GetStat('closeEscapes')
 
   -- Only record new lows during normal tracking on UNIT_HEALTH and OUTSIDE of combat
   -- Check if lowestHealth tracking is not paused
@@ -61,7 +61,7 @@ local function leftCombat()
   if not pvpPauseLowestHealthCloseEscape and combatLowest < closeEscapeHealthPercent then
     if not UnitIsDeadOrGhost('player') then
       -- only increment if we didn't die and health was below closeEscapeHe
-      CharacterStats:UpdateStat('closeEscapes', (currentCloseEscapes + 1))
+      UltraStatisticsCharacterStats:UpdateStat('closeEscapes', (currentCloseEscapes + 1))
     end
   end
 
@@ -75,10 +75,10 @@ local function TrackLowestHealth(event)
   local inCombat = UnitAffectingCombat('player')
 
   local healthPercent = (health / maxHealth) * 100
-  local currentLowestHealth = CharacterStats:GetStat('lowestHealth')
-  local currentLowestHealthThisLevel = CharacterStats:GetStat('lowestHealthThisLevel')
-  local currentLowestHealthThisSession = CharacterStats:GetStat('lowestHealthThisSession')
-  local currentCloseEscapes = CharacterStats:GetStat('closeEscapes')
+  local currentLowestHealth = UltraStatisticsCharacterStats:GetStat('lowestHealth')
+  local currentLowestHealthThisLevel = UltraStatisticsCharacterStats:GetStat('lowestHealthThisLevel')
+  local currentLowestHealthThisSession = UltraStatisticsCharacterStats:GetStat('lowestHealthThisSession')
+  local currentCloseEscapes = UltraStatisticsCharacterStats:GetStat('closeEscapes')
 
   -- Return early if any stats are nil (not initialized yet)
   if not currentLowestHealth or not currentLowestHealthThisLevel or not currentLowestHealthThisSession or not currentCloseEscapes then return end
@@ -86,7 +86,7 @@ local function TrackLowestHealth(event)
   -- Handle pause resumption for lowestHealth
   if pvpPauseLowestHealth then
     -- End pause after 1) not dueling, 2) HP% is above or equal to previous lowest, or you somehow died
-    if not GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealth or health == 0) then
+    if not ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealth or health == 0) then
       pvpPauseLowestHealth = false
       print(
         '|cfff44336[ULTRA]|r |cfff0f000Health has returned above your previous lowest health stat. Lowest Health tracking has resumed!|r'
@@ -99,7 +99,7 @@ local function TrackLowestHealth(event)
   -- Handle pause resumption for lowestHealthThisLevel
   if pvpPauseLowestHealthThisLevel then
     -- End pause after 1) not dueling, 2) HP% is above or equal to previous lowest, or you somehow died
-    if not GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealthThisLevel or health == 0) then
+    if not ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealthThisLevel or health == 0) then
       pvpPauseLowestHealthThisLevel = false
       print(
         '|cfff44336[ULTRA]|r |cfff0f000Health has returned above your previous lowest health this level stat. This Level Health tracking has resumed!|r'
@@ -112,7 +112,7 @@ local function TrackLowestHealth(event)
   -- Handle pause resumption for lowestHealthThisSession (special logic)
   if pvpPauseLowestHealthThisSession then
     -- End pause after 1) not dueling, 2) HP% is above or equal to previous lowest, or you somehow died
-    if not GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealthThisSession or health == 0) then
+    if not ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealthThisSession or health == 0) then
       pvpPauseLowestHealthThisSession = false
       print(
         '|cfff44336[ULTRA]|r |cfff0f000Health has returned above your previous lowest health this session stat. This Session Health tracking has resumed!|r'
@@ -125,7 +125,7 @@ local function TrackLowestHealth(event)
   -- Handle pause resumption for close escape (special logic)
   if pvpPauseLowestHealthCloseEscape then
     -- End pause after 1) not dueling, 2) HP% is above close escape percentage
-    if not GLOBAL_SETTINGS.isDueling and (healthPercent > closeEscapeHealthPercent or health == 0) then
+    if not ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling and (healthPercent > closeEscapeHealthPercent or health == 0) then
       pvpPauseLowestHealthCloseEscape = false
       --print(
       --  '|cfff44336[ULTRA]|r |cfff0f000Health has returned above the close escape threshold.  This session close escape tracking has resumed!|r'
@@ -166,16 +166,16 @@ end
 local function HandleSessionLowestReset(eventType)
   if eventType == 'PLAYER_LOGOUT' then
     local currentTime = GetServerTime()
-    CharacterStats:UpdateStat('lastLogoutTime', currentTime)
+    UltraStatisticsCharacterStats:UpdateStat('lastLogoutTime', currentTime)
   end
   if eventType == 'PLAYER_LOGIN' then
     local currentTime = GetServerTime()
-    local lastLogoutTime = CharacterStats:GetStat('lastLogoutTime')
+    local lastLogoutTime = UltraStatisticsCharacterStats:GetStat('lastLogoutTime')
     if lastLogoutTime and currentTime - lastLogoutTime > 1800 then
       print(
         '|cfff44336[ULTRA]|r |cfff0f000New session! This Session lowest health has been reset.|r'
       )
-      CharacterStats:ResetLowestHealthThisSession()
+      UltraStatisticsCharacterStats:ResetLowestHealthThisSession()
       return
     else
       print(
@@ -203,18 +203,18 @@ frame:SetScript('OnEvent', function(self, event, arg1, arg2, arg3)
     pvpPauseLowestHealthThisLevel = true
     pvpPauseLowestHealthThisSession = true
     pvpPauseLowestHealthCloseEscape = true
-    GLOBAL_SETTINGS.isDueling = true
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling = true
     print(
       '|cfff44336[ULTRA]|r |cfff0f000A duel has been initiated. All Lowest Health tracking is paused.|r'
     )
   elseif event == 'DUEL_FINISHED' then
-    GLOBAL_SETTINGS.isDueling = false
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.isDueling = false
     print(
       '|cfff44336[ULTRA]|r |cfff0f000Dueling has finished. Each health tracking will resume when your health returns above its respective previous lowest value.|r'
     )
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Reset This Level stats when leveling up
-    CharacterStats:ResetLowestHealthThisLevel()
+    UltraStatisticsCharacterStats:ResetLowestHealthThisLevel()
     print('|cfff44336[ULTRA]|r |cfff0f000Level up! This Level lowest health has been reset.|r')
   elseif event == 'PLAYER_LOGIN' or event == 'PLAYER_LOGOUT' then
     HandleSessionLowestReset(event)

@@ -12,7 +12,7 @@ local function SaveFramePointToDB(frame, key)
 end
 
 -- Make a frame draggable
-function MakeFrameDraggable(frame, dbKey)
+function UltraStatistics_MakeFrameDraggable(frame, dbKey)
   if not frame or type(frame) ~= 'table' then return end
 
   frame:SetMovable(true)
@@ -52,7 +52,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
   local defaultCollapsed = opts.defaultCollapsed ~= false
   local showDeaths = opts.showDeaths
   if showDeaths == nil then
-    showDeaths = (IsTBC and IsTBC())
+    showDeaths = (UltraStatistics_IsTBC and UltraStatistics_IsTBC())
   end
 
   local function formatStat(val)

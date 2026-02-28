@@ -1,7 +1,7 @@
 addonName = ...
 UltraStatistics = CreateFrame('Frame')
 
-GLOBAL_SETTINGS = GLOBAL_SETTINGS or {}
+ULTRA_STATISTICS_GLOBAL_SETTINGS = ULTRA_STATISTICS_GLOBAL_SETTINGS or {}
 
 UltraStatistics:RegisterEvent('PLAYER_LOGIN')
 UltraStatistics:RegisterEvent('ADDON_LOADED')
@@ -15,8 +15,8 @@ UltraStatistics:SetScript('OnEvent', function(_, event, arg1)
   end
 
   if event == 'PLAYER_LOGIN' then
-    if LoadDBData then
-      LoadDBData()
+    if LoadUltraStatisticsDBData then
+      LoadUltraStatisticsDBData()
     end
     if _G.UpdateStatistics then
       _G.UpdateStatistics()

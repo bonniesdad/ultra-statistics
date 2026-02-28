@@ -1,13 +1,13 @@
 -- Reusable Twitch invite dialog and button (same pattern as UltraHardcore)
 
-UHC_TwitchInvite = UHC_TwitchInvite or {}
+UltraStatistics_TwitchInvite = UltraStatistics_TwitchInvite or {}
 
 do
   local dialogFrame
   local editBox
   local twitchUrl = 'https://www.twitch.tv/BonniesDadTV'
 
-  function UHC_TwitchInvite_ShowDialog()
+  function UltraStatistics_TwitchInvite_ShowDialog()
     if dialogFrame and dialogFrame:IsShown() then
       dialogFrame:Raise()
       if editBox and C_Timer and C_Timer.After then
@@ -22,7 +22,7 @@ do
     end
 
     if not dialogFrame then
-      dialogFrame = CreateFrame('Frame', 'UltraFoundTwitchDialog', UIParent, 'BackdropTemplate')
+      dialogFrame = CreateFrame('Frame', 'UltraStatisticsTwitchDialog', UIParent, 'BackdropTemplate')
       dialogFrame:SetFrameStrata('FULLSCREEN_DIALOG')
       dialogFrame:SetToplevel(true)
       dialogFrame:SetSize(420, 145)
@@ -77,14 +77,14 @@ do
     dialogFrame:Raise()
   end
 
-  function UHC_CreateTwitchInviteButton(parent, point, relativeTo, relativePoint, xOfs, yOfs, width, height, label)
+  function UltraStatistics_CreateTwitchInviteButton(parent, point, relativeTo, relativePoint, xOfs, yOfs, width, height, label)
     local button = CreateFrame('Button', nil, parent, 'UIPanelButtonTemplate')
     if width and height then button:SetSize(width, height) end
     if point and relativeTo and relativePoint then
       button:SetPoint(point, relativeTo, relativePoint, xOfs or 0, yOfs or 0)
     end
     button:SetText(label or 'Twitch Channel')
-    button:SetScript('OnClick', function() UHC_TwitchInvite_ShowDialog() end)
+    button:SetScript('OnClick', function() UltraStatistics_TwitchInvite_ShowDialog() end)
     return button
   end
 end

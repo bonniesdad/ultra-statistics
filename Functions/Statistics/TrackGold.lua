@@ -12,9 +12,9 @@ local function InitBaseline()
 end
 
 local function AddCopperStat(statKey, amount)
-  if not CharacterStats or not CharacterStats.GetStat or not CharacterStats.UpdateStat then return end
-  local current = CharacterStats:GetStat(statKey) or 0
-  CharacterStats:UpdateStat(statKey, current + (amount or 0))
+  if not UltraStatisticsCharacterStats or not UltraStatisticsCharacterStats.GetStat or not UltraStatisticsCharacterStats.UpdateStat then return end
+  local current = UltraStatisticsCharacterStats:GetStat(statKey) or 0
+  UltraStatisticsCharacterStats:UpdateStat(statKey, current + (amount or 0))
 end
 
 local function OnMoneyChanged()

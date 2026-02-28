@@ -6,9 +6,9 @@ local function isPlayerGUID(guid)
 end
 
 local function increment(statKey)
-  if not _G.CharacterStats or not _G.CharacterStats.GetStat or not _G.CharacterStats.UpdateStat then return end
-  local current = _G.CharacterStats:GetStat(statKey) or 0
-  _G.CharacterStats:UpdateStat(statKey, current + 1)
+  if not _G.UltraStatisticsCharacterStats or not _G.UltraStatisticsCharacterStats.GetStat or not _G.UltraStatisticsCharacterStats.UpdateStat then return end
+  local current = _G.UltraStatisticsCharacterStats:GetStat(statKey) or 0
+  _G.UltraStatisticsCharacterStats:UpdateStat(statKey, current + 1)
 end
 
 local frame = CreateFrame('Frame')

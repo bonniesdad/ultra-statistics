@@ -1,6 +1,6 @@
 -- Save values persistently to UltraStatisticsDB
 
-function SaveDBData(name, newValue)
+function SaveUltraStatisticsDBData(name, newValue)
   if not UltraStatisticsDB then
     UltraStatisticsDB = {}
   end

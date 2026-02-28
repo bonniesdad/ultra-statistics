@@ -55,15 +55,15 @@ local function IsPartyMemberFeigningDeath(destGUID)
 end
 
 function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
 
   local isPartyMember, deadPlayerName = IsPartyMember(destGUID)
   if not isPartyMember or not deadPlayerName then return end
 
   if IsPartyMemberFeigningDeath(destGUID) then return end
 
-  local current = CharacterStats:GetStat('partyMemberDeaths') or 0
-  CharacterStats:UpdateStat('partyMemberDeaths', current + 1)
+  local current = UltraStatisticsCharacterStats:GetStat('partyMemberDeaths') or 0
+  UltraStatisticsCharacterStats:UpdateStat('partyMemberDeaths', current + 1)
 
   -- If this death was during a boss fight, record it for dungeon/raid stats.
   local inBossFight =

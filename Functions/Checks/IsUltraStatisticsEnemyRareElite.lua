@@ -1,4 +1,4 @@
-function IsEnemyRareElite(unitGUID)
+function IsUltraStatisticsEnemyRareElite(unitGUID)
   if not unitGUID then
     return false
   end

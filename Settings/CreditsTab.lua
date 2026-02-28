@@ -94,7 +94,7 @@ function UltraStatistics_InitializeCreditsTab(tabContents)
   discordButton:SetPoint('TOP', joinDeveloperText, 'BOTTOM', 0, -10)
   discordButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
 
-  local twitchButton = UHC_CreateTwitchInviteButton(
+  local twitchButton = UltraStatistics_CreateTwitchInviteButton(
     contentBackground, 'TOP', discordButton, 'BOTTOM', 0, 0, 220, 28, 'Twitch Channel'
   )
   twitchButton:ClearAllPoints()

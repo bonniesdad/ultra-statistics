@@ -19,11 +19,11 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
     CONTENT_PADDING = 8,
   }
 
-  if type(GLOBAL_SETTINGS) ~= 'table' then
-    GLOBAL_SETTINGS = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS = {}
   end
-  if type(GLOBAL_SETTINGS.collapsedHeroicsSections) ~= 'table' then
-    GLOBAL_SETTINGS.collapsedHeroicsSections = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedHeroicsSections) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedHeroicsSections = {}
   end
 
   -- Outer frame (matches style used in Statistics tab)
@@ -65,7 +65,7 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
     scrollFrame = scrollFrame,
     currentScrollChild = scrollChild,
     layout = layout,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedHeroicsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedHeroicsSections,
     width = 435,
     texturesRoot = 'heroics',
     bgHeight = 200,
@@ -254,7 +254,7 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
     end
   end
 
-  -- TBC 5-man instances (boss list from IsDungeonBoss; stats merged from stored DungeonRaidStats)
+  -- TBC 5-man instances (boss list from IsUltraStatisticsDungeonBoss; stats merged from stored DungeonRaidStats)
   local defaultHeroics = { {
     key = 'hellfireRamparts',
     title = 'Hellfire Ramparts',
@@ -673,7 +673,7 @@ function UltraStatistics_InitializeHeroicsTab(tabContents)
     scrollChild = scrollChild,
     layout = layout,
     instances = heroicsInstances,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedHeroicsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedHeroicsSections,
     width = 435,
     texturesRoot = 'heroics',
     bgHeight = 200,

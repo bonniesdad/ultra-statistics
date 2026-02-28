@@ -28,17 +28,17 @@ Functions/Utils/TwitchInvite.lua
 Functions/Utils/ExpansionCheck.lua
 Functions/Utils/AboutAuthor.lua
 
-Functions/DB/SaveDBData.lua
-Functions/DB/LoadDBData.lua
-Functions/DB/CharacterStats.lua
+Functions/DB/SaveUltraStatisticsDBData.lua
+Functions/DB/LoadUltraStatisticsDBData.lua
+Functions/DB/UltraStatisticsCharacterStats.lua
 Functions/DB/DungeonRaidBossInfo.lua
 Functions/DB/DungeonRaidStats.lua
 Functions/Utils/ImportFromUltra.lua
 
-Functions/Checks/IsEnemyElite.lua
-Functions/Checks/IsEnemyRareElite.lua
-Functions/Checks/IsEnemyWorldBoss.lua
-Functions/Checks/IsDungeonBoss.lua
+Functions/Checks/IsUltraStatisticsEnemyElite.lua
+Functions/Checks/IsUltraStatisticsEnemyRareElite.lua
+Functions/Checks/IsUltraStatisticsEnemyWorldBoss.lua
+Functions/Checks/IsUltraStatisticsDungeonBoss.lua
 
 Functions/Statistics/ItemTracker.lua
 Functions/Statistics/KillTracker.lua

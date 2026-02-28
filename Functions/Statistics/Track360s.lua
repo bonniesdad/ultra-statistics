@@ -3,7 +3,7 @@ spinTrackingFrame:RegisterEvent('ADDON_LOADED')
 
 spinTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
   if addonName ~= 'UltraStatistics' then return end
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
 
   local SpinCounter = {}
   -- Don't cache count at ADDON_LOADED: UnitGUID('player') may be nil. We sync from DB before each increment.
@@ -71,12 +71,12 @@ spinTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
       if not SpinCounter.countedThisJump and SpinCounter.accumulated >= TWO_PI then
         SpinCounter.countedThisJump = true
         -- Sync from DB so imported stats are not overwritten (avoid stale cache from ADDON_LOADED).
-        local current = CharacterStats:GetStat('player360s') or 0
+        local current = UltraStatisticsCharacterStats:GetStat('player360s') or 0
         if SpinCounter.count < current then
           SpinCounter.count = current
         end
         SpinCounter.count = SpinCounter.count + 1
-        CharacterStats:UpdateStat('player360s', SpinCounter.count)
+        UltraStatisticsCharacterStats:UpdateStat('player360s', SpinCounter.count)
       end
     end
     SpinCounter.lastFacing = facing

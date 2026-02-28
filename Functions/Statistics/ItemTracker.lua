@@ -44,51 +44,51 @@ local grenadeSpellIDs = {
 }
 
 function ItemTracker.HandleBandageUsage(subEvent, destGUID, spellID)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
   -- "Recently Bandaged" debuff (Classic)
   if subEvent == 'SPELL_AURA_APPLIED' and destGUID == UnitGUID('player') and spellID == 11196 then
-    local currentBandages = CharacterStats:GetStat('bandagesUsed') or 0
-    CharacterStats:UpdateStat('bandagesUsed', currentBandages + 1)
+    local currentBandages = UltraStatisticsCharacterStats:GetStat('bandagesUsed') or 0
+    UltraStatisticsCharacterStats:UpdateStat('bandagesUsed', currentBandages + 1)
   end
 end
 
 function ItemTracker.HandleHealthPotionUsage(subEvent, sourceGUID, spellID)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
   if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
     'player'
   ) and healingPotionSpellIDs[spellID] then
-    local current = CharacterStats:GetStat('healthPotionsUsed') or 0
-    CharacterStats:UpdateStat('healthPotionsUsed', current + 1)
+    local current = UltraStatisticsCharacterStats:GetStat('healthPotionsUsed') or 0
+    UltraStatisticsCharacterStats:UpdateStat('healthPotionsUsed', current + 1)
   end
 end
 
 function ItemTracker.HandleManaPotionUsage(subEvent, sourceGUID, spellID)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
   if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
     'player'
   ) and manaPotionSpellIDs[spellID] then
-    local current = CharacterStats:GetStat('manaPotionsUsed') or 0
-    CharacterStats:UpdateStat('manaPotionsUsed', current + 1)
+    local current = UltraStatisticsCharacterStats:GetStat('manaPotionsUsed') or 0
+    UltraStatisticsCharacterStats:UpdateStat('manaPotionsUsed', current + 1)
   end
 end
 
 function ItemTracker.HandleTargetDummyUsage(subEvent, sourceGUID, spellID)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
   if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
     'player'
   ) and targetDummySpellIDs[spellID] then
-    local current = CharacterStats:GetStat('targetDummiesUsed') or 0
-    CharacterStats:UpdateStat('targetDummiesUsed', current + 1)
+    local current = UltraStatisticsCharacterStats:GetStat('targetDummiesUsed') or 0
+    UltraStatisticsCharacterStats:UpdateStat('targetDummiesUsed', current + 1)
   end
 end
 
 function ItemTracker.HandleGrenadeUsage(subEvent, sourceGUID, spellID)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
   if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID(
     'player'
   ) and grenadeSpellIDs[spellID] then
-    local current = CharacterStats:GetStat('grenadesUsed') or 0
-    CharacterStats:UpdateStat('grenadesUsed', current + 1)
+    local current = UltraStatisticsCharacterStats:GetStat('grenadesUsed') or 0
+    UltraStatisticsCharacterStats:UpdateStat('grenadesUsed', current + 1)
   end
 end
 

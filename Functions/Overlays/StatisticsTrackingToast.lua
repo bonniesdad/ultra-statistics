@@ -162,8 +162,8 @@ local EXCLUDED_STATS = {
 }
 
 local function formatNumber(n)
-  if _G.formatNumberWithCommas then
-    return _G.formatNumberWithCommas(n)
+  if _G.UltraStatistics_FormatNumberWithCommas then
+    return _G.UltraStatistics_FormatNumberWithCommas(n)
   end
   return tostring(n or 0)
 end
@@ -259,8 +259,8 @@ local function SaveStatisticsTrackingToastPosition()
     yOfs = yOfs,
   }
 
-  if SaveDBData then
-    SaveDBData('statisticsTrackingToastPosition', UltraStatisticsDB.statisticsTrackingToastPosition)
+  if SaveUltraStatisticsDBData then
+    SaveUltraStatisticsDBData('statisticsTrackingToastPosition', UltraStatisticsDB.statisticsTrackingToastPosition)
   end
 end
 
@@ -281,8 +281,8 @@ local function ResetStatisticsTrackingToastPosition()
   if UltraStatisticsDB then
     UltraStatisticsDB.statisticsTrackingToastPosition = nil
   end
-  if SaveDBData then
-    SaveDBData('statisticsTrackingToastPosition', nil)
+  if SaveUltraStatisticsDBData then
+    SaveUltraStatisticsDBData('statisticsTrackingToastPosition', nil)
   end
 
   local f = StatisticsTrackingToast.frame
@@ -577,7 +577,7 @@ end
 function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldValue)
   EnsureFrames()
 
-  if not _G.GLOBAL_SETTINGS or not _G.GLOBAL_SETTINGS.showStatisticsTracking then
+  if not _G.ULTRA_STATISTICS_GLOBAL_SETTINGS or not _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then
     self:ClearAll()
     return
   end
@@ -594,14 +594,14 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   if EXCLUDED_STATS[statKey] then return end
 
-  if _G.GLOBAL_SETTINGS.statisticsToastEnabled then
-    local toastEnabled = _G.GLOBAL_SETTINGS.statisticsToastEnabled[statKey]
+  if _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
+    local toastEnabled = _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey]
     if toastEnabled == false then return end
   end
 
   local displayName = HumanizeStatKey(statKey)
-  local minimal = _G.GLOBAL_SETTINGS.minimalStatisticsTracking ~= false
-  local tierOnly = _G.GLOBAL_SETTINGS.statisticsTrackingTierOnly or false
+  local minimal = _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.minimalStatisticsTracking ~= false
+  local tierOnly = _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsTrackingTierOnly or false
 
   local isPercent = (cfg.type == 'percent')
   local hasTier = not isPercent and not cfg.noTier
@@ -818,7 +818,7 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   if achievedTier then
     C_Timer.After(TOAST_ACHIEVEMENT_DELAY_SECONDS, function()
-      if not _G.GLOBAL_SETTINGS or not _G.GLOBAL_SETTINGS.showStatisticsTracking then return end
+      if not _G.ULTRA_STATISTICS_GLOBAL_SETTINGS or not _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then return end
 
       local achievementToast = CreateToast()
       achievementToast.text:SetText(
@@ -864,7 +864,7 @@ do
   gate:SetScript('OnEvent', function()
     EnsureFrames()
     LoadStatisticsTrackingToastPosition()
-    if not _G.GLOBAL_SETTINGS or not _G.GLOBAL_SETTINGS.showStatisticsTracking then
+    if not _G.ULTRA_STATISTICS_GLOBAL_SETTINGS or not _G.ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then
       StatisticsTrackingToast:ClearAll()
     end
   end)

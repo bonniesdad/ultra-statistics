@@ -20,16 +20,16 @@ end
 tempSettings = {}
 
 local function initializeTempSettings()
-  if type(GLOBAL_SETTINGS) ~= 'table' then
-    GLOBAL_SETTINGS = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS = {}
   end
-  for key, value in pairs(GLOBAL_SETTINGS) do
+  for key, value in pairs(ULTRA_STATISTICS_GLOBAL_SETTINGS) do
     tempSettings[key] = value
   end
 
   for settingName, _ in pairs(radioButtons) do
     if tempSettings[settingName] == nil then
-      tempSettings[settingName] = shouldRadioBeChecked(settingName, GLOBAL_SETTINGS)
+      tempSettings[settingName] = shouldRadioBeChecked(settingName, ULTRA_STATISTICS_GLOBAL_SETTINGS)
     end
   end
 end

@@ -1,5 +1,16 @@
 # Patch Notes
 
+**Version:** 1.0.3
+**Date:** 2026-01-28  
+**Expansion:** TBC
+
+---
+
+### BUG FIXES
+
+Remove overlapping function naming convention with sister addons which caused loading issues
+
+
 **Version:** 1.0.0  
 **Date:** 2026-01-28  
 **Expansion:** TBC

@@ -137,8 +137,8 @@ function updateRadioButtons()
     if radio then
       local isChecked = (tempSettings or {})[settingName] or false
       radio:SetChecked(isChecked)
-      if GLOBAL_SETTINGS then
-        GLOBAL_SETTINGS[settingName] = tempSettings[settingName]
+      if ULTRA_STATISTICS_GLOBAL_SETTINGS then
+        ULTRA_STATISTICS_GLOBAL_SETTINGS[settingName] = tempSettings[settingName]
       end
     end
   end
@@ -162,11 +162,11 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   tabContents[5].initialized = true
 
   tempSettings = tempSettings or {}
-  if not GLOBAL_SETTINGS.collapsedSettingsSections then
-    GLOBAL_SETTINGS.collapsedSettingsSections = {}
+  if not ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections = {}
   end
-  if GLOBAL_SETTINGS.collapsedSettingsSections.presetSection == nil then
-    GLOBAL_SETTINGS.collapsedSettingsSections.presetSection = {}
+  if ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection == nil then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection = {}
   end
 
   local checkboxes = {}
@@ -487,7 +487,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     sectionExpandedHeights[sectionIndex] = expandedHeight
     sectionCollapsedHeights[sectionIndex] = collapsedHeight
 
-    local initialCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title]
+    local initialCollapsed = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title]
     if initialCollapsed == nil then
       initialCollapsed = false
     end
@@ -510,9 +510,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
         child:SetShown(not collapsed)
       end
       sectionFrame:SetHeight(collapsed and collapsedHeight or expandedHeight)
-      GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title] = collapsed
+      ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title] = collapsed
       if SaveCharacterSettings then
-        SaveCharacterSettings(GLOBAL_SETTINGS)
+        SaveCharacterSettings(ULTRA_STATISTICS_GLOBAL_SETTINGS)
       end
     end)
 
@@ -523,10 +523,10 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
 
   -- Statistics Display section (opacity sliders)
   if tempSettings.statisticsBackgroundOpacity == nil then
-    tempSettings.statisticsBackgroundOpacity = GLOBAL_SETTINGS.statisticsBackgroundOpacity or 0.3
+    tempSettings.statisticsBackgroundOpacity = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsBackgroundOpacity or 0.3
   end
   if tempSettings.statisticsBorderOpacity == nil then
-    tempSettings.statisticsBorderOpacity = GLOBAL_SETTINGS.statisticsBorderOpacity or 0.9
+    tempSettings.statisticsBorderOpacity = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsBorderOpacity or 0.9
   end
 
   local displaySection = CreateFrame('Frame', nil, scrollChild, 'BackdropTemplate')
@@ -673,7 +673,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     local pct = math.floor(val + 0.5)
     percentText:SetText(pct .. '%')
     tempSettings.statisticsBackgroundOpacity = pct / 100
-    GLOBAL_SETTINGS.statisticsBackgroundOpacity = tempSettings.statisticsBackgroundOpacity
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsBackgroundOpacity = tempSettings.statisticsBackgroundOpacity
     if _G.ApplyStatsBackgroundOpacity then
       _G.ApplyStatsBackgroundOpacity()
     end
@@ -709,7 +709,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     local pct = math.floor(val + 0.5)
     borderPercentText:SetText(pct .. '%')
     tempSettings.statisticsBorderOpacity = pct / 100
-    GLOBAL_SETTINGS.statisticsBorderOpacity = tempSettings.statisticsBorderOpacity
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsBorderOpacity = tempSettings.statisticsBorderOpacity
     if _G.ApplyStatsBackgroundOpacity then
       _G.ApplyStatsBackgroundOpacity()
     end
@@ -718,7 +718,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   local displaySectionExpandedHeight = displayRowsHeight
   local displaySectionKey = 'Main Screen Statistics Display'
   local displayInitialCollapsed =
-    GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
   if displayInitialCollapsed then
     displaySection:SetHeight(HEADER_HEIGHT)
     for _, c in ipairs(displaySectionContentChildren) do
@@ -741,12 +741,12 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end
 
   displayHeaderBtn:SetScript('OnClick', function()
-    local cur = GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
+    local cur = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
     if cur == nil then
       cur = false
     end
     local collapsed = not cur
-    GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = collapsed
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = collapsed
     displayHeaderIcon:SetTexture(
       collapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
     )
@@ -755,7 +755,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     end
     displaySection:SetHeight(collapsed and HEADER_HEIGHT or displaySectionExpandedHeight)
     if SaveCharacterSettings then
-      SaveCharacterSettings(GLOBAL_SETTINGS)
+      SaveCharacterSettings(ULTRA_STATISTICS_GLOBAL_SETTINGS)
     end
     recalcContentHeight()
   end)
@@ -764,7 +764,7 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     local q = string.lower(query or '')
     if q == '' then
       -- Restore all and use saved collapse state for Statistics
-      local saved = GLOBAL_SETTINGS.collapsedSettingsSections.presetSection['Statistics']
+      local saved = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection['Statistics']
       if saved == nil then
         saved = false
       end
@@ -832,14 +832,14 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
           end
         end
         local title = (STATISTICS_SECTIONS[idx] and STATISTICS_SECTIONS[idx].title)
-        if title and GLOBAL_SETTINGS.collapsedSettingsSections and GLOBAL_SETTINGS.collapsedSettingsSections.presetSection then
-          GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[title] = true
+        if title and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection then
+          ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[title] = true
         end
       end
     end
     -- Also collapse Main Screen Statistics Display section
     if displaySection and displaySectionContentChildren and displaySectionKey then
-      GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = true
+      ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = true
       displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
       for _, c in ipairs(displaySectionContentChildren) do
         c:SetShown(false)
@@ -873,10 +873,10 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
 
   local function doSaveAndReload()
     for key, value in pairs(tempSettings) do
-      GLOBAL_SETTINGS[key] = value
+      ULTRA_STATISTICS_GLOBAL_SETTINGS[key] = value
     end
     if SaveCharacterSettings then
-      SaveCharacterSettings(GLOBAL_SETTINGS)
+      SaveCharacterSettings(ULTRA_STATISTICS_GLOBAL_SETTINGS)
     end
     ReloadUI()
   end

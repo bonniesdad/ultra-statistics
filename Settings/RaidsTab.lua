@@ -17,11 +17,11 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     CONTENT_PADDING = 8,
   }
 
-  if type(GLOBAL_SETTINGS) ~= 'table' then
-    GLOBAL_SETTINGS = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS = {}
   end
-  if type(GLOBAL_SETTINGS.collapsedRaidsSections) ~= 'table' then
-    GLOBAL_SETTINGS.collapsedRaidsSections = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedRaidsSections) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedRaidsSections = {}
   end
 
   -- Outer frame (matches style used in Heroics tab)
@@ -82,7 +82,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
   classicContainer:SetPoint('TOPRIGHT', classicDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
   classicContainer:SetSize(435, 1)
 
-  local isTBC = IsTBC and IsTBC()
+  local isTBC = UltraStatistics_IsTBC and UltraStatistics_IsTBC()
 
   local tbcHeader = CreateFrame('Frame', nil, scrollChild)
   tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
@@ -590,7 +590,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     layout = layout,
     instances = classicInstances,
     showDeaths = isTBC,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
     bgHeight = 200,
@@ -608,7 +608,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     layout = layout,
     instances = tbcInstances,
     showDeaths = true,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedRaidsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
     bgHeight = 200,

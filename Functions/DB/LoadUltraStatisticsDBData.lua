@@ -1,6 +1,6 @@
 -- Load DB and initialize default per-character settings
 
-function LoadDBData()
+function LoadUltraStatisticsDBData()
   if not UltraStatisticsDB then
     UltraStatisticsDB = {}
   end
@@ -89,11 +89,11 @@ function LoadDBData()
     end
   end
 
-  GLOBAL_SETTINGS = UltraStatisticsDB.characterSettings[characterGUID]
-  if type(GLOBAL_SETTINGS.statisticsToastEnabled) ~= 'table' then
-    GLOBAL_SETTINGS.statisticsToastEnabled = {}
+  ULTRA_STATISTICS_GLOBAL_SETTINGS = UltraStatisticsDB.characterSettings[characterGUID]
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
   end
-  if type(GLOBAL_SETTINGS.collapsedStatsSections) ~= 'table' then
-    GLOBAL_SETTINGS.collapsedStatsSections = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections = {}
   end
 end
