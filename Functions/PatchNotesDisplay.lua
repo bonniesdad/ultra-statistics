@@ -66,15 +66,15 @@ function CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
   local function generatePatchNotes()
     local yOffset = 0
 
-    for i, patch in ipairs(PATCH_NOTES) do
+    for i, patch in ipairs(ULTRA_STATISTICS_PATCH_NOTES) do
       -- Filter patch notes based on expansion
       -- Skip TBC notes if we're in Classic
       -- Skip Classic notes (no expansion field) if we're in TBC
       local shouldSkip = false
-      if patch.expansion == 'TBC' and not IsTBC() then
+      if patch.expansion == 'TBC' and not UltraStatistics_IsTBC() then
         -- Skip TBC notes in Classic
         shouldSkip = true
-      elseif not patch.expansion and IsTBC() then
+      elseif not patch.expansion and UltraStatistics_IsTBC() then
         -- Skip Classic notes (no expansion field) in TBC
         shouldSkip = true
       end

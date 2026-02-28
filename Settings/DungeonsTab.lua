@@ -20,11 +20,11 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     CONTENT_PADDING = 8,
   }
 
-  if type(GLOBAL_SETTINGS) ~= 'table' then
-    GLOBAL_SETTINGS = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS = {}
   end
-  if type(GLOBAL_SETTINGS.collapsedDungeonsSections) ~= 'table' then
-    GLOBAL_SETTINGS.collapsedDungeonsSections = {}
+  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections) ~= 'table' then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections = {}
   end
 
   -- Outer frame (matches style used in Heroics tab)
@@ -85,7 +85,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
   classicContainer:SetPoint('TOPRIGHT', classicDivider, 'BOTTOMRIGHT', 0, -AFTER_DIVIDER_GAP)
   classicContainer:SetSize(435, 1)
 
-  local isTBC = IsTBC and IsTBC()
+  local isTBC = UltraStatistics_IsTBC and UltraStatistics_IsTBC()
 
   local tbcHeader = CreateFrame('Frame', nil, scrollChild)
   tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
@@ -157,7 +157,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     scrollFrame = scrollFrame,
     currentScrollChild = scrollChild,
     layout = layout,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedDungeonsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'dungeons',
     bgHeight = 200,
@@ -245,7 +245,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
       newTBC:SetSize(state.width, 1)
       state.tbcContainer = newTBC
 
-      local showDeaths = (IsTBC and IsTBC())
+      local showDeaths = (UltraStatistics_IsTBC and UltraStatistics_IsTBC())
 
       UltraStatistics_CreateInstanceAccordionList({
         scrollChild = newClassic,
@@ -861,7 +861,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     layout = layout,
     instances = classicInstances,
     showDeaths = isTBC,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedDungeonsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'dungeons',
     bgHeight = 200,
@@ -879,7 +879,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     layout = layout,
     instances = tbcInstances,
     showDeaths = true,
-    collapsedStateTable = GLOBAL_SETTINGS.collapsedDungeonsSections,
+    collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'dungeons',
     bgHeight = 200,

@@ -33,10 +33,10 @@ local function IsPlayerOrPartyMember(guid)
 end
 
 local function IsBoss(guid)
-  if not IsDungeonBoss then
+  if not IsUltraStatisticsDungeonBoss then
     return false
   end
-  local isDungeon, isRaid = IsDungeonBoss(guid)
+  local isDungeon, isRaid = IsUltraStatisticsDungeonBoss(guid)
   return isDungeon or isRaid
 end
 

@@ -1,4 +1,4 @@
-function IsDungeonBoss(unitGUID)
+function IsUltraStatisticsDungeonBoss(unitGUID)
   if not unitGUID then
     return false, false
   end

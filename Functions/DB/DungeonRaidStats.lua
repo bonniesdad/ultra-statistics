@@ -169,7 +169,7 @@ function DungeonRaidStats.RecordDungeonClearByName(instanceName, difficultyID)
     inst.firstClearDate = formatClearDate()
   end
 
-  SaveDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
+  SaveUltraStatisticsDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
   if _G.UpdateStatistics then
     _G.UpdateStatistics()
   end
@@ -228,7 +228,7 @@ function DungeonRaidStats.MergeWithStored(category, defaultInstances)
   return result
 end
 
--- Record a boss kill (destGUID = killed creature). Call from KillTracker when IsDungeonBoss.
+-- Record a boss kill (destGUID = killed creature). Call from KillTracker when IsUltraStatisticsDungeonBoss.
 -- For TBC 5-man bosses, we route stats to:
 -- - 'heroics' when in heroic mode
 -- - 'dungeons' when in normal mode
@@ -270,7 +270,7 @@ function DungeonRaidStats.RecordBossKill(destGUID)
     end
   end
 
-  SaveDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
+  SaveUltraStatisticsDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
   if _G.UpdateStatistics then
     _G.UpdateStatistics()
   end
@@ -327,7 +327,7 @@ function DungeonRaidStats.RecordBossDeath(bossGUID)
     inst.firstClearDeaths = (inst.firstClearDeaths or 0) + 1
   end
 
-  SaveDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
+  SaveUltraStatisticsDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
   if _G.UpdateStatistics then
     _G.UpdateStatistics()
   end
@@ -357,7 +357,7 @@ function DungeonRaidStats.RecordNonBossDungeonDeath(instanceName, difficultyID)
     inst.firstClearDeaths = (inst.firstClearDeaths or 0) + 1
   end
 
-  SaveDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
+  SaveUltraStatisticsDBData('dungeonRaidStats', UltraStatisticsDB.dungeonRaidStats)
   if _G.UpdateStatistics then
     _G.UpdateStatistics()
   end

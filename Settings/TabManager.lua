@@ -112,7 +112,7 @@ end
 function UltraStatistics_InitializeTabs(settingsFrame)
   if tabButtons[1] then return end
 
-  local isTBC = IsTBC and IsTBC()
+  local isTBC = UltraStatistics_IsTBC and UltraStatistics_IsTBC()
   if not isTBC then
     TAB_WIDTHS[3] = 0 -- Collapse Heroics so other tabs reflow (set before createTabButton)
   end

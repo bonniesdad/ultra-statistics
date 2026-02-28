@@ -3,7 +3,7 @@ jumpTrackingFrame:RegisterEvent('ADDON_LOADED')
 
 jumpTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
   if addonName ~= 'UltraStatistics' then return end
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
 
   local JumpCounter = {}
   -- Don't cache count at ADDON_LOADED: UnitGUID('player') may be nil so we'd read wrong table. We sync from DB on each increment.
@@ -13,10 +13,10 @@ jumpTrackingFrame:SetScript('OnEvent', function(_, _, addonName)
 
   function JumpCounter:OnJump()
     -- Always read current from DB so imported stats are not overwritten (avoid stale cache from ADDON_LOADED when guid was nil).
-    local current = CharacterStats:GetStat('playerJumps') or 0
+    local current = UltraStatisticsCharacterStats:GetStat('playerJumps') or 0
     self.count = current + 1
     self.lastJump = GetTime()
-    CharacterStats:UpdateStat('playerJumps', self.count)
+    UltraStatisticsCharacterStats:UpdateStat('playerJumps', self.count)
   end
 
   hooksecurefunc('AscendStop', function()

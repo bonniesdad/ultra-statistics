@@ -11,7 +11,7 @@ local function copyValue(value)
   return newTable
 end
 
-local CharacterStats = {
+local UltraStatisticsCharacterStats = {
   defaults = {
     closeEscapes = 0,
     enemiesSlain = 0,
@@ -63,7 +63,7 @@ local CharacterStats = {
   },
 }
 
-function CharacterStats:GetCurrentCharacterStats()
+function UltraStatisticsCharacterStats:GetCurrentCharacterStats()
   if not UltraStatisticsDB then
     return self.defaults
   end
@@ -92,15 +92,15 @@ function CharacterStats:GetCurrentCharacterStats()
 end
 
 -- Call after import so the next GetCurrentCharacterStats() uses the updated DB (avoids stale refs).
-function CharacterStats:InvalidateCache()
+function UltraStatisticsCharacterStats:InvalidateCache()
   statsInitialized = false
 end
 
-function CharacterStats:UpdateStat(statName, value)
+function UltraStatisticsCharacterStats:UpdateStat(statName, value)
   local stats = self:GetCurrentCharacterStats()
   local oldValue = stats[statName]
   stats[statName] = value
-  SaveDBData('characterStats', UltraStatisticsDB.characterStats)
+  SaveUltraStatisticsDBData('characterStats', UltraStatisticsDB.characterStats)
 
   -- Statistics tracking toast notifications (ported behavior)
   if _G.StatisticsTrackingToast and _G.StatisticsTrackingToast.NotifyStatDelta then
@@ -119,32 +119,32 @@ function CharacterStats:UpdateStat(statName, value)
   end
 end
 
-function CharacterStats:GetStat(statName)
+function UltraStatisticsCharacterStats:GetStat(statName)
   local stats = self:GetCurrentCharacterStats()
   return stats[statName]
 end
 
-function CharacterStats:ResetLowestHealthThisLevel()
+function UltraStatisticsCharacterStats:ResetLowestHealthThisLevel()
   self:UpdateStat('lowestHealthThisLevel', 100)
 end
 
-function CharacterStats:ResetLowestHealthThisSession()
+function UltraStatisticsCharacterStats:ResetLowestHealthThisSession()
   self:UpdateStat('lowestHealthThisSession', 100)
 end
 
 -- Simple share-to-chat used by the Statistics tab "Share" button
-function CharacterStats:LogStatsToChat()
+function UltraStatisticsCharacterStats:LogStatsToChat()
   local stats = self:GetCurrentCharacterStats()
   local playerName = UnitName('player') or 'Player'
   local playerLevel = UnitLevel('player') or 1
   local _, playerClass = UnitClass('player')
   local msg =
-    '[UltraStatistics] ' .. playerName .. ' (' .. (playerClass or 'Class') .. ' L' .. playerLevel .. ') - ' .. 'Deaths: ' .. formatNumberWithCommas(
+    '[UltraStatistics] ' .. playerName .. ' (' .. (playerClass or 'Class') .. ' L' .. playerLevel .. ') - ' .. 'Deaths: ' .. UltraStatistics_FormatNumberWithCommas(
       stats.playerDeaths or 0
-    ) .. ' - ' .. 'Enemies: ' .. formatNumberWithCommas(
+    ) .. ' - ' .. 'Enemies: ' .. UltraStatistics_FormatNumberWithCommas(
       stats.enemiesSlain or 0
-    ) .. ' - ' .. 'Elites: ' .. formatNumberWithCommas(stats.elitesSlain or 0)
+    ) .. ' - ' .. 'Elites: ' .. UltraStatistics_FormatNumberWithCommas(stats.elitesSlain or 0)
   DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 
-_G.CharacterStats = CharacterStats
+_G.UltraStatisticsCharacterStats = UltraStatisticsCharacterStats

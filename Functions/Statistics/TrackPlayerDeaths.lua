@@ -33,19 +33,19 @@ local function GetDeathContextKey()
 end
 
 frame:SetScript('OnEvent', function(_, event)
-  if not CharacterStats then return end
+  if not UltraStatisticsCharacterStats then return end
 
   if event == 'PLAYER_DEAD' then
     local nowT = GetTime and GetTime() or 0
     if (nowT - lastCountTime) < DEBOUNCE_SECONDS then return end
     lastCountTime = nowT
 
-    local total = CharacterStats:GetStat('playerDeaths') or 0
+    local total = UltraStatisticsCharacterStats:GetStat('playerDeaths') or 0
     local contextKey = GetDeathContextKey()
-    local contextVal = CharacterStats:GetStat(contextKey) or 0
+    local contextVal = UltraStatisticsCharacterStats:GetStat(contextKey) or 0
 
-    CharacterStats:UpdateStat('playerDeaths', total + 1)
-    CharacterStats:UpdateStat(contextKey, contextVal + 1)
+    UltraStatisticsCharacterStats:UpdateStat('playerDeaths', total + 1)
+    UltraStatisticsCharacterStats:UpdateStat(contextKey, contextVal + 1)
 
     -- If we're in a dungeon and NOT currently in a boss fight, increment deaths for that dungeon.
     if type(GetInstanceInfo) == 'function' then

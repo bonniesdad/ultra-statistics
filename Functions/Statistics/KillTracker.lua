@@ -37,16 +37,16 @@ local function shouldDedupeBossKill(destGUID)
 end
 
 local function HandleBossDeathForKillTracking(trigger, destGUID)
-  if not destGUID or not CharacterStats then return end
-  if not IsDungeonBoss then return end
+  if not destGUID or not UltraStatisticsCharacterStats then return end
+  if not IsUltraStatisticsDungeonBoss then return end
 
-  local isDungeon, isRaid = IsDungeonBoss(destGUID)
+  local isDungeon, isRaid = IsUltraStatisticsDungeonBoss(destGUID)
   if not (isDungeon or isRaid) then return end
 
   if shouldDedupeBossKill(destGUID) then return end
 
-  local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
-  CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
+  local currentDungeonBosses = UltraStatisticsCharacterStats:GetStat('dungeonBossesKilled') or 0
+  UltraStatisticsCharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
 
   if DungeonRaidStats and DungeonRaidStats.RecordBossKill then
     local ok = DungeonRaidStats.RecordBossKill(destGUID) == true
@@ -54,41 +54,41 @@ local function HandleBossDeathForKillTracking(trigger, destGUID)
 end
 
 function KillTracker.HandlePartyKill(destGUID)
-  if not destGUID or not CharacterStats then return end
+  if not destGUID or not UltraStatisticsCharacterStats then return end
 
   -- Dedupe: PARTY_KILL can fire twice for the same mob in some cases
   if shouldDedupePartyKill(destGUID) then return end
 
   -- Player kills (PvP): destGUID starts with "Player-" for enemy players
   if destGUID:sub(1, 7) == 'Player-' then
-    local currentPlayerKills = CharacterStats:GetStat('playerKills') or 0
-    CharacterStats:UpdateStat('playerKills', currentPlayerKills + 1)
+    local currentPlayerKills = UltraStatisticsCharacterStats:GetStat('playerKills') or 0
+    UltraStatisticsCharacterStats:UpdateStat('playerKills', currentPlayerKills + 1)
     return -- Don't count players as enemies slain
   end
 
   -- Boss kill tracking (PARTY_KILL only fires when someone in the party gets the killing blow)
   HandleBossDeathForKillTracking('PARTY_KILL', destGUID)
 
-  if IsEnemyElite and IsEnemyElite(destGUID) then
-    local currentElites = CharacterStats:GetStat('elitesSlain') or 0
-    CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
+  if IsUltraStatisticsEnemyElite and IsUltraStatisticsEnemyElite(destGUID) then
+    local currentElites = UltraStatisticsCharacterStats:GetStat('elitesSlain') or 0
+    UltraStatisticsCharacterStats:UpdateStat('elitesSlain', currentElites + 1)
   end
 
-  if IsEnemyRareElite and IsEnemyRareElite(destGUID) then
-    local currentRareElites = CharacterStats:GetStat('rareElitesSlain') or 0
-    CharacterStats:UpdateStat('rareElitesSlain', currentRareElites + 1)
+  if IsUltraStatisticsEnemyRareElite and IsUltraStatisticsEnemyRareElite(destGUID) then
+    local currentRareElites = UltraStatisticsCharacterStats:GetStat('rareElitesSlain') or 0
+    UltraStatisticsCharacterStats:UpdateStat('rareElitesSlain', currentRareElites + 1)
   end
 
-  if IsEnemyWorldBoss and IsEnemyWorldBoss(destGUID) then
-    local currentWorldBosses = CharacterStats:GetStat('worldBossesSlain') or 0
-    CharacterStats:UpdateStat('worldBossesSlain', currentWorldBosses + 1)
+  if IsUltraStatisticsEnemyWorldBoss and IsUltraStatisticsEnemyWorldBoss(destGUID) then
+    local currentWorldBosses = UltraStatisticsCharacterStats:GetStat('worldBossesSlain') or 0
+    UltraStatisticsCharacterStats:UpdateStat('worldBossesSlain', currentWorldBosses + 1)
   end
 
   if IsDungeonFinalBoss then
     local isDungeonFinalBoss = IsDungeonFinalBoss(destGUID)
     if isDungeonFinalBoss then
-      local currentDungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
-      CharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
+      local currentDungeonsCompleted = UltraStatisticsCharacterStats:GetStat('dungeonsCompleted') or 0
+      UltraStatisticsCharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
 
       -- Classic dungeon clears: we may not have per-boss mapping in DungeonRaidBossInfo,
       -- so record the clear at the instance level by name.
@@ -107,8 +107,8 @@ function KillTracker.HandlePartyKill(destGUID)
     end
   end
 
-  local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
-  CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
+  local currentEnemies = UltraStatisticsCharacterStats:GetStat('enemiesSlain') or 0
+  UltraStatisticsCharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
 end
 
 -- Boss kill tracking fallback: UNIT_DIED fires even when PARTY_KILL doesn't (no killing blow credit).

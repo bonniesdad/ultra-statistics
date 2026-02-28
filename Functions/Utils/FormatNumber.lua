@@ -1,5 +1,5 @@
 -- Utility function to format numbers with comma separators
-function formatNumberWithCommas(number)
+function UltraStatistics_FormatNumberWithCommas(number)
   if type(number) ~= 'number' then
     number = tonumber(number) or 0
   end

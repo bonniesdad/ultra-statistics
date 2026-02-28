@@ -71,8 +71,8 @@ end
 -- Returns { { statKey, ourVal, uhcVal, displayName }, ... } for stats where UHC is "better"
 local function getImportableImprovements()
   local ours = {}
-  if _G.CharacterStats and _G.CharacterStats.GetCurrentCharacterStats then
-    ours = _G.CharacterStats:GetCurrentCharacterStats() or {}
+  if _G.UltraStatisticsCharacterStats and _G.UltraStatisticsCharacterStats.GetCurrentCharacterStats then
+    ours = _G.UltraStatisticsCharacterStats:GetCurrentCharacterStats() or {}
   end
   local uhc, err = getUltraHardcoreStats()
   if err then
@@ -329,8 +329,8 @@ function ShowImportFromUltraDialog()
     end
     if not _G.UltraStatisticsDB.characterStats[guid] then
       _G.UltraStatisticsDB.characterStats[guid] = {}
-      if _G.CharacterStats and _G.CharacterStats.defaults then
-        for k, v in pairs(_G.CharacterStats.defaults) do
+      if _G.UltraStatisticsCharacterStats and _G.UltraStatisticsCharacterStats.defaults then
+        for k, v in pairs(_G.UltraStatisticsCharacterStats.defaults) do
           _G.UltraStatisticsDB.characterStats[guid][k] = v
         end
       end
@@ -340,14 +340,14 @@ function ShowImportFromUltraDialog()
       dest[row[1]] = row[3]
     end
     if _G.SaveCharacterSettings then
-      _G.SaveCharacterSettings(_G.GLOBAL_SETTINGS)
+      _G.SaveCharacterSettings(_G.ULTRA_STATISTICS_GLOBAL_SETTINGS)
     end
-    if _G.SaveDBData then
-      _G.SaveDBData('characterStats', _G.UltraStatisticsDB.characterStats)
+    if _G.SaveUltraStatisticsDBData then
+      _G.SaveUltraStatisticsDBData('characterStats', _G.UltraStatisticsDB.characterStats)
     end
     -- Invalidate cache so all code uses the updated DB; prevents increments from being applied to pre-import values.
-    if _G.CharacterStats and _G.CharacterStats.InvalidateCache then
-      _G.CharacterStats:InvalidateCache()
+    if _G.UltraStatisticsCharacterStats and _G.UltraStatisticsCharacterStats.InvalidateCache then
+      _G.UltraStatisticsCharacterStats:InvalidateCache()
     end
     if _G.UpdateLowestHealthDisplay then
       _G.UpdateLowestHealthDisplay()

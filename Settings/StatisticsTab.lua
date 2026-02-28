@@ -558,18 +558,18 @@ local function CreateStatBar(parent)
         string.format(
           '%s tier (%s/%s)',
           self.tierName,
-          formatNumberWithCommas(currentValue),
-          formatNumberWithCommas(self.tierMax)
+          UltraStatistics_FormatNumberWithCommas(currentValue),
+          UltraStatistics_FormatNumberWithCommas(self.tierMax)
         )
       )
     end
 
     -- Add toast toggle info if statKey is available
     if self.statKey then
-      local showStatisticsTracking = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking
+      local showStatisticsTracking = ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking
       if showStatisticsTracking then
         local toastEnabled =
-          GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+          ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
         table.insert(tooltipLines, '')
         table.insert(
           tooltipLines,
@@ -603,16 +603,16 @@ local function CreateStatBar(parent)
   tierText:SetScript('OnMouseDown', function(self, button)
     if button == 'LeftButton' and self.statKey then
       -- Don't allow toggling if showStatisticsTracking is disabled
-      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then return end
+      if not ULTRA_STATISTICS_GLOBAL_SETTINGS or not ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then return end
 
-      if not GLOBAL_SETTINGS.statisticsToastEnabled then
-        GLOBAL_SETTINGS.statisticsToastEnabled = {}
+      if not ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
       end
-      local current = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
-      GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
+      local current = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
+      ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
 
       -- Update visual state immediately
-      local enabled = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+      local enabled = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
       local r, g, b = self:GetTextColor()
       if enabled then
         -- Restore original tier color (will be set by UpdateStatBar)
@@ -627,7 +627,7 @@ local function CreateStatBar(parent)
 
       -- Refresh the stat bar to update colors properly
       if UpdateStatBar and self.statKey then
-        local value = CharacterStats:GetStat(self.statKey) or 0
+        local value = UltraStatisticsCharacterStats:GetStat(self.statKey) or 0
         UpdateStatBar(self.statKey, value)
       end
     end
@@ -637,10 +637,10 @@ local function CreateStatBar(parent)
   toastButton:SetScript('OnEnter', function(self)
     if self.statKey then
       GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-      local showStatisticsTracking = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking
+      local showStatisticsTracking = ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking
       if showStatisticsTracking then
         local toastEnabled =
-          GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+          ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
         GameTooltip:SetText(
           toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications',
           nil,
@@ -665,16 +665,16 @@ local function CreateStatBar(parent)
   toastButton:SetScript('OnMouseDown', function(self, button)
     if button == 'LeftButton' and self.statKey then
       -- Don't allow toggling if showStatisticsTracking is disabled
-      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then return end
+      if not ULTRA_STATISTICS_GLOBAL_SETTINGS or not ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then return end
 
-      if not GLOBAL_SETTINGS.statisticsToastEnabled then
-        GLOBAL_SETTINGS.statisticsToastEnabled = {}
+      if not ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
       end
-      local current = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
-      GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
+      local current = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
+      ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
 
       -- Update visual state immediately
-      local enabled = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+      local enabled = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
       if enabled then
         self:SetTextColor(0.7, 0.7, 0.7, 1)
       else
@@ -741,11 +741,11 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   end
 
   -- Initialize toast settings if needed (default: all enabled)
-  if not GLOBAL_SETTINGS.statisticsToastEnabled then
-    GLOBAL_SETTINGS.statisticsToastEnabled = {}
+  if not ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
   end
-  if GLOBAL_SETTINGS.statisticsToastEnabled[statKey] == nil then
-    GLOBAL_SETTINGS.statisticsToastEnabled[statKey] = true
+  if ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] == nil then
+    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] = true
   end
 
   bar.tier:ClearAllPoints()
@@ -804,8 +804,8 @@ local LABEL_BAR_OFFSET = (LAYOUT.ROW_INDENT + 12) - (LAYOUT.ROW_INDENT + STAT_BA
 local function AttachSettingCheckbox(radio, settingName)
   if not radio or not settingName then return end
   local checked = false
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS[settingName] ~= nil then
-    checked = GLOBAL_SETTINGS[settingName] and true or false
+  if ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS[settingName] ~= nil then
+    checked = ULTRA_STATISTICS_GLOBAL_SETTINGS[settingName] and true or false
   end
   if tempSettings and tempSettings[settingName] ~= nil then
     checked = tempSettings[settingName] and true or false
@@ -817,8 +817,8 @@ local function AttachSettingCheckbox(radio, settingName)
     if tempSettings then
       tempSettings[settingName] = v
     end
-    if GLOBAL_SETTINGS then
-      GLOBAL_SETTINGS[settingName] = v
+    if ULTRA_STATISTICS_GLOBAL_SETTINGS then
+      ULTRA_STATISTICS_GLOBAL_SETTINGS[settingName] = v
     end
     if UltraStatsFrame and UltraStatsFrame.UpdateRowVisibility then
       UltraStatsFrame.UpdateRowVisibility()
@@ -925,7 +925,7 @@ local function CreateStatsGrid(parent, statsList, options)
       if stat.valueFunc then
         value = stat.valueFunc()
       else
-        value = CharacterStats:GetStat(statKey)
+        value = UltraStatisticsCharacterStats:GetStat(statKey)
       end
       if value == nil and stat.defaultValue ~= nil then
         value = stat.defaultValue
@@ -1034,8 +1034,8 @@ function UpdateStatBar(statKey, value)
   local bar = statBars[statKey]
   if not bar then return end
 
-  local showTiers = not GLOBAL_SETTINGS or GLOBAL_SETTINGS.showTiers ~= false
-  local showNotifications = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking
+  local showTiers = not ULTRA_STATISTICS_GLOBAL_SETTINGS or ULTRA_STATISTICS_GLOBAL_SETTINGS.showTiers ~= false
+  local showNotifications = ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking
 
   local cfg = STAT_BAR_CONFIG[statKey] or STAT_BAR_CONFIG.default
   local valueOnly = cfg.valueOnly
@@ -1076,7 +1076,7 @@ function UpdateStatBar(statKey, value)
         displayText = isZero and '-' or FormatMoneyText(rawValue)
       else
         local suffix = cfg.suffix or ''
-        displayText = isZero and '-' or (formatNumberWithCommas(rawValue) .. suffix)
+        displayText = isZero and '-' or (UltraStatistics_FormatNumberWithCommas(rawValue) .. suffix)
       end
 
       -- Calculate and show tier for non-percent valueOnly stats (unless noTier is set), or use white when Show Tiers off
@@ -1099,7 +1099,7 @@ function UpdateStatBar(statKey, value)
             bar.tier:SetText(tierName)
             -- Check if toast is disabled and grey out if so
             local toastEnabled =
-              GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+              ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
             if toastEnabled then
               bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
             else
@@ -1202,7 +1202,7 @@ function UpdateStatBar(statKey, value)
       end
       -- Update visual state based on toast enabled status
       local toastEnabled =
-        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
       if toastEnabled then
         bar.toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
       else
@@ -1283,7 +1283,7 @@ function UpdateStatBar(statKey, value)
     local availableWidth =
       (bar.bg and (bar.bg:GetWidth() - STAT_FILL_INSET * 2)) or bar.frame:GetWidth()
     bar.fill:SetWidth(availableWidth * progress)
-    bar.text:SetText(formatNumberWithCommas(value or 0))
+    bar.text:SetText(UltraStatistics_FormatNumberWithCommas(value or 0))
 
     -- Set tier name and colours when Show Tiers on; otherwise white text
     local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
@@ -1294,7 +1294,7 @@ function UpdateStatBar(statKey, value)
         tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
       end
       local toastEnabled =
-        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
       if toastEnabled then
         bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
       else
@@ -1315,10 +1315,10 @@ function UpdateStatBar(statKey, value)
     end
 
     if bar.minText then
-      bar.minText:SetText(formatNumberWithCommas(tierMin))
+      bar.minText:SetText(UltraStatistics_FormatNumberWithCommas(tierMin))
     end
     if bar.maxText then
-      bar.maxText:SetText(formatNumberWithCommas(tierMax))
+      bar.maxText:SetText(UltraStatistics_FormatNumberWithCommas(tierMax))
     end
   end
 
@@ -1409,7 +1409,7 @@ function UpdateStatBar(statKey, value)
       end
       -- Update visual state based on toast enabled status
       local toastEnabled =
-        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
       if toastEnabled then
         bar.toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
       else
@@ -1488,7 +1488,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       header = header,
       content = content,
       name = name,
-      collapsed = GLOBAL_SETTINGS.collapsedStatsSections and GLOBAL_SETTINGS.collapsedStatsSections[name] or false,
+      collapsed = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections[name] or false,
     }
     table.insert(sections, section)
     return section
@@ -1552,10 +1552,10 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       if button == 'LeftButton' and section then
         section.collapsed = not section.collapsed
         -- Save state
-        if not GLOBAL_SETTINGS.collapsedStatsSections then
-          GLOBAL_SETTINGS.collapsedStatsSections = {}
+        if not ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections then
+          ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections = {}
         end
-        GLOBAL_SETTINGS.collapsedStatsSections[sectionName] = section.collapsed
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections[sectionName] = section.collapsed
         -- Update icon
         updateIcon(section.collapsed)
         -- Update all positions
@@ -1682,7 +1682,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   })
 
   -- Create Health Tracking section (Deaths) - TBC only; Classic Era has no death context breakdown
-  if IsTBC and IsTBC() then
+  if UltraStatistics_IsTBC and UltraStatistics_IsTBC() then
     local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
     healthTrackingHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
 
@@ -1797,7 +1797,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   end
 
   -- Create Lowest Health section - Classic Era only; TBC shows Deaths instead
-  if not (IsTBC and IsTBC()) then
+  if not (UltraStatistics_IsTBC and UltraStatistics_IsTBC()) then
     local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
     lowestHealthHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
     lowestHealthHeader:SetBackdrop({
@@ -2303,9 +2303,9 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     UpdateStatBar('level', UnitLevel('player') or 1)
     -- Max Health / Max Resource: show max *ever*, only update stored when current is higher
     local currentMaxHealth = UnitHealthMax('player') or 0
-    local maxHealthEver = CharacterStats:GetStat('maxHealthEver') or 0
+    local maxHealthEver = UltraStatisticsCharacterStats:GetStat('maxHealthEver') or 0
     if currentMaxHealth > maxHealthEver then
-      CharacterStats:UpdateStat('maxHealthEver', currentMaxHealth)
+      UltraStatisticsCharacterStats:UpdateStat('maxHealthEver', currentMaxHealth)
       maxHealthEver = currentMaxHealth
     end
     UpdateStatBar('totalHP', maxHealthEver)
@@ -2314,9 +2314,9 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       statLabels.maxResource:SetText('Highest ' .. (resourceLabel or 'Resource') .. ':')
     end
     local currentMaxResource = UnitPowerMax('player', powerType or 0) or 0
-    local maxResourceEver = CharacterStats:GetStat('maxResourceEver') or 0
+    local maxResourceEver = UltraStatisticsCharacterStats:GetStat('maxResourceEver') or 0
     if currentMaxResource > maxResourceEver then
-      CharacterStats:UpdateStat('maxResourceEver', currentMaxResource)
+      UltraStatisticsCharacterStats:UpdateStat('maxResourceEver', currentMaxResource)
       maxResourceEver = currentMaxResource
     end
     UpdateStatBar('maxResource', maxResourceEver)
@@ -2324,54 +2324,54 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     -- Only update pet deaths for pet classes (hunter and warlock)
     local _, playerClass = UnitClass('player')
     if playerClass == 'HUNTER' or playerClass == 'WARLOCK' then
-      UpdateStatBar('petDeaths', CharacterStats:GetStat('petDeaths') or 0)
+      UpdateStatBar('petDeaths', UltraStatisticsCharacterStats:GetStat('petDeaths') or 0)
     end
-    UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
-    UpdateStatBar('playerDeaths', CharacterStats:GetStat('playerDeaths') or 0)
-    UpdateStatBar('playerDeathsOpenWorld', CharacterStats:GetStat('playerDeathsOpenWorld') or 0)
+    UpdateStatBar('closeEscapes', UltraStatisticsCharacterStats:GetStat('closeEscapes') or 0)
+    UpdateStatBar('playerDeaths', UltraStatisticsCharacterStats:GetStat('playerDeaths') or 0)
+    UpdateStatBar('playerDeathsOpenWorld', UltraStatisticsCharacterStats:GetStat('playerDeathsOpenWorld') or 0)
     UpdateStatBar(
       'playerDeathsBattleground',
-      CharacterStats:GetStat('playerDeathsBattleground') or 0
+      UltraStatisticsCharacterStats:GetStat('playerDeathsBattleground') or 0
     )
-    UpdateStatBar('playerDeathsDungeon', CharacterStats:GetStat('playerDeathsDungeon') or 0)
+    UpdateStatBar('playerDeathsDungeon', UltraStatisticsCharacterStats:GetStat('playerDeathsDungeon') or 0)
     UpdateStatBar(
       'playerDeathsHeroicDungeon',
-      CharacterStats:GetStat('playerDeathsHeroicDungeon') or 0
+      UltraStatisticsCharacterStats:GetStat('playerDeathsHeroicDungeon') or 0
     )
-    UpdateStatBar('playerDeathsRaid', CharacterStats:GetStat('playerDeathsRaid') or 0)
-    UpdateStatBar('playerDeathsArena', CharacterStats:GetStat('playerDeathsArena') or 0)
-    UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
-    UpdateStatBar('lowestHealth', CharacterStats:GetStat('lowestHealth') or 100)
-    UpdateStatBar('lowestHealthThisLevel', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
+    UpdateStatBar('playerDeathsRaid', UltraStatisticsCharacterStats:GetStat('playerDeathsRaid') or 0)
+    UpdateStatBar('playerDeathsArena', UltraStatisticsCharacterStats:GetStat('playerDeathsArena') or 0)
+    UpdateStatBar('partyMemberDeaths', UltraStatisticsCharacterStats:GetStat('partyMemberDeaths') or 0)
+    UpdateStatBar('lowestHealth', UltraStatisticsCharacterStats:GetStat('lowestHealth') or 100)
+    UpdateStatBar('lowestHealthThisLevel', UltraStatisticsCharacterStats:GetStat('lowestHealthThisLevel') or 100)
     UpdateStatBar(
       'lowestHealthThisSession',
-      CharacterStats:GetStat('lowestHealthThisSession') or 100
+      UltraStatisticsCharacterStats:GetStat('lowestHealthThisSession') or 100
     )
-    UpdateStatBar('blocks', CharacterStats:GetStat('blocks') or 0)
-    UpdateStatBar('parries', CharacterStats:GetStat('parries') or 0)
-    UpdateStatBar('dodges', CharacterStats:GetStat('dodges') or 0)
-    UpdateStatBar('resists', CharacterStats:GetStat('resists') or 0)
+    UpdateStatBar('blocks', UltraStatisticsCharacterStats:GetStat('blocks') or 0)
+    UpdateStatBar('parries', UltraStatisticsCharacterStats:GetStat('parries') or 0)
+    UpdateStatBar('dodges', UltraStatisticsCharacterStats:GetStat('dodges') or 0)
+    UpdateStatBar('resists', UltraStatisticsCharacterStats:GetStat('resists') or 0)
 
-    UpdateStatBar('elitesSlain', CharacterStats:GetStat('elitesSlain') or 0)
-    UpdateStatBar('rareElitesSlain', CharacterStats:GetStat('rareElitesSlain') or 0)
-    UpdateStatBar('worldBossesSlain', CharacterStats:GetStat('worldBossesSlain') or 0)
-    UpdateStatBar('enemiesSlain', CharacterStats:GetStat('enemiesSlain') or 0)
-    UpdateStatBar('dungeonBossesKilled', CharacterStats:GetStat('dungeonBossesKilled') or 0)
-    UpdateStatBar('dungeonsCompleted', CharacterStats:GetStat('dungeonsCompleted') or 0)
+    UpdateStatBar('elitesSlain', UltraStatisticsCharacterStats:GetStat('elitesSlain') or 0)
+    UpdateStatBar('rareElitesSlain', UltraStatisticsCharacterStats:GetStat('rareElitesSlain') or 0)
+    UpdateStatBar('worldBossesSlain', UltraStatisticsCharacterStats:GetStat('worldBossesSlain') or 0)
+    UpdateStatBar('enemiesSlain', UltraStatisticsCharacterStats:GetStat('enemiesSlain') or 0)
+    UpdateStatBar('dungeonBossesKilled', UltraStatisticsCharacterStats:GetStat('dungeonBossesKilled') or 0)
+    UpdateStatBar('dungeonsCompleted', UltraStatisticsCharacterStats:GetStat('dungeonsCompleted') or 0)
 
-    UpdateStatBar('highestCritValue', CharacterStats:GetStat('highestCritValue') or 0)
-    UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue') or 0)
+    UpdateStatBar('highestCritValue', UltraStatisticsCharacterStats:GetStat('highestCritValue') or 0)
+    UpdateStatBar('highestHealCritValue', UltraStatisticsCharacterStats:GetStat('highestHealCritValue') or 0)
 
     for _, stat in ipairs(survivalStats) do
-      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
+      UpdateStatBar(stat.key, UltraStatisticsCharacterStats:GetStat(stat.key) or 0)
     end
 
     for _, stat in ipairs(pvpStats) do
-      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
+      UpdateStatBar(stat.key, UltraStatisticsCharacterStats:GetStat(stat.key) or 0)
     end
 
     for _, stat in ipairs(miscStats) do
-      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
+      UpdateStatBar(stat.key, UltraStatisticsCharacterStats:GetStat(stat.key) or 0)
     end
   end
 
