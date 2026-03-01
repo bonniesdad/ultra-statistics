@@ -1,5 +1,17 @@
 # Patch Notes
 
+**Version:** 1.0.4
+**Date:** 2026-02-01  
+**Expansion:** Both
+
+---
+
+### FEATURES
+
+- Level, Class, Race details on main screen.
+- Click main screen overlay to open menu.
+
+
 **Version:** 1.0.3
 **Date:** 2026-01-28  
 **Expansion:** TBC

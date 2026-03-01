@@ -1,6 +1,17 @@
 -- Patch notes data structure - update this for each release
 ULTRA_STATISTICS_PATCH_NOTES = { 
   {
+  version = '1.0.4',
+  date = '2026-03-01',
+  notes = { 'FEATURES:', '• Add: Level row to on-screen statistics', '• Add: Open settings by clicking on the overlay' },
+},
+{
+  version = '1.0.4',
+  date = '2026-03-01',
+  expansion = 'TBC',
+  notes = { 'FEATURES:', '• Add: Level row to on-screen statistics', '• Add: Open settings by clicking on the overlay' },
+},
+  {
   version = '1.0.3',
   date = '2026-02-28',
   notes = { 'BUG FIXES:', '• Remove overlapping function naming convention with sister addons which caused loading issues' },
