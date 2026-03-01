@@ -99,6 +99,48 @@ ApplyStatsBackgroundOpacity()
 -- Make the frame draggable
 UltraStatistics_MakeFrameDraggable(statsFrame)
 
+-- Click to open settings (drag to move). Use OnMouseUp since Frame doesn't support OnClick.
+local mouseDownPos
+local function OpenStatisticsSettings()
+  if not _G.UltraStatisticsSettingsFrame or not _G.UltraStatisticsSettingsFrame:IsShown() then
+    if _G.ToggleUltraStatistics then
+      _G.ToggleUltraStatistics()
+    end
+  else
+    if _G.UltraStatistics_SwitchToTab then
+      _G.UltraStatistics_SwitchToTab(1)
+    end
+  end
+end
+
+statsFrame:SetScript('OnMouseDown', function(_, button)
+  if button == 'LeftButton' then
+    local x, y = GetCursorPosition()
+    mouseDownPos = { x = x, y = y }
+  end
+end)
+statsFrame:SetScript('OnMouseUp', function(_, button)
+  if button == 'LeftButton' and mouseDownPos then
+    local x, y = GetCursorPosition()
+    local dx = math.abs(x - mouseDownPos.x)
+    local dy = math.abs(y - mouseDownPos.y)
+    mouseDownPos = nil
+    -- Only open settings if it was a click (minimal movement), not a drag
+    if dx < 3 and dy < 3 then
+      OpenStatisticsSettings()
+    end
+  end
+end)
+statsFrame:SetScript('OnEnter', function()
+  GameTooltip:SetOwner(statsFrame, 'ANCHOR_RIGHT')
+  GameTooltip:SetText('Click to open settings\nDrag to move', nil, nil, nil, nil, true)
+  GameTooltip:Show()
+end)
+statsFrame:SetScript('OnLeave', function()
+  mouseDownPos = nil
+  GameTooltip:Hide()
+end)
+
 -- Helper function to create font strings with standard WoW font
 -- Available fonts: FRIZQT__.TTF (standard), ARIALN.TTF (narrow), MORPHEUS.TTF (serif), SKURRI.TTF
 -- Available styles: '' (none), 'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'MONOCHROME,OUTLINE'
@@ -723,7 +765,7 @@ end
 
 -- Function to update row visibility and positioning
 local function UpdateRowVisibility()
-  local yOffset = -8
+  local yOffset = -12
   local visibleRows = 0
 
   for _, element in ipairs(statsElements) do
@@ -743,8 +785,17 @@ local function UpdateRowVisibility()
       element.label:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, yOffset)
       element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, yOffset)
       element.label:Show()
-      element.value:Show()
+      -- Level row shows "Level {x} {race} {class}" in label only; hide value
+      if element.statKey == 'level' then
+        element.value:Hide()
+      else
+        element.value:Show()
+      end
       yOffset = yOffset - 16
+      -- Extra gap below level row only
+      if element.statKey == 'level' then
+        yOffset = yOffset - 8
+      end
       visibleRows = visibleRows + 1
     else
       element.label:Hide()
@@ -752,8 +803,12 @@ local function UpdateRowVisibility()
     end
   end
 
-  -- Adjust frame height based on visible rows
-  local newHeight = math.max(20, visibleRows * 16 + 16)
+  -- Adjust frame height based on visible rows (include extra gap below level row if visible)
+  local levelGap = 0
+  if ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showMainStatisticsPanelLevel then
+    levelGap = 8
+  end
+  local newHeight = math.max(20, visibleRows * 16 + 16 + levelGap)
   statsFrame:SetSize(220, newHeight)
 end
 
@@ -868,13 +923,25 @@ function UpdateStatistics()
     return statLookup[statKey]
   end
 
-  -- Update character level
+  -- Update character level: show "Level {x} {race} {class}" with class colour
   local playerLevel = UnitLevel('player') or 1
+  local raceName = UnitRace('player') or ''
+  local className, classFileName = UnitClass('player')
+  className = className or ''
   local levelStat = getStat('level')
   if levelStat then
-    levelStat.value:SetText(UltraStatistics_FormatNumberWithCommas(playerLevel))
-    levelStat.label:SetTextColor(1, 0.9, 0.5, 1)
-    levelStat.value:SetTextColor(1, 1, 1, 1)
+    levelStat.label:SetText(string.format('Level %d %s %s', playerLevel, raceName, className))
+    if classFileName and GetClassColor then
+      local r, g, b = GetClassColor(classFileName)
+      if r and g and b then
+        levelStat.label:SetTextColor(r, g, b, 1)
+      else
+        levelStat.label:SetTextColor(0.9, 0.9, 0.85, 1)
+      end
+    else
+      levelStat.label:SetTextColor(0.9, 0.9, 0.85, 1)
+    end
+    levelStat.value:Hide()
   end
 
   -- Update total HP and Max Resource: show max *ever*, only update stored when current is higher
