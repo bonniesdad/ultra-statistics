@@ -4,12 +4,12 @@ local TAB_SPACING = 3
 
 local MAX_TABS = 7 -- Stats / Dungeons / Heroics / Raids / Settings / Info / Credits
 local TAB_WIDTHS = {
-  [1] = TAB_WIDTH, -- Stats
+  [1] = UltraStatistics_IsTBC and UltraStatistics_IsTBC() and 60 or TAB_WIDTH, -- Stats
   [2] = TAB_WIDTH, -- Dungeons
   [3] = TAB_WIDTH, -- Heroics
-  [4] = TAB_WIDTH, -- Raids
+  [4] = UltraStatistics_IsTBC and UltraStatistics_IsTBC() and 60 or TAB_WIDTH, -- Raids
   [5] = TAB_WIDTH, -- Settings
-  [6] = TAB_WIDTH, -- Info
+  [6] = UltraStatistics_IsTBC and UltraStatistics_IsTBC() and 50 or TAB_WIDTH, -- Info
   [7] = TAB_WIDTH, -- Credits
 }
 

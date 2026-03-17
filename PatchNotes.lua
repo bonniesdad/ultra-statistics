@@ -1,9 +1,15 @@
 -- Patch notes data structure - update this for each release
 ULTRA_STATISTICS_PATCH_NOTES = { 
   {
+    version = '1.0.5',
+    date = '2026-03-17',
+    expansion = 'TBC',
+    notes = { 'FEATURES:', '• Sister addon compatibility', '• Add: Lowest health tracking on TBC' },
+  },
+  {
   version = '1.0.5',
   date = '2026-03-17',
-  notes = { 'FEATURES:', '• Sister addon compatibility' },
+  notes = { 'FEATURES:', '• Sister addon compatibility', '• Add: Lowest health tracking on TBC' },
 },
   {
   version = '1.0.4',
@@ -19,13 +25,13 @@ ULTRA_STATISTICS_PATCH_NOTES = {
   {
   version = '1.0.3',
   date = '2026-02-28',
-  notes = { 'BUG FIXES:', '• Remove overlapping function naming convention with sister addons which caused loading issues' },
+  notes = { 'BUG FIXES:', '• Remove overlapping naming convention with sister addon' },
 },
 {
   version = '1.0.3',
   date = '2026-02-28',
   expansion = 'TBC',
-  notes = { 'BUG FIXES:', '• Remove overlapping function naming convention with sister addons which caused loading issues' },
+  notes = { 'BUG FIXES:', '• Remove overlapping naming convention with sister addon' },
 },
   {
   version = '1.0.2',
