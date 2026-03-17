@@ -133,7 +133,7 @@ function UltraStatistics_InitializeTabs(settingsFrame)
   tabContents[5] = createTabContent(5, settingsFrame)
   tabButtons[6] = createTabButton('Info', 6, settingsFrame)
   tabContents[6] = createTabContent(6, settingsFrame)
-  tabButtons[7] = createTabButton('Credits', 7, settingsFrame)
+  tabButtons[7] = createTabButton('Need Help?', 7, settingsFrame)
   tabContents[7] = createTabContent(7, settingsFrame)
 end
 
