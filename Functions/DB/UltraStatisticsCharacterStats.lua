@@ -48,7 +48,6 @@ local UltraStatisticsCharacterStats = {
     duelsLost = 0,
     duelsWinPercent = 0,
     playerJumps = 0,
-    player360s = 0,
     goldGained = 0, -- COPPER
     goldSpent = 0, -- COPPER
     lastLogoutTime = 0,

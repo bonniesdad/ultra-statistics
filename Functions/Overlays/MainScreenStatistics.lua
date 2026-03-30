@@ -507,15 +507,6 @@ local playerJumpsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontH
 playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -413)
 playerJumpsValue:SetText(UltraStatistics_FormatNumberWithCommas(0))
 playerJumpsValue:SetTextColor(1, 1, 1, 1)
--- Player 360s (full spins during jumps)
-local player360sLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-player360sLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -428)
-player360sLabel:SetText('Jump 360s:')
-player360sLabel:SetTextColor(1, 0.9, 0.5, 1)
-local player360sValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-player360sValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -428)
-player360sValue:SetText(UltraStatistics_FormatNumberWithCommas(0))
-player360sValue:SetTextColor(1, 1, 1, 1)
 
 -- Economy statistics
 local goldGainedLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
@@ -748,11 +739,6 @@ local statsElements = { -- Non-tier stats (no tier system)
   value = playerJumpsValue,
   setting = 'showMainStatisticsPanelPlayerJumps',
   statKey = 'playerJumps',
-}, {
-  label = player360sLabel,
-  value = player360sValue,
-  setting = 'showMainStatisticsPanelPlayer360s',
-  statKey = 'player360s',
 } }
 
 -- Create lookup table to reduce upvalues
@@ -1287,14 +1273,6 @@ function UpdateStatistics()
   if playerJumpsStat then
     playerJumpsStat.value:SetText(UltraStatistics_FormatNumberWithCommas(playerJumps))
     ApplyTierColor('playerJumps', playerJumps, playerJumpsStat.label, playerJumpsStat.value)
-  end
-
-  -- Update player 360s value
-  local player360s = UltraStatisticsCharacterStats:GetStat('player360s') or 0
-  local player360sStat = getStat('player360s')
-  if player360sStat then
-    player360sStat.value:SetText(UltraStatistics_FormatNumberWithCommas(player360s))
-    ApplyTierColor('player360s', player360s, player360sStat.label, player360sStat.value)
   end
 
   -- Economy stats (money)

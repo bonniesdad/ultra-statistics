@@ -1,4 +1,4 @@
-KillTracker = KillTracker or {}
+UltraStatisticsKillTracker = UltraStatisticsKillTracker or {}
 
 local recentBossKillTimes = {}
 local BOSS_KILL_DEDUPE_SECONDS = 2.0
@@ -53,9 +53,9 @@ local function HandleBossDeathForKillTracking(trigger, destGUID)
   end
 end
 
-function KillTracker.HandlePartyKill(destGUID)
+function UltraStatisticsKillTracker.HandlePartyKill(destGUID)
   if not destGUID or not UltraStatisticsCharacterStats then return end
-
+  
   -- Dedupe: PARTY_KILL can fire twice for the same mob in some cases
   if shouldDedupePartyKill(destGUID) then return end
 
@@ -112,6 +112,6 @@ function KillTracker.HandlePartyKill(destGUID)
 end
 
 -- Boss kill tracking fallback: UNIT_DIED fires even when PARTY_KILL doesn't (no killing blow credit).
-function KillTracker.HandleUnitDied(destGUID)
+function UltraStatisticsKillTracker.HandleUnitDied(destGUID)
   HandleBossDeathForKillTracking('UNIT_DIED', destGUID)
 end

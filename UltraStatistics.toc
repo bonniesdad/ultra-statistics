@@ -41,8 +41,8 @@ Functions/Checks/IsUltraStatisticsEnemyWorldBoss.lua
 Functions/Checks/IsUltraStatisticsDungeonBoss.lua
 
 Functions/Statistics/ItemTracker.lua
-Functions/Statistics/KillTracker.lua
-Functions/Statistics/CritTracker.lua
+Functions/Statistics/UltraStatisticsKillTracker.lua
+Functions/Statistics/UltraStatisticsCritTracker.lua
 Functions/Statistics/PartyDeathTracker.lua
 Functions/Statistics/BossFightTracker.lua
 Functions/Statistics/TrackLowestHealth.lua
@@ -50,7 +50,6 @@ Functions/Statistics/TrackPlayerDeaths.lua
 Functions/Statistics/TrackAvoidance.lua
 Functions/Statistics/TrackGold.lua
 Functions/Statistics/TrackJumps.lua
-Functions/Statistics/Track360s.lua
 Functions/Statistics/DuelTracker.lua
 Functions/Statistics/CombatLogDispatcher.lua
 Functions/Statistics/DuelEventListener.lua
