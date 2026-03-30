@@ -3,7 +3,7 @@
 
 -- Create the main statistics frame with backdrop styling
 local statsFrame = CreateFrame('Frame', 'UltraStatsFrame', UIParent, 'BackdropTemplate')
-statsFrame:SetSize(220, 360) -- Increased width for better spacing
+statsFrame:SetSize(220, 360) -- Height adjusted by UpdateRowVisibility (+ bottom padding)
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
 
 -- Enhanced backdrop styling with decorative border
@@ -749,6 +749,9 @@ for _, element in ipairs(statsElements) do
   end
 end
 
+-- Extra space below the last visible row (inside the backdrop)
+local MAIN_SCREEN_STATS_BOTTOM_PADDING = 6
+
 -- Function to update row visibility and positioning
 local function UpdateRowVisibility()
   local yOffset = -12
@@ -794,7 +797,8 @@ local function UpdateRowVisibility()
   if ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showMainStatisticsPanelLevel then
     levelGap = 8
   end
-  local newHeight = math.max(20, visibleRows * 16 + 16 + levelGap)
+  local newHeight =
+    math.max(20, visibleRows * 16 + 16 + levelGap + MAIN_SCREEN_STATS_BOTTOM_PADDING)
   statsFrame:SetSize(220, newHeight)
 end
 
