@@ -1,6 +1,6 @@
-CritTracker = CritTracker or {}
+UltraStatisticsCritTracker = UltraStatisticsCritTracker or {}
 
-function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
+function UltraStatisticsCritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
   if not UltraStatisticsCharacterStats then return end
   if sourceGUID ~= UnitGUID('player') then return end
 
@@ -13,6 +13,7 @@ function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
     end
 
     if critical then
+
       local currentHighestCrit = UltraStatisticsCharacterStats:GetStat('highestCritValue') or 0
       if (amount or 0) > currentHighestCrit then
         UltraStatisticsCharacterStats:UpdateStat('highestCritValue', amount or 0)
@@ -21,7 +22,7 @@ function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
   end
 end
 
-function CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
+function UltraStatisticsCritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
   if not UltraStatisticsCharacterStats then return end
   if sourceGUID ~= UnitGUID('player') then return end
 

@@ -68,7 +68,6 @@ function LoadUltraStatisticsDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = true,
-    showMainStatisticsPanelPlayer360s = false,
     showMainStatisticsPanelGoldGained = false,
     showMainStatisticsPanelGoldSpent = false,
     -- lagHome / lagWorld removed in UltraStatistics

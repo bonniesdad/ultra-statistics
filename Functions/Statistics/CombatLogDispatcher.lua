@@ -16,19 +16,19 @@ frame:SetScript('OnEvent', function()
     amount = select(12, CombatLogGetCurrentEventInfo())
   end
 
-  if CritTracker then
-    CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
-    CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
+  if UltraStatisticsCritTracker then
+    UltraStatisticsCritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
+    UltraStatisticsCritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
   end
 
-  if subEvent == 'PARTY_KILL' and KillTracker then
-    KillTracker.HandlePartyKill(destGUID)
+  if subEvent == 'PARTY_KILL' and UltraStatisticsKillTracker then
+    UltraStatisticsKillTracker.HandlePartyKill(destGUID)
   end
 
   -- Some boss deaths do NOT fire PARTY_KILL for the player/party (no killing blow credit),
   -- but they DO fire UNIT_DIED. Use this to count boss kills reliably.
-  if subEvent == 'UNIT_DIED' and KillTracker and KillTracker.HandleUnitDied then
-    KillTracker.HandleUnitDied(destGUID)
+  if subEvent == 'UNIT_DIED' and UltraStatisticsKillTracker and UltraStatisticsKillTracker.HandleUnitDied then
+    UltraStatisticsKillTracker.HandleUnitDied(destGUID)
   end
 
   if ItemTracker then

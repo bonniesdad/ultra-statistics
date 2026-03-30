@@ -64,7 +64,6 @@ local STATISTIC_TOOLTIPS = {
   duelsWinPercent = 'Percentage of duels you have won',
   -- Misc section
   playerJumps = 'Number of jumps you have performed.',
-  player360s = 'Number of times you did a full 360 spin during a jump',
   -- Economy section
   goldGained = 'Total money gained (copper).',
   goldSpent = 'Total money spent (copper).',
@@ -404,11 +403,6 @@ local STAT_BAR_CONFIG = {
   },
   playerJumps = {
     base = 10000,
-    multiplier = 3,
-    valueOnly = true,
-  },
-  player360s = {
-    base = 1000,
     multiplier = 3,
     valueOnly = true,
   },
@@ -2264,12 +2258,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     key = 'playerJumps',
     label = 'Jumps Performed:',
     tooltipKey = 'playerJumps',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'player360s',
-    label = '360s During Jumps:',
-    tooltipKey = 'player360s',
     defaultValue = 0,
     width = 1,
   }, {

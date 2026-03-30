@@ -32,7 +32,6 @@ local STAT_DISPLAY_NAMES = {
   duelsLost = 'Duels Lost',
   duelsWinPercent = 'Duel Win %',
   playerJumps = 'Player Jumps',
-  player360s = '360s During Jumps',
   goldGained = 'Gold Gained',
   goldSpent = 'Gold Spent',
 }
