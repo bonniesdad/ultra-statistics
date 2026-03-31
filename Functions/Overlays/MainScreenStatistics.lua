@@ -741,6 +741,11 @@ local statsElements = { -- Non-tier stats (no tier system)
   statKey = 'playerJumps',
 } }
 
+local function UltraStatistics_UhcXpVerificationAvailable()
+  local u = _G.UHC_XPVerification
+  return u and type(u.GetVerificationVerdictAndSettingLabel) == 'function'
+end
+
 -- Create lookup table to reduce upvalues
 local statLookup = {}
 for _, element in ipairs(statsElements) do
@@ -749,11 +754,37 @@ for _, element in ipairs(statsElements) do
   end
 end
 
+local function UltraStatistics_TryInjectUhcXpVerificationRow()
+  if _G.UltraStatistics_UhcXpVerificationRowInjected then return end
+  if not UltraStatistics_UhcXpVerificationAvailable() then return end
+  _G.UltraStatistics_UhcXpVerificationRowInjected = true
+
+  local uhcXpVerdictLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+  uhcXpVerdictLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
+  uhcXpVerdictLabel:SetText('')
+  uhcXpVerdictLabel:SetTextColor(0.9, 0.9, 0.85, 1)
+  local uhcXpVerdictValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+  uhcXpVerdictValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -23)
+  uhcXpVerdictValue:SetText('')
+  uhcXpVerdictValue:SetTextColor(0.9, 0.9, 0.85, 1)
+
+  local row = {
+    label = uhcXpVerdictLabel,
+    value = uhcXpVerdictValue,
+    setting = 'showMainStatisticsPanelUhcXpVerification',
+    statKey = 'uhcXpVerification',
+  }
+  table.insert(statsElements, 2, row)
+  statLookup['uhcXpVerification'] = row
+end
+
 -- Extra space below the last visible row (inside the backdrop)
 local MAIN_SCREEN_STATS_BOTTOM_PADDING = 6
 
 -- Function to update row visibility and positioning
 local function UpdateRowVisibility()
+  UltraStatistics_TryInjectUhcXpVerificationRow()
+
   local yOffset = -12
   local visibleRows = 0
 
@@ -777,6 +808,13 @@ local function UpdateRowVisibility()
       -- Level row shows "Level {x} {race} {class}" in label only; hide value
       if element.statKey == 'level' then
         element.value:Hide()
+      elseif element.statKey == 'uhcXpVerification' then
+        element.label:Hide()
+        element.value:ClearAllPoints()
+        element.value:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, yOffset + 8)
+        element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, yOffset + 8)
+        element.value:SetJustifyH('LEFT')
+        element.value:Show()
       else
         element.value:Show()
       end
@@ -908,6 +946,8 @@ end
 function UpdateStatistics()
   if not UltraStatisticsDB then return end
 
+  UltraStatistics_TryInjectUhcXpVerificationRow()
+
   -- Helper to get stat element from lookup table
   local function getStat(statKey)
     return statLookup[statKey]
@@ -932,6 +972,15 @@ function UpdateStatistics()
       levelStat.label:SetTextColor(0.9, 0.9, 0.85, 1)
     end
     levelStat.value:Hide()
+  end
+
+  local uhcXpStat = getStat('uhcXpVerification')
+  if uhcXpStat and UltraStatistics_UhcXpVerificationAvailable() then
+    local ok, verdict = pcall(function()
+      return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
+    end)
+    uhcXpStat.value:SetText(ok and 'Ultra Status: ' .. verdict or '')
+    uhcXpStat.value:SetTextColor(0.9, 0.9, 0.85, 1)
   end
 
   -- Update total HP and Max Resource: show max *ever*, only update stored when current is higher

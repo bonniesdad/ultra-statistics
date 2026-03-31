@@ -25,6 +25,7 @@ local STATISTIC_TOOLTIPS = {
   level = 'Your current character level',
   totalHP = 'The highest maximum health you have ever had',
   totalResource = 'The highest maximum primary resource (mana/rage/energy/etc.) you have ever had',
+  uhcXpVerification = 'Verification status from the UHC addon',
   -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
@@ -118,6 +119,7 @@ local STATS_WITHOUT_TOAST_ICON = {
   lowestHealth = true,
   lowestHealthThisLevel = true,
   lowestHealthThisSession = true,
+  uhcXpVerification = true,
 }
 
 -- Some stats share the same icon art; map new keys to existing textures to avoid requiring new PNGs.
@@ -129,6 +131,7 @@ local ICON_KEY_OVERRIDES = {
   playerDeathsHeroicDungeon = 'playerDeaths',
   playerDeathsRaid = 'playerDeaths',
   playerDeathsArena = 'playerDeaths',
+  uhcXpVerification = 'playerJumps',
 }
 
 local function ResolveStatIconKey(statKey)
@@ -204,6 +207,12 @@ local STAT_BAR_CONFIG = {
   maxResource = {
     valueOnly = true,
     noTier = true,
+  },
+  uhcXpVerification = {
+    type = 'text',
+    valueOnly = true,
+    noTier = true,
+    noStatisticsToast = true,
   },
   closeEscapes = {
     base = 1,
@@ -1045,11 +1054,30 @@ function UpdateStatBar(statKey, value)
     if bar.fill then
       bar.fill:Hide()
     end
-    local rawValue = value or 0
-    local isZero = rawValue == 0
+    local rawValue = (cfg.type == 'text') and value or (value or 0)
+    local isZero = cfg.type ~= 'text' and rawValue == 0
     local displayText
     local textColor = fillColor or { 1, 1, 1, 1 }
-    if cfg.type == 'percent' then
+    if cfg.type == 'text' then
+      if type(rawValue) == 'string' and rawValue ~= '' then
+        displayText = rawValue
+      elseif rawValue ~= nil and rawValue ~= '' then
+        displayText = tostring(rawValue)
+      else
+        displayText = '-'
+      end
+      textColor = { 1, 1, 1, 1 }
+      if bar.tier then
+        bar.tier:SetText('')
+        bar.tier:Hide()
+      end
+      if bar.tierBg then
+        bar.tierBg:Hide()
+      end
+      if bar.tierIcon then
+        bar.tierIcon:Hide()
+      end
+    elseif cfg.type == 'percent' then
       local pctMax = cfg.max or 100
       local percent = math.max(0, math.min(value or 0, pctMax))
       displayText = isZero and '-' or string.format('%.1f%%', percent)
@@ -1172,7 +1200,10 @@ function UpdateStatBar(statKey, value)
     local shouldShowToastButton = false
     if bar.toastButton and showNotifications then
       local percentStatsWithToast = { duelsWinPercent = true }
-      if cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier) then
+      if
+        not cfg.noStatisticsToast
+        and (cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier))
+      then
         shouldShowToastButton = true
       end
     end
@@ -1379,7 +1410,10 @@ function UpdateStatBar(statKey, value)
     local shouldShowToastButton = false
     if showNotifications then
       local percentStatsWithToast = { duelsWinPercent = true }
-      if cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier) then
+      if
+        not cfg.noStatisticsToast
+        and (cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier))
+      then
         shouldShowToastButton = true
       end
     end
@@ -1670,6 +1704,22 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     end,
     defaultValue = 0,
   } }
+  if _G.UHC_XPVerification and type(_G.UHC_XPVerification.GetVerificationVerdictAndSettingLabel) == 'function' then
+    table.insert(characterStatsConfig, 2, {
+      key = 'uhcXpVerification',
+      label = 'Ultra Status:',
+      tooltipKey = 'uhcXpVerification',
+      width = 1,
+      settingName = 'showMainStatisticsPanelUhcXpVerification',
+      valueFunc = function()
+        local ok, s = pcall(function()
+          return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
+        end)
+        return ok and s or ''
+      end,
+      defaultValue = '',
+    })
+  end
   CreateStatsGrid(characterInfoContent, characterStatsConfig, {
     defaultWidth = 1,
     rowHeight = 36,
@@ -2287,6 +2337,12 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     if not UltraStatisticsDB then return end
 
     UpdateStatBar('level', UnitLevel('player') or 1)
+    if statBars.uhcXpVerification and _G.UHC_XPVerification and _G.UHC_XPVerification.GetVerificationVerdictAndSettingLabel then
+      local ok, s = pcall(function()
+        return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
+      end)
+      UpdateStatBar('uhcXpVerification', ok and s or '')
+    end
     -- Max Health / Max Resource: show max *ever*, only update stored when current is higher
     local currentMaxHealth = UnitHealthMax('player') or 0
     local maxHealthEver = UltraStatisticsCharacterStats:GetStat('maxHealthEver') or 0

@@ -1,6 +1,17 @@
 -- Patch notes data structure - update this for each release
 ULTRA_STATISTICS_PATCH_NOTES = { 
   {
+    version = '1.0.6',
+    date = '2026-03-31',
+    notes = { 'FEATURES:', '• Add: Ultra Status to on-screen statistics', '• Add: Ultra Status to statistics tab' },
+  },
+  {
+    version = '1.0.6',
+    date = '2026-03-31',
+    expansion = 'TBC',
+    notes = { 'FEATURES:', '• Add: Ultra Status to on-screen statistics', '• Add: Ultra Status to statistics tab' },
+  },
+  {
     version = '1.0.5',
     date = '2026-03-17',
     expansion = 'TBC',
