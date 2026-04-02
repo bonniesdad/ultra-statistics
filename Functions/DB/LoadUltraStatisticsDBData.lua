@@ -29,6 +29,7 @@ function LoadUltraStatisticsDBData()
     collapsedStatsSections = {},
     -- Row visibility settings (MainScreenStatistics.lua reads these)
     showMainStatisticsPanelLevel = true,
+    showMainStatisticsPanelGuild = false,
     showMainStatisticsPanelUhcXpVerification = false,
     showMainStatisticsPanelTotalHP = false,
     showMainStatisticsPanelTotalMana = false,

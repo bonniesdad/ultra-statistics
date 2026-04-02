@@ -23,9 +23,11 @@ end
 local STATISTIC_TOOLTIPS = {
   -- Character Info section
   level = 'Your current character level',
+  guild = 'Your current guild name on the on-screen statistics panel',
   totalHP = 'The highest maximum health you have ever had',
   totalResource = 'The highest maximum primary resource (mana/rage/energy/etc.) you have ever had',
-  uhcXpVerification = 'Verification status from the UHC addon',
+  uhcXpVerification =
+    'UHC verification: on the main statistics overlay, shows valid or failed icon on the level row (hover for status text)',
   -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
@@ -38,7 +40,6 @@ local STATISTIC_TOOLTIPS = {
   petDeaths = 'Total number of times your pet has died permanently',
   -- Survival section
   closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
-  partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
   healthPotionsUsed = 'Number of health potions you have consumed',
   manaPotionsUsed = 'Number of mana potions you have consumed',
   bandagesApplied = 'Number of bandages you have used to heal',
@@ -58,6 +59,8 @@ local STATISTIC_TOOLTIPS = {
   parries = 'Number of times you parried an incoming attack',
   dodges = 'Number of times you dodged an incoming attack',
   resists = 'Number of times you fully resisted a spell attack',
+  -- Social section
+  partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
   playerKills = 'Number of enemy players you have killed (PvP)',
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
@@ -105,6 +108,7 @@ local STAT_TIER_ICON_GAP = 12
 -- Death stats do not show an icon next to the toast button
 local STATS_WITHOUT_TOAST_ICON = {
   level = true, -- no dedicated icon
+  guild = true,
   playerDeaths = true,
   playerDeathsOpenWorld = true,
   playerDeathsBattleground = true,
@@ -199,6 +203,12 @@ local STAT_BAR_CONFIG = {
     max = 60, -- classic cap
     valueOnly = true,
     noTier = true,
+  },
+  guild = {
+    type = 'text',
+    valueOnly = true,
+    noTier = true,
+    noStatisticsToast = true,
   },
   totalHP = {
     valueOnly = true,
@@ -1683,6 +1693,20 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     end,
     defaultValue = 1,
   }, {
+    key = 'guild',
+    label = 'Guild:',
+    tooltipKey = 'guild',
+    width = 1,
+    settingName = 'showMainStatisticsPanelGuild',
+    valueFunc = function()
+      local guildName = select(1, GetGuildInfo('player'))
+      if guildName and guildName ~= '' then
+        return '<' .. guildName .. '>'
+      end
+      return 'Guildless'
+    end,
+    defaultValue = '',
+  }, {
     key = 'totalHP',
     label = 'Highest Health:',
     tooltipKey = 'totalHP',
@@ -1705,7 +1729,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     defaultValue = 0,
   } }
   if _G.UHC_XPVerification and type(_G.UHC_XPVerification.GetVerificationVerdictAndSettingLabel) == 'function' then
-    table.insert(characterStatsConfig, 2, {
+    table.insert(characterStatsConfig, 3, {
       key = 'uhcXpVerification',
       label = 'Ultra Status:',
       tooltipKey = 'uhcXpVerification',
@@ -1829,13 +1853,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       settingName = 'showMainStatisticsPanelPlayerDeathsArena',
       defaultValue = 0,
       width = 0.5,
-    }, {
-      key = 'partyMemberDeaths',
-      label = 'Party Deaths Witnessed:',
-      tooltipKey = 'partyDeathsWitnessed',
-      settingName = 'showMainStatisticsPanelPartyMemberDeaths',
-      defaultValue = 0,
-      width = 1,
     } }
     CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
   end
@@ -2165,6 +2182,62 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   end
   CreateStatsGrid(survivalContent, survivalStats, { defaultWidth = 0.5 })
 
+  -- Social section (collapsible)
+  local socialHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  socialHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  socialHeader:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  socialHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  socialHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  local socialLabel = socialHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  socialLabel:SetPoint('LEFT', socialHeader, 'LEFT', 24, 0)
+  socialLabel:SetText('Social')
+  socialLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  socialLabel:SetShadowOffset(1, -1)
+  socialLabel:SetShadowColor(0, 0, 0, 0.8)
+
+  local socialContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  socialContent:SetSize(415, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+  socialContent:Show()
+  local socialSection = addSection(socialHeader, socialContent, 'social')
+  makeHeaderClickable(socialHeader, socialContent, 'social', socialSection)
+  socialContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  socialContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  socialContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+
+  local socialStats = { {
+    key = 'partyMemberDeaths',
+    label = 'Party Deaths Witnessed:',
+    tooltipKey = 'partyDeathsWitnessed',
+    settingName = 'showMainStatisticsPanelPartyMemberDeaths',
+    defaultValue = 0,
+    width = 1,
+  } }
+  CreateStatsGrid(socialContent, socialStats, { defaultWidth = 0.5 })
+
   -- Create PvP section (duel stats)
   local pvpHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   pvpHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
@@ -2337,6 +2410,11 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     if not UltraStatisticsDB then return end
 
     UpdateStatBar('level', UnitLevel('player') or 1)
+    do
+      local guildName = select(1, GetGuildInfo('player'))
+      local gText = (guildName and guildName ~= '') and ('<' .. guildName .. '>') or 'Guildless'
+      UpdateStatBar('guild', gText)
+    end
     if statBars.uhcXpVerification and _G.UHC_XPVerification and _G.UHC_XPVerification.GetVerificationVerdictAndSettingLabel then
       local ok, s = pcall(function()
         return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
@@ -2382,7 +2460,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     )
     UpdateStatBar('playerDeathsRaid', UltraStatisticsCharacterStats:GetStat('playerDeathsRaid') or 0)
     UpdateStatBar('playerDeathsArena', UltraStatisticsCharacterStats:GetStat('playerDeathsArena') or 0)
-    UpdateStatBar('partyMemberDeaths', UltraStatisticsCharacterStats:GetStat('partyMemberDeaths') or 0)
     UpdateStatBar('lowestHealth', UltraStatisticsCharacterStats:GetStat('lowestHealth') or 100)
     UpdateStatBar('lowestHealthThisLevel', UltraStatisticsCharacterStats:GetStat('lowestHealthThisLevel') or 100)
     UpdateStatBar(
@@ -2405,6 +2482,10 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     UpdateStatBar('highestHealCritValue', UltraStatisticsCharacterStats:GetStat('highestHealCritValue') or 0)
 
     for _, stat in ipairs(survivalStats) do
+      UpdateStatBar(stat.key, UltraStatisticsCharacterStats:GetStat(stat.key) or 0)
+    end
+
+    for _, stat in ipairs(socialStats) do
       UpdateStatBar(stat.key, UltraStatisticsCharacterStats:GetStat(stat.key) or 0)
     end
 
