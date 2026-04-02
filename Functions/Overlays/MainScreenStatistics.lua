@@ -162,6 +162,38 @@ local levelValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlig
 levelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -8)
 levelValue:SetText(UltraStatistics_FormatNumberWithCommas(1))
 levelValue:SetTextColor(1, 1, 1, 1) -- White for values
+
+-- Ultra Status (UHC): checkmark / X on the level row (replaces separate stats row)
+local UHC_ICON_PATH_VALID = 'Interface\\AddOns\\UltraStatistics\\Textures\\valid.png'
+local UHC_ICON_PATH_FAILED = 'Interface\\AddOns\\UltraStatistics\\Textures\\failed.png'
+local UHC_ICON_PATH_UNSURE = 'Interface\\AddOns\\UltraStatistics\\Textures\\unsure.png'
+local UHC_ICON_RIGHT_INSET = 12 -- padding from panel right edge
+local uhcVerificationIconHost = CreateFrame('Frame', nil, statsFrame)
+uhcVerificationIconHost:SetSize(18, 18)
+uhcVerificationIconHost:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -UHC_ICON_RIGHT_INSET, -10)
+uhcVerificationIconHost:SetFrameLevel(statsFrame:GetFrameLevel() + 10)
+uhcVerificationIconHost:EnableMouse(true)
+uhcVerificationIconHost:Hide()
+local uhcVerificationIcon = uhcVerificationIconHost:CreateTexture(nil, 'ARTWORK')
+uhcVerificationIcon:SetAllPoints()
+uhcVerificationIconHost:SetScript('OnEnter', function(self)
+  if not self._uhcTooltip then return end
+  GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
+  GameTooltip:SetText(self._uhcTooltip, nil, nil, nil, nil, true)
+  GameTooltip:Show()
+end)
+uhcVerificationIconHost:SetScript('OnLeave', function()
+  GameTooltip:Hide()
+end)
+
+local guildLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+guildLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
+guildLabel:SetText('Guildless')
+guildLabel:SetTextColor(1, 1, 1, 1)
+local guildValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+guildValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -23)
+guildValue:SetText('')
+guildValue:SetTextColor(1, 1, 1, 1)
 local totalHPLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 totalHPLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
 totalHPLabel:SetText('Highest Health:')
@@ -547,6 +579,11 @@ local statsElements = { -- Non-tier stats (no tier system)
   setting = 'showMainStatisticsPanelLevel',
   statKey = 'level',
 }, {
+  label = guildLabel,
+  value = guildValue,
+  setting = 'showMainStatisticsPanelGuild',
+  statKey = 'guild',
+}, {
   label = totalHPLabel,
   value = totalHPValue,
   setting = 'showMainStatisticsPanelTotalHP',
@@ -777,6 +814,126 @@ local function UltraStatistics_UhcXpVerificationAvailable()
   return u and type(u.GetVerificationVerdictAndSettingLabel) == 'function'
 end
 
+--- @return 'valid' | 'failed' | 'unsure'
+local function UltraStatistics_ParseUhcVerificationState(verdict)
+  local u = _G.UHC_XPVerification
+
+  if u then
+    if type(u.IsVerificationSceptical) == 'function' then
+      local ok, sceptical = pcall(function()
+        return u:IsVerificationSceptical()
+      end)
+      if ok and sceptical then
+        return 'unsure'
+      end
+    end
+    if type(u.IsScepticalVerification) == 'function' then
+      local ok, sceptical = pcall(function()
+        return u:IsScepticalVerification()
+      end)
+      if ok and sceptical then
+        return 'unsure'
+      end
+    end
+    if type(u.GetVerificationState) == 'function' then
+      local ok, state = pcall(function()
+        return u:GetVerificationState()
+      end)
+      if ok and type(state) == 'string' and state ~= '' then
+        local sl = string.lower(state)
+        if sl == 'sceptical' or sl == 'skeptical' or sl == 'unsure' or sl == 'unknown' or sl == 'pending' then
+          return 'unsure'
+        end
+        if sl == 'valid' or sl == 'pass' or sl == 'passed' or sl == 'ok' then
+          return 'valid'
+        end
+        if sl == 'failed' or sl == 'fail' or sl == 'invalid' then
+          return 'failed'
+        end
+      end
+    end
+  end
+
+  if verdict == nil or verdict == '' then
+    return 'unsure'
+  end
+
+  local s = string.lower(tostring(verdict))
+  if string.find(s, 'sceptical', 1, true) or string.find(s, 'skeptical', 1, true)
+    or string.find(s, 'unsure', 1, true) or string.find(s, 'unknown', 1, true)
+    or string.find(s, 'ambiguous', 1, true) or string.find(s, 'pending', 1, true) then
+    return 'unsure'
+  end
+  if string.find(s, 'not valid', 1, true) or string.find(s, 'fail', 1, true)
+    or string.find(s, 'invalid', 1, true) then
+    return 'failed'
+  end
+  if string.find(s, 'valid', 1, true) or string.find(s, 'pass', 1, true)
+    or string.find(s, 'verified', 1, true) then
+    return 'valid'
+  end
+  if string.find(s, '^%s*ok%s*$', 1, false) or string.find(s, ' ok', 1, true) then
+    return 'valid'
+  end
+
+  if u then
+    if type(u.IsVerificationPassing) == 'function' then
+      local ok, pass = pcall(function()
+        return u:IsVerificationPassing()
+      end)
+      if ok and pass ~= nil then
+        return pass and 'valid' or 'failed'
+      end
+    end
+    if type(u.IsXPVerificationValid) == 'function' then
+      local ok, pass = pcall(function()
+        return u:IsXPVerificationValid()
+      end)
+      if ok and pass ~= nil then
+        return pass and 'valid' or 'failed'
+      end
+    end
+  end
+
+  return 'unsure'
+end
+
+local function UltraStatistics_RefreshUhcVerificationOverlayIcon(levelRowYForUhcIcon)
+  if not uhcVerificationIconHost then return end
+  local st = ULTRA_STATISTICS_GLOBAL_SETTINGS
+  local showUhcIcon = st and st.showMainStatisticsPanelLevel and st.showMainStatisticsPanelUhcXpVerification
+    and UltraStatistics_UhcXpVerificationAvailable()
+  if showUhcIcon then
+    local ok, verdict = pcall(function()
+      return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
+    end)
+    verdict = ok and verdict or ''
+    local uhcState = UltraStatistics_ParseUhcVerificationState(verdict)
+    local iconPath = UHC_ICON_PATH_UNSURE
+    if uhcState == 'valid' then
+      iconPath = UHC_ICON_PATH_VALID
+    elseif uhcState == 'failed' then
+      iconPath = UHC_ICON_PATH_FAILED
+    end
+    uhcVerificationIcon:SetTexture(iconPath)
+    uhcVerificationIconHost._uhcTooltip = (verdict ~= '') and ('Ultra Status: ' .. verdict) or 'Ultra Status'
+    uhcVerificationIconHost:Show()
+    if levelRowYForUhcIcon then
+      uhcVerificationIconHost:ClearAllPoints()
+      uhcVerificationIconHost:SetPoint(
+        'TOPRIGHT',
+        statsFrame,
+        'TOPRIGHT',
+        -UHC_ICON_RIGHT_INSET,
+        levelRowYForUhcIcon + 2
+      )
+    end
+  else
+    uhcVerificationIconHost._uhcTooltip = nil
+    uhcVerificationIconHost:Hide()
+  end
+end
+
 -- Create lookup table to reduce upvalues
 local statLookup = {}
 for _, element in ipairs(statsElements) do
@@ -785,39 +942,14 @@ for _, element in ipairs(statsElements) do
   end
 end
 
-local function UltraStatistics_TryInjectUhcXpVerificationRow()
-  if _G.UltraStatistics_UhcXpVerificationRowInjected then return end
-  if not UltraStatistics_UhcXpVerificationAvailable() then return end
-  _G.UltraStatistics_UhcXpVerificationRowInjected = true
-
-  local uhcXpVerdictLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-  uhcXpVerdictLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
-  uhcXpVerdictLabel:SetText('')
-  uhcXpVerdictLabel:SetTextColor(0.9, 0.9, 0.85, 1)
-  local uhcXpVerdictValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
-  uhcXpVerdictValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -23)
-  uhcXpVerdictValue:SetText('')
-  uhcXpVerdictValue:SetTextColor(0.9, 0.9, 0.85, 1)
-
-  local row = {
-    label = uhcXpVerdictLabel,
-    value = uhcXpVerdictValue,
-    setting = 'showMainStatisticsPanelUhcXpVerification',
-    statKey = 'uhcXpVerification',
-  }
-  table.insert(statsElements, 2, row)
-  statLookup['uhcXpVerification'] = row
-end
-
 -- Extra space below the last visible row (inside the backdrop)
 local MAIN_SCREEN_STATS_BOTTOM_PADDING = 6
 
 -- Function to update row visibility and positioning
 local function UpdateRowVisibility()
-  UltraStatistics_TryInjectUhcXpVerificationRow()
-
   local yOffset = -12
   local visibleRows = 0
+  local levelRowYForUhcIcon
 
   for _, element in ipairs(statsElements) do
     local isVisible = false
@@ -837,22 +969,27 @@ local function UpdateRowVisibility()
       element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, yOffset)
       element.label:Show()
       -- Level row shows "Level {x} {race} {class}" in label only; hide value
-      if element.statKey == 'level' then
+      -- Guild row shows "<GuildName>" in label only
+      if element.statKey == 'level' or element.statKey == 'guild' then
         element.value:Hide()
-      elseif element.statKey == 'uhcXpVerification' then
-        element.label:Hide()
-        element.value:ClearAllPoints()
-        element.value:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, yOffset + 8)
-        element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, yOffset + 8)
-        element.value:SetJustifyH('LEFT')
-        element.value:Show()
       else
         element.value:Show()
       end
-      yOffset = yOffset - 16
-      -- Extra gap below level row only
       if element.statKey == 'level' then
-        yOffset = yOffset - 8
+        levelRowYForUhcIcon = yOffset
+      end
+      yOffset = yOffset - 16
+      -- Breathing room below the level block: skip it between level and guild so guild sits tight under level;
+      -- keep it after level when guild is off, or after guild when both are on.
+      local settings = ULTRA_STATISTICS_GLOBAL_SETTINGS
+      if element.statKey == 'level' then
+        if not (settings and settings.showMainStatisticsPanelGuild) then
+          yOffset = yOffset - 8
+        end
+      elseif element.statKey == 'guild' then
+        if settings and settings.showMainStatisticsPanelLevel then
+          yOffset = yOffset - 8
+        end
       end
       visibleRows = visibleRows + 1
     else
@@ -869,6 +1006,8 @@ local function UpdateRowVisibility()
   local newHeight =
     math.max(20, visibleRows * 16 + 16 + levelGap + MAIN_SCREEN_STATS_BOTTOM_PADDING)
   statsFrame:SetSize(220, newHeight)
+
+  UltraStatistics_RefreshUhcVerificationOverlayIcon(levelRowYForUhcIcon)
 end
 
 -- Make UpdateRowVisibility globally accessible
@@ -977,8 +1116,6 @@ end
 function UpdateStatistics()
   if not UltraStatisticsDB then return end
 
-  UltraStatistics_TryInjectUhcXpVerificationRow()
-
   -- Helper to get stat element from lookup table
   local function getStat(statKey)
     return statLookup[statKey]
@@ -1005,13 +1142,13 @@ function UpdateStatistics()
     levelStat.value:Hide()
   end
 
-  local uhcXpStat = getStat('uhcXpVerification')
-  if uhcXpStat and UltraStatistics_UhcXpVerificationAvailable() then
-    local ok, verdict = pcall(function()
-      return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
-    end)
-    uhcXpStat.value:SetText(ok and 'Ultra Status: ' .. verdict or '')
-    uhcXpStat.value:SetTextColor(0.9, 0.9, 0.85, 1)
+  local guildStat = getStat('guild')
+  if guildStat then
+    local guildName = select(1, GetGuildInfo('player'))
+    local gText = (guildName and guildName ~= '') and ('<' .. guildName .. '>') or 'Guildless'
+    guildStat.label:SetText(gText)
+    guildStat.label:SetTextColor(1, 1, 1, 1)
+    guildStat.value:Hide()
   end
 
   -- Update total HP and Max Resource: show max *ever*, only update stored when current is higher
@@ -1396,6 +1533,7 @@ statsFrame:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
 statsFrame:RegisterEvent('UNIT_MAXHEALTH')
 statsFrame:RegisterEvent('UNIT_MAXPOWER')
 statsFrame:RegisterEvent('PLAYER_LOGIN') -- Player entity and world are ready. Addon database and C_ APIs are safe to access.
+statsFrame:RegisterEvent('PLAYER_GUILD_UPDATE')
 statsFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_LOGIN' then
     CheckAddonEnabled()
@@ -1414,7 +1552,7 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Update XP when leveling up
     UpdateStatistics()
-  elseif event == 'PLAYER_EQUIPMENT_CHANGED' then
+  elseif event == 'PLAYER_EQUIPMENT_CHANGED' or event == 'PLAYER_GUILD_UPDATE' then
     UpdateStatistics()
   end
 end)
