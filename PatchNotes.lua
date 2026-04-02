@@ -1,5 +1,10 @@
 -- Patch notes data structure - update this for each release
-ULTRA_STATISTICS_PATCH_NOTES = { 
+ULTRA_STATISTICS_PATCH_NOTES = {
+  {
+    version = '1.0.7',
+    date = '2026-04-02',
+    notes = { 'BUG FIXES:', '• Fix: Remove TBC stats from Classic' },
+  },
   {
     version = '1.0.6',
     date = '2026-03-31',
