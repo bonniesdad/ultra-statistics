@@ -1,5 +1,16 @@
 # Patch Notes
 
+## 1.0.8 - 2026-04-09
+
+**Expansion:** Classic Era / TBC
+
+### BUG FIXES
+
+- Fix: Error on loading in TBC
+
+---
+
+
 ## 1.0.7 — 2026-04-02
 
 **Expansion:** Classic Era

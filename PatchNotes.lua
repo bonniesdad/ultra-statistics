@@ -1,6 +1,17 @@
 -- Patch notes data structure - update this for each release
 ULTRA_STATISTICS_PATCH_NOTES = {
   {
+    version = '1.0.8',
+    date = '2026-04-09',
+    expansion = 'TBC',
+    notes = { 'HOTFIX:', '• Fix: Error on TBC' },
+  },
+  {
+    version = '1.0.8',
+    date = '2026-04-09',
+    notes = { 'HOTFIX:', '• Fix: Error on TBC' },
+  },
+  {
     version = '1.0.7',
     date = '2026-04-02',
     notes = { 'FEATURES:', '• Add: Guild name to on-screen statistics', 'BUG FIXES:', '• Fix: Remove TBC stats from Classic' },
