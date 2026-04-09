@@ -384,11 +384,11 @@ if UltraStatistics_IsTBC and UltraStatistics_IsTBC() then
   playerDeathsHeroicDungeonValue:SetText(UltraStatistics_FormatNumberWithCommas(0))
   playerDeathsHeroicDungeonValue:SetTextColor(1, 0.2, 0.2, 1)
 
-  local playerDeathsRaidLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+  playerDeathsRaidLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
   playerDeathsRaidLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
   playerDeathsRaidLabel:SetText('Deaths (Raid):')
   playerDeathsRaidLabel:SetTextColor(1, 0.9, 0.5, 1)
-  local playerDeathsRaidValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+  playerDeathsRaidValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
   playerDeathsRaidValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
   playerDeathsRaidValue:SetText(UltraStatistics_FormatNumberWithCommas(0))
   playerDeathsRaidValue:SetTextColor(1, 0.2, 0.2, 1)
