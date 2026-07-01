@@ -26,6 +26,7 @@ Functions/Utils/FrameUtils.lua
 Functions/Utils/DiscordInvite.lua
 Functions/Utils/TwitchInvite.lua
 Functions/Utils/ExpansionCheck.lua
+Functions/Utils/HardcoreCheck.lua
 Functions/Utils/AboutAuthor.lua
 
 Functions/DB/SaveUltraStatisticsDBData.lua

@@ -52,7 +52,7 @@ function UltraStatistics_CreateInstanceAccordionList(opts)
   local defaultCollapsed = opts.defaultCollapsed ~= false
   local showDeaths = opts.showDeaths
   if showDeaths == nil then
-    showDeaths = (UltraStatistics_IsTBC and UltraStatistics_IsTBC())
+    showDeaths = (UltraStatistics_IsHardcore and UltraStatistics_IsHardcore())
   end
 
   local function formatStat(val)

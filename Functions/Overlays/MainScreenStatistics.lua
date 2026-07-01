@@ -325,7 +325,7 @@ local partyDeathsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontH
 partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -278)
 partyDeathsValue:SetText(UltraStatistics_FormatNumberWithCommas(0))
 partyDeathsValue:SetTextColor(1, 0.2, 0.2, 1) -- Red for deaths
--- Player Deaths rows (TBC only); locals hoisted so statsElements can reference them
+-- Player Deaths rows (non-Hardcore only); locals hoisted so statsElements can reference them
 local playerDeathsLabel, playerDeathsValue
 local playerDeathsOpenWorldLabel, playerDeathsOpenWorldValue
 local playerDeathsBattlegroundLabel, playerDeathsBattlegroundValue
@@ -333,7 +333,7 @@ local playerDeathsDungeonLabel, playerDeathsDungeonValue
 local playerDeathsHeroicDungeonLabel, playerDeathsHeroicDungeonValue
 local playerDeathsRaidLabel, playerDeathsRaidValue
 local playerDeathsArenaLabel, playerDeathsArenaValue
-if UltraStatistics_IsTBC and UltraStatistics_IsTBC() then
+if UltraStatistics_IsHardcore and UltraStatistics_IsHardcore() then
   playerDeathsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
   playerDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -293)
   playerDeathsLabel:SetText('Deaths (Total):')
@@ -605,7 +605,7 @@ local statsElements = { -- Non-tier stats (no tier system)
   statKey = 'partyMemberDeaths',
 }}
 
-if UltraStatistics_IsTBC and UltraStatistics_IsTBC() then
+if UltraStatistics_IsHardcore and UltraStatistics_IsHardcore() then
   local tbcPlayerDeathStatRows = {
     {
       label = playerDeathsLabel,
@@ -1303,7 +1303,7 @@ function UpdateStatistics()
   end
 
   -- Player deaths
-  if UltraStatistics_IsTBC and UltraStatistics_IsTBC() then
+  if UltraStatistics_IsHardcore and UltraStatistics_IsHardcore() then
     local playerDeaths = UltraStatisticsCharacterStats:GetStat('playerDeaths') or 0
     local playerDeathsStat = getStat('playerDeaths')
     if playerDeathsStat then

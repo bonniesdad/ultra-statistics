@@ -86,6 +86,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
   classicContainer:SetSize(435, 1)
 
   local isTBC = UltraStatistics_IsTBC and UltraStatistics_IsTBC()
+  local showDeaths = UltraStatistics_IsHardcore and UltraStatistics_IsHardcore()
 
   local tbcHeader = CreateFrame('Frame', nil, scrollChild)
   tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
@@ -245,7 +246,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
       newTBC:SetSize(state.width, 1)
       state.tbcContainer = newTBC
 
-      local showDeaths = (UltraStatistics_IsTBC and UltraStatistics_IsTBC())
+      local showDeaths = UltraStatistics_IsHardcore and UltraStatistics_IsHardcore()
 
       UltraStatistics_CreateInstanceAccordionList({
         scrollChild = newClassic,
@@ -860,7 +861,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     scrollChild = classicContainer,
     layout = layout,
     instances = classicInstances,
-    showDeaths = isTBC,
+    showDeaths = showDeaths,
     collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'dungeons',
@@ -878,7 +879,7 @@ function UltraStatistics_InitializeDungeonsTab(tabContents)
     scrollChild = tbcContainer,
     layout = layout,
     instances = tbcInstances,
-    showDeaths = true,
+    showDeaths = showDeaths,
     collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedDungeonsSections,
     width = 435,
     texturesRoot = 'dungeons',

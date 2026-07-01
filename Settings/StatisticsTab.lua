@@ -1749,8 +1749,8 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     rowHeight = 36,
   })
 
-  -- Create Health Tracking section (Deaths) - TBC only; Classic Era has no death context breakdown
-  if UltraStatistics_IsTBC and UltraStatistics_IsTBC() then
+  -- Create Health Tracking section (Deaths) - hidden on Hardcore servers
+  if UltraStatistics_IsHardcore and UltraStatistics_IsHardcore() then
     local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
     healthTrackingHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
 

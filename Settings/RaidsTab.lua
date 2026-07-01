@@ -83,6 +83,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
   classicContainer:SetSize(435, 1)
 
   local isTBC = UltraStatistics_IsTBC and UltraStatistics_IsTBC()
+  local showDeaths = UltraStatistics_IsHardcore and UltraStatistics_IsHardcore()
 
   local tbcHeader = CreateFrame('Frame', nil, scrollChild)
   tbcHeader:SetSize(435, SECTION_TITLE_HEIGHT)
@@ -589,7 +590,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     scrollChild = classicContainer,
     layout = layout,
     instances = classicInstances,
-    showDeaths = isTBC,
+    showDeaths = showDeaths,
     collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
@@ -607,7 +608,7 @@ function UltraStatistics_InitializeRaidsTab(tabContents)
     scrollChild = tbcContainer,
     layout = layout,
     instances = tbcInstances,
-    showDeaths = true,
+    showDeaths = showDeaths,
     collapsedStateTable = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedRaidsSections,
     width = 435,
     texturesRoot = 'raids',
