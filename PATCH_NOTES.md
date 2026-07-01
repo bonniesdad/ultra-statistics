@@ -1,5 +1,14 @@
 # Patch Notes
 
+## 1.0.8 — 2026-07-01
+
+**Expansion:** Classic Era
+
+### FEATURES
+
+- Add: Non Hardcore server support
+
+
 ## 1.0.7 — 2026-04-02
 
 **Expansion:** Classic Era
