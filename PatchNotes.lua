@@ -1,6 +1,11 @@
 -- Patch notes data structure - update this for each release
 ULTRA_STATISTICS_PATCH_NOTES = {
   {
+    version = '1.0.9',
+    date = '2026-07-22',
+    notes = { 'FEATURES:', '• Add: Bump for blizzard' },
+  },
+  {
     version = '1.0.8',
     date = '2026-07-01',
     notes = { 'FEATURES:', '• Add: Non-Hardcore server support' },
