@@ -1,5 +1,15 @@
 # Patch Notes
 
+## 2.0.0 — 2026-09-14
+
+### FEATURES
+
+- Add: Forever support
+- Add: UI Improvements
+- Add: Leaderboard Tab
+
+---
+
 ## 1.0.8 — 2026-07-01
 
 **Expansion:** Classic Era

@@ -2,15 +2,12 @@ local TAB_WIDTH = 86
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
-local MAX_TABS = 7 -- Stats / Dungeons / Heroics / Raids / Settings / Info / Credits
+local MAX_TABS = 4 -- Stats / Leaderboard / Settings / Info
 local TAB_WIDTHS = {
-  [1] = UltraStatistics_IsTBC and UltraStatistics_IsTBC() and 60 or TAB_WIDTH, -- Stats
-  [2] = TAB_WIDTH, -- Dungeons
-  [3] = TAB_WIDTH, -- Heroics
-  [4] = UltraStatistics_IsTBC and UltraStatistics_IsTBC() and 60 or TAB_WIDTH, -- Raids
-  [5] = TAB_WIDTH, -- Settings
-  [6] = UltraStatistics_IsTBC and UltraStatistics_IsTBC() and 50 or TAB_WIDTH, -- Info
-  [7] = TAB_WIDTH, -- Credits
+  [1] = TAB_WIDTH, -- Stats
+  [2] = TAB_WIDTH, -- Leaderboard
+  [3] = TAB_WIDTH, -- Settings
+  [4] = TAB_WIDTH, -- Info
 }
 
 local BASE_TEXT_COLOR = {
@@ -36,35 +33,39 @@ local tabButtons = {}
 local tabContents = {}
 local activeTab = 1
 
-local function calculateTabOffset(index)
-  local totalWidth = 0
+local function getTabBarInset()
+  return _G.UltraStatistics_MenuBorderInset or 5
+end
+
+-- Split the menu content width evenly across all tabs (minus spacing).
+local function layoutTabWidths(parentFrame)
+  local inset = getTabBarInset()
+  local available = math.max(0, (parentFrame:GetWidth() or 535) - (inset * 2))
+  local spacingTotal = TAB_SPACING * (MAX_TABS - 1)
+  local baseWidth = math.floor((available - spacingTotal) / MAX_TABS)
+  local used = baseWidth * MAX_TABS + spacingTotal
+  local remainder = available - used
   for i = 1, MAX_TABS do
-    local width = TAB_WIDTHS[i] or TAB_WIDTH
-    if i < MAX_TABS then
-      totalWidth = totalWidth + width + TAB_SPACING
-    else
-      totalWidth = totalWidth + width
-    end
+    TAB_WIDTHS[i] = baseWidth
   end
+  -- Give leftover pixels to the last tab so the row fills exactly.
+  TAB_WIDTHS[MAX_TABS] = (TAB_WIDTHS[MAX_TABS] or baseWidth) + remainder
+end
 
-  local leftEdge = -totalWidth / 2
-
+local function getTabLeftOffset(index)
+  local inset = getTabBarInset()
   local cumulativeWidth = 0
   for i = 1, index - 1 do
-    local width = TAB_WIDTHS[i] or TAB_WIDTH
-    cumulativeWidth = cumulativeWidth + width + TAB_SPACING
+    cumulativeWidth = cumulativeWidth + (TAB_WIDTHS[i] or TAB_WIDTH) + TAB_SPACING
   end
-
-  local tabWidth = TAB_WIDTHS[index] or TAB_WIDTH
-  return leftEdge + cumulativeWidth + (tabWidth / 2)
+  return inset + cumulativeWidth
 end
 
 local function createTabButton(text, index, parentFrame)
   local button = CreateFrame('Button', nil, parentFrame, 'BackdropTemplate')
   local tabWidth = TAB_WIDTHS[index] or TAB_WIDTH
   button:SetSize(tabWidth, TAB_HEIGHT)
-  local horizontalOffset = calculateTabOffset(index)
-  button:SetPoint('TOP', parentFrame, 'TOP', horizontalOffset, -57)
+  button:SetPoint('TOPLEFT', parentFrame, 'TOPLEFT', getTabLeftOffset(index), -57)
 
   local background = button:CreateTexture(nil, 'BACKGROUND')
   background:SetAllPoints()
@@ -102,8 +103,9 @@ end
 
 local function createTabContent(_, parentFrame)
   local content = CreateFrame('Frame', nil, parentFrame)
-  content:SetSize(495, 600)
-  content:SetPoint('TOP', parentFrame, 'TOP', 0, -50)
+  local inset = getTabBarInset()
+  content:SetPoint('TOPLEFT', parentFrame, 'TOPLEFT', inset, -50)
+  content:SetPoint('BOTTOMRIGHT', parentFrame, 'BOTTOMRIGHT', -inset, 0)
   content:Hide()
   return content
 end
@@ -112,29 +114,16 @@ end
 function UltraStatistics_InitializeTabs(settingsFrame)
   if tabButtons[1] then return end
 
-  local isTBC = UltraStatistics_IsTBC and UltraStatistics_IsTBC()
-  if not isTBC then
-    TAB_WIDTHS[3] = 0 -- Collapse Heroics so other tabs reflow (set before createTabButton)
-  end
+  layoutTabWidths(settingsFrame)
 
   tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
   tabContents[1] = createTabContent(1, settingsFrame)
-  tabButtons[2] = createTabButton('Dungeons', 2, settingsFrame)
+  tabButtons[2] = createTabButton('Leaderboard', 2, settingsFrame)
   tabContents[2] = createTabContent(2, settingsFrame)
-  tabButtons[3] = createTabButton('Heroics', 3, settingsFrame)
+  tabButtons[3] = createTabButton('Settings', 3, settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame)
-  if not isTBC then
-    tabButtons[3]:Hide()
-    tabContents[3]:Hide()
-  end
-  tabButtons[4] = createTabButton('Raids', 4, settingsFrame)
+  tabButtons[4] = createTabButton('Info', 4, settingsFrame)
   tabContents[4] = createTabContent(4, settingsFrame)
-  tabButtons[5] = createTabButton('Settings', 5, settingsFrame)
-  tabContents[5] = createTabContent(5, settingsFrame)
-  tabButtons[6] = createTabButton('Info', 6, settingsFrame)
-  tabContents[6] = createTabContent(6, settingsFrame)
-  tabButtons[7] = createTabButton('Need Help?', 7, settingsFrame)
-  tabContents[7] = createTabContent(7, settingsFrame)
 end
 
 function UltraStatistics_SwitchToTab(index)
@@ -217,24 +206,15 @@ function UltraStatistics_SwitchToTab(index)
         UpdateLowestHealthDisplay()
       end
     end
-  elseif index == 2 and UltraStatistics_InitializeDungeonsTab then
-    UltraStatistics_InitializeDungeonsTab(tabContents)
-    if _G and _G.UltraStatistics_RefreshDungeonsTab then
-      _G.UltraStatistics_RefreshDungeonsTab(true)
+  elseif index == 2 and UltraStatistics_InitializeLeaderboardTab then
+    UltraStatistics_InitializeLeaderboardTab(tabContents)
+    if UltraStatistics_Leaderboard and UltraStatistics_Leaderboard.RefreshUI then
+      UltraStatistics_Leaderboard.RefreshUI()
     end
-  elseif index == 3 and UltraStatistics_InitializeHeroicsTab then
-    UltraStatistics_InitializeHeroicsTab(tabContents)
-    if _G and _G.UltraStatistics_RefreshHeroicsTab then
-      _G.UltraStatistics_RefreshHeroicsTab(true)
-    end
-  elseif index == 4 and UltraStatistics_InitializeRaidsTab then
-    UltraStatistics_InitializeRaidsTab(tabContents)
-  elseif index == 5 and UltraStatistics_InitializeSettingsTab then
+  elseif index == 3 and UltraStatistics_InitializeSettingsTab then
     UltraStatistics_InitializeSettingsTab(tabContents)
-  elseif index == 6 and UltraStatistics_InitializeInfoTab then
+  elseif index == 4 and UltraStatistics_InitializeInfoTab then
     UltraStatistics_InitializeInfoTab(tabContents)
-  elseif index == 7 and UltraStatistics_InitializeCreditsTab then
-    UltraStatistics_InitializeCreditsTab(tabContents)
   end
 end
 

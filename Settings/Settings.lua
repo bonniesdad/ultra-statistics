@@ -47,6 +47,10 @@ local CLASS_BACKGROUND_MAP = {
 }
 
 local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
+local BORDER_INSET = 5
+local BORDER_EDGE_SIZE = 22
+local BORDER_FRAME_INSET = 0
+_G.UltraStatistics_MenuBorderInset = BORDER_INSET
 
 local function getClassBackgroundTexture()
   local _, classFileName = UnitClass('player')
@@ -76,33 +80,67 @@ settingsFrame:SetFrameStrata('DIALOG')
 settingsFrame:SetFrameLevel(15)
 settingsFrame:SetClipsChildren(true)
 
-local settingsFrameBackground = settingsFrame:CreateTexture(nil, 'BACKGROUND')
-settingsFrameBackground:SetPoint('CENTER', settingsFrame, 'CENTER')
+local settingsFrameBackground
+
+local backgroundClip = CreateFrame('Frame', nil, settingsFrame)
+backgroundClip:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', BORDER_INSET, -BORDER_INSET)
+backgroundClip:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -BORDER_INSET, BORDER_INSET)
+backgroundClip:SetClipsChildren(true)
+
+settingsFrameBackground = backgroundClip:CreateTexture(nil, 'BACKGROUND')
+settingsFrameBackground:SetPoint('CENTER', backgroundClip, 'CENTER')
 settingsFrameBackground:SetTexCoord(0, 1, 0, 1)
+
+-- Drawn above all menu content so rounded corners aren't covered by the header/background.
+local settingsBorderFrame = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
+settingsBorderFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', BORDER_FRAME_INSET, -BORDER_FRAME_INSET)
+settingsBorderFrame:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -BORDER_FRAME_INSET, BORDER_FRAME_INSET)
+settingsBorderFrame:SetFrameStrata('DIALOG')
+settingsBorderFrame:EnableMouse(false)
 
 local function updateSettingsFrameBackdrop()
   settingsFrameBackground:SetTexture(getClassBackgroundTexture())
-  local frameHeight = settingsFrame:GetHeight()
-  settingsFrameBackground:SetSize(frameHeight * CLASS_BACKGROUND_ASPECT_RATIO, frameHeight)
+  local clipHeight = backgroundClip:GetHeight()
+  if not clipHeight or clipHeight <= 0 then
+    clipHeight = settingsFrame:GetHeight() - (BORDER_INSET * 2)
+  end
+  settingsFrameBackground:ClearAllPoints()
+  settingsFrameBackground:SetPoint('CENTER', backgroundClip, 'CENTER')
+  settingsFrameBackground:SetSize(clipHeight * CLASS_BACKGROUND_ASPECT_RATIO, clipHeight)
 
+  -- Solid fill only inside the inset so outer corner pixels stay empty for the round border.
   settingsFrame:SetBackdrop({
-    edgeFile = 'Interface\\Buttons\\WHITE8x8',
-    tile = false,
-    edgeSize = 2,
+    bgFile = 'Interface\\Buttons\\WHITE8x8',
+    tile = true,
     insets = {
-      left = 0,
-      right = 0,
-      top = 0,
-      bottom = 0,
+      left = BORDER_INSET,
+      right = BORDER_INSET,
+      top = BORDER_INSET,
+      bottom = BORDER_INSET,
     },
   })
-  settingsFrame:SetBackdropBorderColor(0, 0, 0, 1)
+  settingsFrame:SetBackdropColor(0, 0, 0, 1)
+
+  settingsBorderFrame:SetFrameLevel(settingsFrame:GetFrameLevel() + 100)
+  settingsBorderFrame:SetBackdrop({
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    edgeSize = BORDER_EDGE_SIZE,
+    insets = {
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5,
+    },
+  })
+  settingsBorderFrame:SetBackdropBorderColor(0, 0, 0, 1)
 end
 updateSettingsFrameBackdrop()
 
 local titleBar = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-titleBar:SetSize(535, 60)
-titleBar:SetPoint('TOP', settingsFrame, 'TOP')
+titleBar:SetHeight(52)
+titleBar:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', BORDER_INSET, -BORDER_INSET)
+titleBar:SetPoint('TOPRIGHT', settingsFrame, 'TOPRIGHT', -BORDER_INSET, -BORDER_INSET)
 titleBar:SetFrameStrata('DIALOG')
 titleBar:SetFrameLevel(20)
 titleBar:SetBackdropBorderColor(0, 0, 0, 1)
@@ -125,7 +163,10 @@ settingsTitleLabel:SetText('Ultra Statistics')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
-dividerFrame:SetSize(545, 24)
+dividerFrame:SetHeight(24)
+-- Match the full tab-bar width (content area inside the menu border).
+dividerFrame:SetPoint('LEFT', settingsFrame, 'LEFT', BORDER_INSET, 0)
+dividerFrame:SetPoint('RIGHT', settingsFrame, 'RIGHT', -BORDER_INSET, 0)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
 dividerFrame:SetFrameStrata('DIALOG')
 dividerFrame:SetFrameLevel(20)
@@ -133,7 +174,8 @@ dividerFrame:SetFrameLevel(20)
 local dividerTexture = dividerFrame:CreateTexture(nil, 'ARTWORK')
 dividerTexture:SetAllPoints()
 dividerTexture:SetTexture('Interface\\AddOns\\UltraStatistics\\Textures\\divider.png')
-dividerTexture:SetTexCoord(0, 1, 0, 1)
+-- Crop soft/transparent end caps so the riveted bar fills the same width as the tabs.
+dividerTexture:SetTexCoord(10 / 799, 789 / 799, 0, 1)
 
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 4)

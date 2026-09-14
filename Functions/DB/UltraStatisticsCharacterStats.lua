@@ -11,6 +11,20 @@ local function copyValue(value)
   return newTable
 end
 
+local function GetCurrentRealmKey()
+  if GetNormalizedRealmName then
+    local normalized = GetNormalizedRealmName()
+    if type(normalized) == 'string' and normalized ~= '' then
+      return normalized
+    end
+  end
+  local realm = GetRealmName and GetRealmName() or nil
+  if type(realm) == 'string' and realm ~= '' then
+    return realm
+  end
+  return 'Unknown'
+end
+
 local UltraStatisticsCharacterStats = {
   defaults = {
     closeEscapes = 0,
@@ -26,9 +40,6 @@ local UltraStatisticsCharacterStats = {
     playerDeaths = 0,
     playerDeathsOpenWorld = 0,
     playerDeathsBattleground = 0,
-    playerDeathsDungeon = 0,
-    playerDeathsHeroicDungeon = 0,
-    playerDeathsRaid = 0,
     playerDeathsArena = 0,
     -- Avoidance / mitigation
     blocks = 0,
@@ -69,6 +80,8 @@ function UltraStatisticsCharacterStats:GetCurrentCharacterStats()
 
   local characterGUID = UnitGUID('player')
   if statsInitialized and UltraStatisticsDB.characterStats and UltraStatisticsDB.characterStats[characterGUID] then
+    -- Keep realm tag fresh so server totals stay accurate after transfers/renames.
+    UltraStatisticsDB.characterStats[characterGUID].realmKey = GetCurrentRealmKey()
     return UltraStatisticsDB.characterStats[characterGUID]
   end
 
@@ -86,6 +99,7 @@ function UltraStatisticsCharacterStats:GetCurrentCharacterStats()
     end
   end
 
+  UltraStatisticsDB.characterStats[characterGUID].realmKey = GetCurrentRealmKey()
   statsInitialized = true
   return UltraStatisticsDB.characterStats[characterGUID]
 end
@@ -97,21 +111,8 @@ end
 
 function UltraStatisticsCharacterStats:UpdateStat(statName, value)
   local stats = self:GetCurrentCharacterStats()
-  local oldValue = stats[statName]
   stats[statName] = value
   SaveUltraStatisticsDBData('characterStats', UltraStatisticsDB.characterStats)
-
-  -- Statistics tracking toast notifications (ported behavior)
-  if _G.StatisticsTrackingToast and _G.StatisticsTrackingToast.NotifyStatDelta then
-    local nextVal = tonumber(value)
-    if nextVal ~= nil then
-      local prev = tonumber(oldValue) or 0
-      local delta = nextVal - prev
-      if delta ~= 0 then
-        _G.StatisticsTrackingToast:NotifyStatDelta(statName, delta, nextVal, prev)
-      end
-    end
-  end
 
   if _G.UpdateStatistics then
     _G.UpdateStatistics()
@@ -121,6 +122,25 @@ end
 function UltraStatisticsCharacterStats:GetStat(statName)
   local stats = self:GetCurrentCharacterStats()
   return stats[statName]
+end
+
+-- Sum of playerDeaths for every character this account has tracked on the current realm.
+function UltraStatisticsCharacterStats:GetServerDeaths()
+  local realmKey = GetCurrentRealmKey()
+  local total = 0
+  if not UltraStatisticsDB or type(UltraStatisticsDB.characterStats) ~= 'table' then
+    return self:GetStat('playerDeaths') or 0
+  end
+
+  -- Ensure the current character is tagged before summing.
+  self:GetCurrentCharacterStats()
+
+  for _, stats in pairs(UltraStatisticsDB.characterStats) do
+    if type(stats) == 'table' and stats.realmKey == realmKey then
+      total = total + (tonumber(stats.playerDeaths) or 0)
+    end
+  end
+  return total
 end
 
 function UltraStatisticsCharacterStats:ResetLowestHealthThisLevel()
@@ -147,3 +167,4 @@ function UltraStatisticsCharacterStats:LogStatsToChat()
 end
 
 _G.UltraStatisticsCharacterStats = UltraStatisticsCharacterStats
+_G.UltraStatistics_GetCurrentRealmKey = GetCurrentRealmKey

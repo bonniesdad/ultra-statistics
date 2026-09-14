@@ -23,11 +23,9 @@ end
 local STATISTIC_TOOLTIPS = {
   -- Character Info section
   level = 'Your current character level',
-  guild = 'Your current guild name on the on-screen statistics panel',
+  guild = 'Your current guild name',
   totalHP = 'The highest maximum health you have ever had',
-  totalResource = 'The highest maximum primary resource (mana/rage/energy/etc.) you have ever had',
-  uhcXpVerification =
-    'UHC verification: on the main statistics overlay, shows valid or failed icon on the level row (hover for status text)',
+  totalResource = 'The highest maximum primary resource you have ever had',
   -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
@@ -46,13 +44,11 @@ local STATISTIC_TOOLTIPS = {
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
   playerDeaths = 'Total number of times your character has died',
-  playerDeathsOpenWorld = 'Number of times your character has died in the open world (not in an instance)',
+  serverDeaths = 'Total deaths across all characters on this server',
+  playerDeathsOpenWorld = 'Number of times your character has died in the open world',
   playerDeathsBattleground = 'Number of times your character has died in a battleground',
-  playerDeathsDungeon = 'Number of times your character has died in a normal dungeon (5-man, non-heroic)',
-  playerDeathsHeroicDungeon = 'Number of times your character has died in a heroic dungeon (5-man heroic)',
-  playerDeathsRaid = 'Number of times your character has died in a raid instance',
   playerDeathsArena = 'Number of times your character has died in an arena match',
-  lowestHealth = 'The lowest health percentage you have ever reached (outside combat)',
+  lowestHealth = 'The lowest health percentage you have ever reached',
   lowestHealthThisLevel = 'The lowest health percentage you have reached at your current level',
   lowestHealthThisSession = 'The lowest health percentage you have reached this login session',
   blocks = 'Number of times you blocked an incoming attack',
@@ -61,16 +57,16 @@ local STATISTIC_TOOLTIPS = {
   resists = 'Number of times you fully resisted a spell attack',
   -- Social section
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
-  playerKills = 'Number of enemy players you have killed (PvP)',
+  playerKills = 'Number of enemy players you have killed',
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
   -- Misc section
-  playerJumps = 'Number of jumps you have performed.',
+  playerJumps = 'Number of jumps you have performed',
   -- Economy section
-  goldGained = 'Total money gained (copper).',
-  goldSpent = 'Total money spent (copper).',
+  goldGained = 'Total money gained',
+  goldSpent = 'Total money spent',
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -97,90 +93,14 @@ local STAT_BAR_INSET = 2 -- widen bars by reducing side inset by 20px per side
 local STAT_FILL_INSET = 3
 local ROW_Y_ADJUST = -(LAYOUT.ROW_HEIGHT - STAT_BAR_HEIGHT) / 2
 local BAR_VERTICAL_SHIFT = 28 -- pull bars up slightly now that min labels are hidden
-local TIER_LEFT_PADDING = 16 -- extra gap from bar start
 local BAR_ROW_HEIGHT_REDUCTION = 30 -- shrink bar rows vertically
 local DEFAULT_BAR_ROW_HEIGHT =
   math.max(STAT_BAR_HEIGHT + 4, (LAYOUT.ROW_HEIGHT * 2) - BAR_ROW_HEIGHT_REDUCTION)
 local SECTION_CONTENT_BOTTOM_PADDING = 12 -- gap between last row and frame edge
 local SECTION_BOTTOM_PADDING = 30 -- add breathing room below each section
-local STAT_TIER_ICON_SIZE = 14
-local STAT_TIER_ICON_GAP = 12
--- Death stats do not show an icon next to the toast button
-local STATS_WITHOUT_TOAST_ICON = {
-  level = true, -- no dedicated icon
-  guild = true,
-  playerDeaths = true,
-  playerDeathsOpenWorld = true,
-  playerDeathsBattleground = true,
-  playerDeathsDungeon = true,
-  playerDeathsHeroicDungeon = true,
-  playerDeathsRaid = true,
-  playerDeathsArena = true,
-  petDeaths = true,
-  partyMemberDeaths = true,
-  totalHP = true, -- no dedicated icon
-  maxResource = true, -- no dedicated icon
-  lowestHealth = true,
-  lowestHealthThisLevel = true,
-  lowestHealthThisSession = true,
-  uhcXpVerification = true,
-}
-
--- Some stats share the same icon art; map new keys to existing textures to avoid requiring new PNGs.
-local ICON_KEY_OVERRIDES = {
-  playerKills = 'enemiesSlain',
-  playerDeathsOpenWorld = 'playerDeaths',
-  playerDeathsBattleground = 'playerDeaths',
-  playerDeathsDungeon = 'playerDeaths',
-  playerDeathsHeroicDungeon = 'playerDeaths',
-  playerDeathsRaid = 'playerDeaths',
-  playerDeathsArena = 'playerDeaths',
-  uhcXpVerification = 'playerJumps',
-}
-
-local function ResolveStatIconKey(statKey)
-  if not statKey then
-    return statKey
-  end
-  return ICON_KEY_OVERRIDES[statKey] or statKey
-end
--- Fill colors progress from calm/neutral to impressive across tiers
-local TIER_COLORS = {
-  { 0.78, 0.49, 0.20, 0.95 }, -- tier 1: bronze
-  { 0.78, 0.78, 0.82, 0.95 }, -- tier 2: silver
-  { 0.95, 0.80, 0.22, 0.95 }, -- tier 3: gold
-  { 0.62, 0.36, 0.90, 0.95 }, -- tier 4: master (purple)
-  { 0.90, 0.25, 0.25, 0.95 }, -- tier 5+: demon (red)
-}
-
--- Tier name mapping
-local TIER_NAMES = {
-  [1] = 'Bronze',
-  [2] = 'Silver',
-  [3] = 'Gold',
-  [4] = 'Master',
-  [5] = 'Demon',
-}
-
--- Expose tier names for other UI modules (e.g. StatisticsTrackingToast)
-_G.ULTRA_TIER_NAMES = TIER_NAMES
--- Expose tier colors for other UI modules (e.g. StatisticsTrackingToast)
-_G.ULTRA_TIER_COLORS = TIER_COLORS
-
--- Level bar color steps (blue -> red as you near cap)
-local LEVEL_COLOR_STEPS = {
-  { 0.25, 0.65, 0.9, 0.95 }, -- blue
-  { 0.3, 0.75, 0.75, 0.95 }, -- teal
-  { 0.35, 0.8, 0.55, 0.95 }, -- green-teal
-  { 0.8, 0.75, 0.35, 0.95 }, -- yellow-gold
-  { 0.9, 0.55, 0.25, 0.95 }, -- orange
-  { 0.9, 0.25, 0.25, 0.95 }, -- red
-}
 
 local STAT_BAR_CONFIG = {
   default = {
-    base = 100,
-    multiplier = 2,
     color = { 0.25, 0.65, 0.9, 0.95 },
     bgColor = { 0.05, 0.05, 0.07, 0.75 },
     valueOnly = true,
@@ -198,161 +118,85 @@ local STAT_BAR_CONFIG = {
     color = { 0.9, 0.7, 0.25, 0.95 },
     valueOnly = true,
   },
-  -- Numeric stats with individualized tier settings (all inherit default base/multiplier unless overridden)
   level = {
     max = 60, -- classic cap
     valueOnly = true,
-    noTier = true,
   },
   guild = {
     type = 'text',
     valueOnly = true,
-    noTier = true,
-    noStatisticsToast = true,
   },
   totalHP = {
     valueOnly = true,
-    noTier = true,
   },
   maxResource = {
     valueOnly = true,
-    noTier = true,
-  },
-  uhcXpVerification = {
-    type = 'text',
-    valueOnly = true,
-    noTier = true,
-    noStatisticsToast = true,
   },
   closeEscapes = {
-    base = 1,
-    multiplier = 3,
     valueOnly = true,
   },
   petDeaths = {
     valueOnly = true,
-    noTier = true,
   },
   enemiesSlain = {
-    base = 1000,
-    multiplier = 3,
     valueOnly = true,
   },
   elitesSlain = {
-    base = 200,
-    multiplier = 3,
     valueOnly = true,
   },
   rareElitesSlain = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
   },
   worldBossesSlain = {
-    base = 10,
-    multiplier = 2,
     valueOnly = true,
   },
   dungeonBossesKilled = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
   },
   dungeonsCompleted = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
   },
   playerKills = {
-    base = 10,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   highestCritValue = {
-    base = 500,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   highestHealCritValue = {
-    base = 500,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   healthPotionsUsed = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
   },
   manaPotionsUsed = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
   },
   bandagesUsed = {
-    base = 50,
-    multiplier = 2,
     valueOnly = true,
   },
   targetDummiesUsed = {
-    base = 20,
-    multiplier = 2,
     valueOnly = true,
   },
   grenadesUsed = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
   },
   partyMemberDeaths = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   playerDeaths = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
+  },
+  serverDeaths = {
+    valueOnly = true,
   },
   playerDeathsOpenWorld = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   playerDeathsBattleground = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
-  },
-  playerDeathsDungeon = {
-    base = 1,
-    multiplier = 2,
-    valueOnly = true,
-    noTier = true,
-  },
-  playerDeathsHeroicDungeon = {
-    base = 1,
-    multiplier = 2,
-    valueOnly = true,
-    noTier = true,
-  },
-  playerDeathsRaid = {
-    base = 1,
-    multiplier = 2,
-    valueOnly = true,
-    noTier = true,
   },
   playerDeathsArena = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   lowestHealth = {
     type = 'percent',
@@ -360,7 +204,6 @@ local STAT_BAR_CONFIG = {
     color = { 0.85, 0.35, 0.3, 0.95 },
     bgColor = { 0.07, 0.07, 0.09, 0.75 },
     valueOnly = true,
-    noTier = true,
   },
   lowestHealthThisLevel = {
     type = 'percent',
@@ -368,7 +211,6 @@ local STAT_BAR_CONFIG = {
     color = { 0.85, 0.35, 0.3, 0.95 },
     bgColor = { 0.07, 0.07, 0.09, 0.75 },
     valueOnly = true,
-    noTier = true,
   },
   lowestHealthThisSession = {
     type = 'percent',
@@ -376,71 +218,42 @@ local STAT_BAR_CONFIG = {
     color = { 0.85, 0.35, 0.3, 0.95 },
     bgColor = { 0.07, 0.07, 0.09, 0.75 },
     valueOnly = true,
-    noTier = true,
   },
   blocks = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   parries = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   dodges = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   resists = {
-    base = 1,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   duelsTotal = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   duelsWon = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   duelsLost = {
-    base = 25,
-    multiplier = 2,
     valueOnly = true,
-    noTier = true,
   },
   playerJumps = {
-    base = 10000,
-    multiplier = 3,
     valueOnly = true,
   },
   goldGained = {
     type = 'money',
-    base = 100000, -- 10g
-    multiplier = 2,
     valueOnly = true,
   },
   goldSpent = {
     type = 'money',
-    base = 100000, -- 10g
-    multiplier = 2,
     valueOnly = true,
   },
-  -- lagHome / lagWorld removed in UltraStatistics
 }
 
--- Expose to other modules (e.g. StatisticsTrackingToast) without having to duplicate tier config.
+-- Expose to other modules (e.g. MainScreenStatistics) without duplicating config.
 -- NOTE: This file is loaded on addon load (per `.toc`), so this global is available during gameplay.
 _G.ULTRA_STAT_BAR_CONFIG = STAT_BAR_CONFIG
 
@@ -512,200 +325,11 @@ local function CreateStatBar(parent)
   local text = barFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   text:SetPoint('CENTER', barFrame, 'CENTER', 0, 0)
 
-  -- Dedicated container to force highest z-order for tier text/background
-  local tierContainer = CreateFrame('Frame', nil, barFrame)
-  tierContainer:SetFrameLevel(barFrame:GetFrameLevel() + 20)
-
-  local tierText = tierContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  tierText:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', -30, 9)
-  tierText:SetDrawLayer('OVERLAY', 50) -- keep above any pill/bg/fill
-  tierText:SetTextColor(1, 1, 1, 1) -- bright white for readability
-  local tierIcon = tierContainer:CreateTexture(nil, 'OVERLAY')
-  tierIcon:SetSize(STAT_TIER_ICON_SIZE, STAT_TIER_ICON_SIZE)
-  tierIcon:SetPoint('LEFT', tierText, 'RIGHT', STAT_TIER_ICON_GAP, 0)
-  tierIcon:Hide()
-
-  -- Toast button for non-tier stats (when showStatisticsTracking is enabled)
-  local toastButton = tierContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  toastButton:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', -30, 9)
-  toastButton:SetDrawLayer('OVERLAY', 50)
-  toastButton:SetText('Toast')
-  toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
-  toastButton:Hide()
-
-  -- Pill-style backdrop behind tier text
-  local tierBg = CreateFrame('Frame', nil, tierContainer, 'BackdropTemplate')
-  tierBg:SetFrameLevel(tierContainer:GetFrameLevel() - 1)
-  tierBg:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 10,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 2,
-      bottom = 2,
-    },
-  })
-  tierBg:SetBackdropColor(0, 0, 0, 0.35)
-  tierBg:SetBackdropBorderColor(0, 0, 0, 0.5)
-  tierBg:Hide()
-
-  -- Store tier range and name for tooltip directly on tierText
-  tierText.tierMin = 0
-  tierText.tierMax = 0
-  tierText.tierCurrent = 0
-  tierText.tierName = ''
-
-  -- Add tooltip and click handler to tier text
-  tierText:SetScript('OnEnter', function(self)
-    local tooltipLines = {}
-
-    -- Add tier info if available
-    local currentValue = (self.tierCurrent ~= nil) and self.tierCurrent or self.tierMin
-    if currentValue ~= nil and self.tierMax ~= nil and self.tierName ~= '' then
-      table.insert(
-        tooltipLines,
-        string.format(
-          '%s tier (%s/%s)',
-          self.tierName,
-          UltraStatistics_FormatNumberWithCommas(currentValue),
-          UltraStatistics_FormatNumberWithCommas(self.tierMax)
-        )
-      )
-    end
-
-    -- Add toast toggle info if statKey is available
-    if self.statKey then
-      local showStatisticsTracking = ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking
-      if showStatisticsTracking then
-        local toastEnabled =
-          ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
-        table.insert(tooltipLines, '')
-        table.insert(
-          tooltipLines,
-          toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications'
-        )
-      else
-        table.insert(tooltipLines, '')
-        table.insert(tooltipLines, 'Statistics notifications are disabled')
-      end
-    end
-
-    if #tooltipLines > 0 then
-      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-      for i, line in ipairs(tooltipLines) do
-        if i == 1 then
-          GameTooltip:SetText(line, nil, nil, nil, nil, true)
-        else
-          GameTooltip:AddLine(line, nil, nil, nil, true)
-        end
-      end
-      GameTooltip:Show()
-    end
-  end)
-
-  tierText:SetScript('OnLeave', function(self)
-    GameTooltip:Hide()
-  end)
-
-  -- Make tier text clickable to toggle toast notifications
-  tierText:EnableMouse(true)
-  tierText:SetScript('OnMouseDown', function(self, button)
-    if button == 'LeftButton' and self.statKey then
-      -- Don't allow toggling if showStatisticsTracking is disabled
-      if not ULTRA_STATISTICS_GLOBAL_SETTINGS or not ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then return end
-
-      if not ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
-        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
-      end
-      local current = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
-      ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
-
-      -- Update visual state immediately
-      local enabled = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
-      local r, g, b = self:GetTextColor()
-      if enabled then
-        -- Restore original tier color (will be set by UpdateStatBar)
-        -- For now, just ensure it's not grey
-        if r == 0.5 and g == 0.5 and b == 0.5 then
-          self:SetTextColor(1, 1, 1, 1)
-        end
-      else
-        -- Grey out when disabled
-        self:SetTextColor(0.5, 0.5, 0.5, 1)
-      end
-
-      -- Refresh the stat bar to update colors properly
-      if UpdateStatBar and self.statKey then
-        local value = UltraStatisticsCharacterStats:GetStat(self.statKey) or 0
-        UpdateStatBar(self.statKey, value)
-      end
-    end
-  end)
-
-  -- Add tooltip and click handler to toast button
-  toastButton:SetScript('OnEnter', function(self)
-    if self.statKey then
-      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-      local showStatisticsTracking = ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking
-      if showStatisticsTracking then
-        local toastEnabled =
-          ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
-        GameTooltip:SetText(
-          toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications',
-          nil,
-          nil,
-          nil,
-          nil,
-          true
-        )
-      else
-        GameTooltip:SetText('Statistics notifications are disabled', nil, nil, nil, nil, true)
-      end
-      GameTooltip:Show()
-    end
-  end)
-
-  toastButton:SetScript('OnLeave', function(self)
-    GameTooltip:Hide()
-  end)
-
-  -- Make toast button clickable to toggle toast notifications
-  toastButton:EnableMouse(true)
-  toastButton:SetScript('OnMouseDown', function(self, button)
-    if button == 'LeftButton' and self.statKey then
-      -- Don't allow toggling if showStatisticsTracking is disabled
-      if not ULTRA_STATISTICS_GLOBAL_SETTINGS or not ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking then return end
-
-      if not ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
-        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
-      end
-      local current = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
-      ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
-
-      -- Update visual state immediately
-      local enabled = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
-      if enabled then
-        self:SetTextColor(0.7, 0.7, 0.7, 1)
-      else
-        self:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when disabled
-      end
-    end
-  end)
-
   return {
     frame = barFrame,
     fill = fill,
     text = text,
-    tier = tierText,
-    tierIcon = tierIcon,
-    tierBg = tierBg,
-    tierContainer = tierContainer,
     bg = bg,
-    toastButton = toastButton,
   }
 end
 
@@ -745,68 +369,25 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   bar.minText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   bar.maxText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
 
-  -- Store statKey on tier text for toast toggle functionality
-  bar.tier.statKey = statKey
-
-  -- Store statKey on toast button for toast toggle functionality
-  if bar.toastButton then
-    bar.toastButton.statKey = statKey
-  end
-
-  -- Initialize toast settings if needed (default: all enabled)
-  if not ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled then
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
-  end
-  if ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] == nil then
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] = true
-  end
-
-  bar.tier:ClearAllPoints()
-  bar.tier:SetPoint('TOPRIGHT', bar.frame, 'TOPRIGHT', -30, 9)
-
   bar.minText:SetPoint('BOTTOMLEFT', bar.frame, 'TOPLEFT', 0, 4)
-  -- Show the max value inside the bar on the right
   bar.maxText:ClearAllPoints()
   bar.maxText:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 0)
   bar.maxText:SetJustifyH('RIGHT')
-  bar.maxText:SetDrawLayer('OVERLAY', 10) -- ensure it sits above fills/frames
-  -- Match styling to the centered current value
-  local r, g, b, a = bar.text:GetTextColor()
-  local sr, sg, sb, sa = bar.text:GetShadowColor()
-  local sx, sy = bar.text:GetShadowOffset()
-  local font, fontSize, fontFlags = bar.text:GetFont()
-  if font then
-    bar.maxText:SetFont(font, fontSize, fontFlags)
-  end
-  local fontObj = bar.text:GetFontObject()
-  if fontObj then
-    bar.maxText:SetFontObject(fontObj)
-  end
-  bar.maxText:SetTextColor(r, g, b, a)
-  if sr and sg and sb and sa then
-    bar.maxText:SetShadowColor(sr, sg, sb, sa)
-  end
-  if sx and sy then
-    bar.maxText:SetShadowOffset(sx, sy)
-  end
+  bar.maxText:SetDrawLayer('OVERLAY', 10)
+  bar.minText:Hide()
+  bar.maxText:Hide()
 
   if not isLast then
     local divider = parent:CreateTexture(nil, 'ARTWORK')
     divider:SetColorTexture(0.25, 0.25, 0.3, 0.65)
-    divider:SetHeight(1) -- fill more space below (reduce post-divider gap by ~30px)
-    divider:SetPoint('TOP', bar.frame, 'BOTTOM', 0, -14) -- add 10px more gap above divider
+    divider:SetHeight(1)
+    divider:SetPoint('TOP', bar.frame, 'BOTTOM', 0, -14)
     divider:SetPoint('LEFT', parent, 'LEFT', LAYOUT.ROW_INDENT + 5, 0)
     divider:SetPoint('RIGHT', parent, 'RIGHT', -LAYOUT.ROW_INDENT - 5, 0)
     bar.divider = divider
   end
 
   statBars[statKey] = bar
-  if bar.tierIcon and statKey then
-    local iconKey = ResolveStatIconKey(statKey)
-    bar.tierIcon:SetTexture(
-      'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
-    )
-  end
   PositionStatBar(bar, parent, yOffset, layoutOptions)
   return bar
 end
@@ -839,19 +420,43 @@ local function AttachSettingCheckbox(radio, settingName)
   end)
 end
 
-local function CreateStatsGrid(parent, statsList, options)
-  if not parent or not statsList or #statsList == 0 then
+local function SetStatRowShown(row, shown)
+  if not row then return end
+  if row.label then
+    row.label:SetShown(shown)
+  end
+  if row.radio then
+    row.radio:SetShown(shown)
+  end
+  if row.bar then
+    if row.bar.frame then
+      row.bar.frame:SetShown(shown)
+    end
+    if row.bar.minText then
+      row.bar.minText:SetShown(shown)
+    end
+    if row.bar.maxText then
+      row.bar.maxText:SetShown(shown)
+    end
+    if row.bar.divider then
+      row.bar.divider:SetShown(shown)
+    end
+  end
+end
+
+local function RelayoutStatRows(parent, rows, options)
+  if not parent then
     return 0
   end
-
-  local opts = options or {}
+  rows = rows or parent._statRows or {}
+  local opts = options or parent._statGridOptions or {}
   local defaultWidth = opts.defaultWidth or 0.5
   local columnGap = opts.columnGap or TWO_COLUMN_GAP
   local rowHeight = opts.rowHeight or DEFAULT_BAR_ROW_HEIGHT
   local baseYOffset = opts.baseYOffset or -LAYOUT.CONTENT_PADDING
   local parentWidth = parent:GetWidth()
   if not parentWidth or parentWidth == 0 then
-    parentWidth = opts.fallbackWidth or 415
+    parentWidth = opts.fallbackWidth or 465
   end
   local barLeftBase = LAYOUT.ROW_INDENT + STAT_BAR_INSET
   local fullBarWidth = math.max(0, parentWidth - barLeftBase * 2)
@@ -861,23 +466,18 @@ local function CreateStatsGrid(parent, statsList, options)
     columnGap = 0
   end
 
-  local rowCount = 0
   local nextColumn = 0
   local accumulatedHeight = 0
   local pendingRowHeight = 0
   local pendingRowYOffset = baseYOffset
   local valueOnlyRowHeight = opts.valueOnlyRowHeight or (STAT_BAR_HEIGHT + 4)
+  local visibleCount = 0
 
-  for _, stat in ipairs(statsList) do
-    local statKey = stat.key
-    if statKey then
-      local width = stat.width or defaultWidth
-      local cfg = STAT_BAR_CONFIG[statKey]
-      if cfg and cfg.valueOnly and width < 1 then
-        width = 1
-      end
-      local isValueOnly = cfg and cfg.valueOnly
-      local rowHeightForStat = isValueOnly and valueOnlyRowHeight or rowHeight
+  for _, row in ipairs(rows) do
+    if row.visible ~= false then
+      visibleCount = visibleCount + 1
+      local width = row.width or defaultWidth
+      local rowHeightForStat = row.isValueOnly and valueOnlyRowHeight or rowHeight
       local isFullWidth = width >= 1
       local barWidth = isFullWidth and fullBarWidth or halfBarWidth
       local columnIndex
@@ -890,13 +490,11 @@ local function CreateStatsGrid(parent, statsList, options)
           pendingRowYOffset = baseYOffset - accumulatedHeight
           nextColumn = 0
         end
-        rowCount = rowCount + 1
         columnIndex = 0
         yOffset = baseYOffset - accumulatedHeight
         accumulatedHeight = accumulatedHeight + rowHeightForStat
       else
         if nextColumn == 0 then
-          rowCount = rowCount + 1
           columnIndex = 0
           pendingRowHeight = rowHeightForStat
           pendingRowYOffset = baseYOffset - accumulatedHeight
@@ -921,17 +519,70 @@ local function CreateStatsGrid(parent, statsList, options)
       end
 
       local labelLeft = columnLeft + LABEL_BAR_OFFSET + 8
+      if row.label then
+        row.label:ClearAllPoints()
+        row.label:SetPoint('TOPLEFT', parent, 'TOPLEFT', labelLeft, yOffset + ROW_Y_ADJUST)
+      end
+      if row.radio and row.label then
+        row.radio:ClearAllPoints()
+        row.radio:SetPoint('RIGHT', row.label, 'LEFT', -4, 0)
+      end
+      PositionStatBar(row.bar, parent, yOffset, {
+        left = columnLeft,
+        width = barWidth,
+      })
+      SetStatRowShown(row, true)
+    else
+      SetStatRowShown(row, false)
+    end
+  end
+
+  if nextColumn == 1 then
+    accumulatedHeight = accumulatedHeight + pendingRowHeight
+  end
+
+  local totalHeight = math.max(rowHeight, accumulatedHeight + LAYOUT.CONTENT_PADDING * 2 - 12)
+  if visibleCount == 0 then
+    totalHeight = LAYOUT.CONTENT_PADDING * 2
+  end
+  parent:SetHeight(totalHeight + SECTION_CONTENT_BOTTOM_PADDING)
+  return visibleCount
+end
+
+local function CreateStatsGrid(parent, statsList, options)
+  if not parent or not statsList or #statsList == 0 then
+    return 0
+  end
+
+  local opts = options or {}
+  parent._statGridOptions = opts
+  parent._statRows = {}
+
+  local defaultWidth = opts.defaultWidth or 0.5
+  local valueOnlyRowHeight = opts.valueOnlyRowHeight or (STAT_BAR_HEIGHT + 4)
+  local rowHeight = opts.rowHeight or DEFAULT_BAR_ROW_HEIGHT
+
+  -- Create all rows first, then lay them out through the shared helper.
+  for _, stat in ipairs(statsList) do
+    local statKey = stat.key
+    if statKey then
+      local width = stat.width or defaultWidth
+      local cfg = STAT_BAR_CONFIG[statKey]
+      if cfg and cfg.valueOnly and width < 1 then
+        width = 1
+      end
+      local isValueOnly = cfg and cfg.valueOnly
+
       local label = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-      label:SetPoint('TOPLEFT', parent, 'TOPLEFT', labelLeft, yOffset + ROW_Y_ADJUST)
       label:SetText(stat.label or statKey)
       statLabels[statKey] = label
       if stat.tooltipKey then
         AddStatisticTooltip(label, stat.tooltipKey)
       end
 
-      local bar = CreateBarRow(parent, statKey, yOffset, true, {
-        left = columnLeft,
-        width = barWidth,
+      local bar = CreateBarRow(parent, statKey, 0, true, {
+        left = LAYOUT.ROW_INDENT + STAT_BAR_INSET,
+        width = 100,
       })
 
       local value
@@ -945,6 +596,7 @@ local function CreateStatsGrid(parent, statsList, options)
       end
       UpdateStatBar(statKey, value)
 
+      local radio
       if opts.createCheckboxes ~= false then
         local settingName = stat.settingName
         if settingName == nil then
@@ -956,58 +608,36 @@ local function CreateStatsGrid(parent, statsList, options)
             )
         end
         if settingName and settingName ~= '' then
-          local radio = CreateFrame('CheckButton', nil, parent, 'UICheckButtonTemplate')
-          radio:SetPoint('RIGHT', label, 'LEFT', -4, 0)
+          radio = CreateFrame('CheckButton', nil, parent, 'UICheckButtonTemplate')
           radio:SetScale(0.7)
           AttachSettingCheckbox(radio, settingName)
         end
       end
+
+      local tooltipText = ''
+      if stat.tooltipKey and STATISTIC_TOOLTIPS[stat.tooltipKey] then
+        tooltipText = STATISTIC_TOOLTIPS[stat.tooltipKey]
+      end
+      local searchBlob = string.lower(table.concat({
+        tostring(stat.label or ''),
+        tostring(statKey or ''),
+        tostring(tooltipText or ''),
+      }, ' '))
+
+      table.insert(parent._statRows, {
+        key = statKey,
+        label = label,
+        bar = bar,
+        radio = radio,
+        width = width,
+        isValueOnly = isValueOnly and true or false,
+        searchBlob = searchBlob,
+        visible = true,
+      })
     end
   end
 
-  if nextColumn == 1 then
-    accumulatedHeight = accumulatedHeight + pendingRowHeight
-  end
-
-  local totalHeight = math.max(rowHeight, accumulatedHeight + LAYOUT.CONTENT_PADDING * 2 - 12)
-  parent:SetHeight(totalHeight + SECTION_CONTENT_BOTTOM_PADDING)
-  return rowCount
-end
-
-local function CalculateTierProgress(value, base, multiplier)
-  local currentValue = math.max(0, value or 0)
-  base = tonumber(base) or 0
-  multiplier = tonumber(multiplier) or 0
-
-  -- Robust handling:
-  -- - For multiplier <= 1 (or invalid), use linear tiers: tierMax = base * tier
-  --   This avoids infinite loops and still allows "tier ups" to exist.
-  if base <= 0 then
-    return 1, 0, 0, 0
-  end
-  if multiplier <= 1 then
-    local tier = math.floor(currentValue / base) + 1
-    local tierMin = (tier - 1) * base
-    local tierMax = tier * base
-    local range = tierMax - tierMin
-    local progress = range > 0 and (currentValue - tierMin) / range or 0
-    return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
-  end
-
-  local tier = 1
-  local tierMax = base
-
-  -- Inclusive boundary: hitting the max of a tier counts as entering the next tier.
-  while currentValue >= tierMax do
-    tier = tier + 1
-    tierMax = tierMax * multiplier
-  end
-
-  local tierMin = tier == 1 and 0 or (tierMax / multiplier)
-  local range = tierMax - tierMin
-  local progress = range > 0 and (currentValue - tierMin) / range or 0
-
-  return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
+  return RelayoutStatRows(parent, parent._statRows, opts)
 end
 
 local function FormatMoneyText(copper)
@@ -1047,435 +677,51 @@ function UpdateStatBar(statKey, value)
   local bar = statBars[statKey]
   if not bar then return end
 
-  local showTiers = not ULTRA_STATISTICS_GLOBAL_SETTINGS or ULTRA_STATISTICS_GLOBAL_SETTINGS.showTiers ~= false
-  local showNotifications = ULTRA_STATISTICS_GLOBAL_SETTINGS and ULTRA_STATISTICS_GLOBAL_SETTINGS.showStatisticsTracking
-
   local cfg = STAT_BAR_CONFIG[statKey] or STAT_BAR_CONFIG.default
-  local valueOnly = cfg.valueOnly
-  local fillColor = cfg.color or STAT_BAR_CONFIG.default.color
-  local bgColor = cfg.bgColor or STAT_BAR_CONFIG.default.bgColor
-  local effectiveFillColor = fillColor
 
-  if valueOnly then
-    -- Value-only mode: simple label + value (no bar visuals)
-    if bar.bg then
-      bar.bg:Hide()
-    end
-    if bar.fill then
-      bar.fill:Hide()
-    end
-    local rawValue = (cfg.type == 'text') and value or (value or 0)
-    local isZero = cfg.type ~= 'text' and rawValue == 0
-    local displayText
-    local textColor = fillColor or { 1, 1, 1, 1 }
-    if cfg.type == 'text' then
-      if type(rawValue) == 'string' and rawValue ~= '' then
-        displayText = rawValue
-      elseif rawValue ~= nil and rawValue ~= '' then
-        displayText = tostring(rawValue)
-      else
-        displayText = '-'
-      end
-      textColor = { 1, 1, 1, 1 }
-      if bar.tier then
-        bar.tier:SetText('')
-        bar.tier:Hide()
-      end
-      if bar.tierBg then
-        bar.tierBg:Hide()
-      end
-      if bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-    elseif cfg.type == 'percent' then
-      local pctMax = cfg.max or 100
-      local percent = math.max(0, math.min(value or 0, pctMax))
-      displayText = isZero and '-' or string.format('%.1f%%', percent)
-      -- Hide tier for percent stats
-      if bar.tier then
-        bar.tier:SetText('')
-        bar.tier:Hide()
-      end
-      if bar.tierBg then
-        bar.tierBg:Hide()
-      end
-      if bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-      -- Don't hide toast button here - it will be handled in the toast button section below
-    else
-      if cfg.type == 'money' then
-        displayText = isZero and '-' or FormatMoneyText(rawValue)
-      else
-        local suffix = cfg.suffix or ''
-        displayText = isZero and '-' or (UltraStatistics_FormatNumberWithCommas(rawValue) .. suffix)
-      end
-
-      -- Calculate and show tier for non-percent valueOnly stats (unless noTier is set), or use white when Show Tiers off
-      if not cfg.noTier then
-        local base = cfg.base or STAT_BAR_CONFIG.default.base
-        local multiplier = cfg.multiplier or STAT_BAR_CONFIG.default.multiplier
-        if multiplier <= 1 then
-          multiplier = STAT_BAR_CONFIG.default.multiplier
-        end
-
-        local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
-        local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
-        if showTiers then
-          -- Use tier color for value text
-          local tierColorIndex = math.min(tier, #TIER_COLORS)
-          local tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
-          textColor = tierColor
-          -- Store tier info for positioning after value text is set up
-          if bar.tier then
-            bar.tier:SetText(tierName)
-            -- Check if toast is disabled and grey out if so
-            local toastEnabled =
-              ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
-            if toastEnabled then
-              bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
-            else
-              bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
-            end
-            bar.tier.tierMin = tierMin
-            bar.tier.tierMax = tierMax
-            bar.tier.tierCurrent = value or 0
-            bar.tier.tierName = tierName
-          end
-        else
-          -- Show Tiers off: white text, tier UI hidden (toast button shown later when notifications on)
-          textColor = { 1, 1, 1, 1 }
-          if bar.tier then
-            bar.tier:SetText('')
-            bar.tier:Hide()
-          end
-          if bar.tierBg then
-            bar.tierBg:Hide()
-          end
-          if bar.tierIcon then
-            bar.tierIcon:Hide()
-          end
-        end
-      else
-        -- Hide tier for stats with noTier flag
-        if bar.tier then
-          bar.tier:SetText('')
-          bar.tier:Hide()
-        end
-        if bar.tierBg then
-          bar.tierBg:Hide()
-        end
-        if bar.tierIcon then
-          bar.tierIcon:Hide()
-        end
-      end
-    end
-    if bar.minText then
-      bar.minText:Hide()
-    end
-    if bar.maxText then
-      bar.maxText:Hide()
-    end
-    bar.frame:SetBackdrop(nil)
-    bar.text:ClearAllPoints()
-    -- Nudge value up slightly to align with label baseline
-    bar.text:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 6)
-    bar.text:SetJustifyH('RIGHT')
-    bar.text:SetText(displayText or '')
-    bar.text:SetTextColor(textColor[1] or 1, textColor[2] or 1, textColor[3] or 1, 1)
-
-    -- Position tier text after value text is positioned (for non-percent valueOnly stats, when Show Tiers on)
-    if cfg.type ~= 'percent' and not cfg.noTier and showTiers and bar.tier and bar.tier:GetText() ~= '' then
-      bar.tier:Show()
-      bar.tier:ClearAllPoints()
-      -- Position tier text consistently from the right (moved 30px left)
-      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
-      if bar.tierIcon and showNotifications then
-        bar.tierIcon:ClearAllPoints()
-        bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
-        bar.tierIcon:Show()
-      elseif bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-      if bar.tierBg then
-        bar.tierBg:ClearAllPoints()
-        bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
-        -- Pill should wrap tier text only (icon sits outside the pill)
-        bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
-        bar.tierBg:Show()
-      end
-    end
-
-    -- Show toast button: when Notifications on, for noTier/percent-with-toast stats or for any tier stat when Show Tiers off
-    local shouldShowToastButton = false
-    if bar.toastButton and showNotifications then
-      local percentStatsWithToast = { duelsWinPercent = true }
-      if
-        not cfg.noStatisticsToast
-        and (cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier))
-      then
-        shouldShowToastButton = true
-      end
-    end
-
-    if shouldShowToastButton then
-      bar.toastButton:Show()
-      bar.toastButton:ClearAllPoints()
-      -- Position toast button consistently from the right (moved 30px left)
-      bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
-      -- Show stat icon to the right of the toast button only when Notifications on (deaths have no icon)
-      if bar.tierIcon and statKey and showNotifications and not STATS_WITHOUT_TOAST_ICON[statKey] then
-        local iconKey = ResolveStatIconKey(statKey)
-        bar.tierIcon:ClearAllPoints()
-        bar.tierIcon:SetPoint('LEFT', bar.toastButton, 'RIGHT', STAT_TIER_ICON_GAP, 0)
-        bar.tierIcon:SetTexture(
-          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
-        )
-        bar.tierIcon:Show()
-      elseif bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-      -- Update visual state based on toast enabled status
-      local toastEnabled =
-        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
-      if toastEnabled then
-        bar.toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
-      else
-        bar.toastButton:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when disabled
-      end
-    elseif bar.toastButton then
-      bar.toastButton:Hide()
-      -- Don't hide tierIcon when tier is visible; it was set above and follows showNotifications like other icons
-      local tierVisible =
-        cfg.type ~= 'percent' and not cfg.noTier and showTiers and bar.tier and bar.tier:GetText() ~= ''
-      if bar.tierIcon and not tierVisible then
-        bar.tierIcon:Hide()
-      end
-    end
-
-    -- Keep bar height consistent
-    bar.frame:SetHeight(STAT_BAR_HEIGHT)
-    return
-  end
-
-  -- Ensure visuals are shown for normal bar mode
   if bar.bg then
-    bar.bg:Show()
+    bar.bg:Hide()
   end
   if bar.fill then
-    bar.fill:Show()
-  end
-  if bar.tier then
-    bar.tier:Show()
+    bar.fill:Hide()
   end
   if bar.minText then
     bar.minText:Hide()
-    bar.minText:SetText('')
   end
   if bar.maxText then
-    bar.maxText:Show()
+    bar.maxText:Hide()
   end
 
-  if cfg.type == 'percent' then
+  local rawValue = (cfg.type == 'text') and value or (value or 0)
+  local isZero = cfg.type ~= 'text' and rawValue == 0
+  local displayText
+
+  if cfg.type == 'text' then
+    if type(rawValue) == 'string' and rawValue ~= '' then
+      displayText = rawValue
+    elseif rawValue ~= nil and rawValue ~= '' then
+      displayText = tostring(rawValue)
+    else
+      displayText = '-'
+    end
+  elseif cfg.type == 'percent' then
     local pctMax = cfg.max or 100
     local percent = math.max(0, math.min(value or 0, pctMax))
-    local progress = pctMax > 0 and percent / pctMax or 0
-    if statKey == 'level' and #LEVEL_COLOR_STEPS > 0 then
-      local idx =
-        math.min(#LEVEL_COLOR_STEPS, math.max(1, math.floor(progress * #LEVEL_COLOR_STEPS) + 1))
-      effectiveFillColor = LEVEL_COLOR_STEPS[idx] or effectiveFillColor
-    end
-    local availableWidth =
-      (bar.bg and (bar.bg:GetWidth() - STAT_FILL_INSET * 2)) or bar.frame:GetWidth()
-    bar.fill:SetWidth(availableWidth * progress)
-    if statKey == 'level' then
-      bar.text:SetText(string.format('%d', value or 0))
-    else
-      bar.text:SetText(string.format('%.1f%%', percent))
-    end
-    bar.tier:SetText('')
-    -- Don't hide toast button here - it will be handled in the toast button section below
-    if bar.minText then
-      bar.minText:SetText('0')
-    end
-    if bar.maxText then
-      bar.maxText:SetText(string.format('%d', pctMax))
-    end
+    displayText = isZero and '-' or string.format('%.1f%%', percent)
+  elseif cfg.type == 'money' then
+    displayText = isZero and '-' or FormatMoneyText(rawValue)
   else
-    local base = cfg.base or STAT_BAR_CONFIG.default.base
-    local multiplier = cfg.multiplier or STAT_BAR_CONFIG.default.multiplier
-    if multiplier <= 1 then
-      multiplier = STAT_BAR_CONFIG.default.multiplier
-    end
-
-    local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
-    local tierColor = nil
-    if showTiers and not cfg.color and #TIER_COLORS > 0 then
-      local tierColorIndex = math.min(tier, #TIER_COLORS)
-      tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
-      effectiveFillColor = tierColor
-    end
-    local availableWidth =
-      (bar.bg and (bar.bg:GetWidth() - STAT_FILL_INSET * 2)) or bar.frame:GetWidth()
-    bar.fill:SetWidth(availableWidth * progress)
-    bar.text:SetText(UltraStatistics_FormatNumberWithCommas(value or 0))
-
-    -- Set tier name and colours when Show Tiers on; otherwise white text
-    local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
-    if showTiers then
-      bar.tier:SetText(tierName)
-      if not tierColor then
-        local tierColorIndex = math.min(tier, #TIER_COLORS)
-        tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
-      end
-      local toastEnabled =
-        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
-      if toastEnabled then
-        bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
-      else
-        bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
-      end
-      if not cfg.color then
-        bar.text:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
-      end
-      if bar.tier then
-        bar.tier.tierMin = tierMin
-        bar.tier.tierMax = tierMax
-        bar.tier.tierCurrent = value or 0
-        bar.tier.tierName = tierName
-      end
-    else
-      bar.tier:SetText('')
-      bar.text:SetTextColor(1, 1, 1, 1)
-    end
-
-    if bar.minText then
-      bar.minText:SetText(UltraStatistics_FormatNumberWithCommas(tierMin))
-    end
-    if bar.maxText then
-      bar.maxText:SetText(UltraStatistics_FormatNumberWithCommas(tierMax))
-    end
+    local suffix = cfg.suffix or ''
+    displayText = isZero and '-' or (UltraStatistics_FormatNumberWithCommas(rawValue) .. suffix)
   end
 
-  -- Style end value to exactly match the centered value and sit above fills
-  if bar.maxText then
-    bar.maxText:Show()
-    bar.maxText:ClearAllPoints()
-    bar.maxText:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 0)
-    bar.maxText:SetJustifyH('RIGHT')
-    local font, fontSize, fontFlags = bar.text:GetFont()
-    if font then
-      bar.maxText:SetFont(font, fontSize, fontFlags)
-    end
-    local fontObj = bar.text:GetFontObject()
-    if fontObj then
-      bar.maxText:SetFontObject(fontObj)
-    end
-    local r, g, b, a = bar.text:GetTextColor()
-    bar.maxText:SetTextColor(r or 1, g or 1, b or 1, a or 1)
-    local sr, sg, sb, sa = bar.text:GetShadowColor()
-    if sr and sg and sb and sa then
-      bar.maxText:SetShadowColor(sr, sg, sb, sa)
-    end
-    local sx, sy = bar.text:GetShadowOffset()
-    if sx and sy then
-      bar.maxText:SetShadowOffset(sx, sy)
-    end
-    -- Force max text to the topmost layer
-    bar.maxText:SetDrawLayer('OVERLAY', 50)
-  end
-
-  -- Layout: tier on the left, value on the right (only when Show Tiers on); hide tier icon when Notifications off
-  if bar.tier then
-    if cfg.type == 'percent' or cfg.noTier or not showTiers then
-      bar.tier:Hide()
-      if bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-      if bar.tierBg then
-        bar.tierBg:Hide()
-      end
-    else
-      bar.tier:Show()
-      bar.tier:ClearAllPoints()
-      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
-      if bar.tierIcon and showNotifications then
-        bar.tierIcon:ClearAllPoints()
-        bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
-        bar.tierIcon:Show()
-      elseif bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-      if bar.tierBg then
-        bar.tierBg:ClearAllPoints()
-        bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
-        bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
-        bar.tierBg:Show()
-      end
-    end
-  end
-
-  -- Show toast button when Notifications on: noTier/percent-with-toast, or any tier stat when Show Tiers off
-  if bar.toastButton then
-    local shouldShowToastButton = false
-    if showNotifications then
-      local percentStatsWithToast = { duelsWinPercent = true }
-      if
-        not cfg.noStatisticsToast
-        and (cfg.noTier or percentStatsWithToast[statKey] or (not showTiers and cfg.type ~= 'percent' and not cfg.noTier))
-      then
-        shouldShowToastButton = true
-      end
-    end
-
-    if shouldShowToastButton then
-      bar.toastButton:Show()
-      bar.toastButton:ClearAllPoints()
-      -- Position toast button consistently from the right (moved 30px left)
-      bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
-      -- Show stat icon to the right of the toast button only when Notifications on (deaths have no icon)
-      if bar.tierIcon and statKey and showNotifications and not STATS_WITHOUT_TOAST_ICON[statKey] then
-        local iconKey = ResolveStatIconKey(statKey)
-        bar.tierIcon:ClearAllPoints()
-        bar.tierIcon:SetPoint('LEFT', bar.toastButton, 'RIGHT', STAT_TIER_ICON_GAP, 0)
-        bar.tierIcon:SetTexture(
-          'Interface\\AddOns\\UltraStatistics\\Textures\\stats-icons\\' .. iconKey .. '.png'
-        )
-        bar.tierIcon:Show()
-      elseif bar.tierIcon then
-        bar.tierIcon:Hide()
-      end
-      -- Update visual state based on toast enabled status
-      local toastEnabled =
-        ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled and ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
-      if toastEnabled then
-        bar.toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
-      else
-        bar.toastButton:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when disabled
-      end
-    else
-      bar.toastButton:Hide()
-      -- Hide icon when toast hidden (not in tier mode here; tier mode icon is handled by Layout block above)
-      if bar.tierIcon and (cfg.type == 'percent' or cfg.noTier or not showTiers) then
-        bar.tierIcon:Hide()
-      end
-    end
-  end
+  bar.frame:SetBackdrop(nil)
   bar.text:ClearAllPoints()
-  bar.text:SetPoint('CENTER', bar.frame, 'CENTER', 0, 0)
-
-  if effectiveFillColor then
-    bar.fill:SetColorTexture(unpack(effectiveFillColor))
-  end
-  if bgColor then
-    bar.bg:SetColorTexture(unpack(bgColor))
-  end
-  if effectiveFillColor then
-    bar.fill:SetColorTexture(unpack(effectiveFillColor))
-  end
-  if bgColor then
-    bar.bg:SetColorTexture(unpack(bgColor))
-  end
+  bar.text:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 6)
+  bar.text:SetJustifyH('RIGHT')
+  bar.text:SetText(displayText or '')
+  bar.text:SetTextColor(1, 1, 1, 1)
+  bar.frame:SetHeight(STAT_BAR_HEIGHT)
 end
 
 -- Initialize Statistics Tab when called
@@ -1489,11 +735,41 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   -- Mark as initialized
   tabContents[1].initialized = true
 
+  -- Search row: [Search bar stretches] [Clear] [Expand] [Collapse]
+  -- Slightly larger left pad so the row sits visually centered (InputBox chrome reads left-heavy).
+  local SEARCH_ROW_PAD_LEFT = 10
+  local SEARCH_ROW_PAD_RIGHT = 4
+
+  local collapseAllButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
+  collapseAllButton:SetSize(80, 22)
+  collapseAllButton:SetText('Collapse')
+  collapseAllButton:SetPoint('TOPRIGHT', tabContents[1], 'TOPRIGHT', -SEARCH_ROW_PAD_RIGHT, -60)
+
+  local expandAllButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
+  expandAllButton:SetSize(80, 22)
+  expandAllButton:SetText('Expand')
+  expandAllButton:SetPoint('TOPRIGHT', collapseAllButton, 'TOPLEFT', -6, 0)
+
+  local clearSearchButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
+  clearSearchButton:SetSize(56, 22)
+  clearSearchButton:SetText('Clear')
+  clearSearchButton:SetPoint('TOPRIGHT', expandAllButton, 'TOPLEFT', -6, 0)
+
+  local searchBox = CreateFrame('EditBox', nil, tabContents[1], 'InputBoxTemplate')
+  searchBox:SetHeight(25)
+  searchBox:SetAutoFocus(false)
+  searchBox:SetPoint('TOPLEFT', tabContents[1], 'TOPLEFT', SEARCH_ROW_PAD_LEFT, -58)
+  searchBox:SetPoint('TOPRIGHT', clearSearchButton, 'TOPLEFT', -6, 2)
+
+  local searchPlaceholder = searchBox:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
+  searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
+  searchPlaceholder:SetText('Search stats...')
+
   local statsFrame = CreateFrame('Frame', nil, tabContents[1], 'BackdropTemplate')
-  statsFrame:SetPoint('TOP', tabContents[1], 'TOP', 0, -55) -- Moved up 10px
-  statsFrame:SetPoint('LEFT', tabContents[1], 'LEFT', 10, 0)
-  statsFrame:SetPoint('RIGHT', tabContents[1], 'RIGHT', -10, 0)
-  statsFrame:SetHeight(535) -- Height fixed, width set by LEFT/RIGHT anchors
+  statsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
+  statsFrame:SetPoint('LEFT', tabContents[1], 'LEFT', 0, 0)
+  statsFrame:SetPoint('RIGHT', tabContents[1], 'RIGHT', 0, 0)
+  statsFrame:SetPoint('BOTTOM', tabContents[1], 'BOTTOM', 0, 10)
   statsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -1515,59 +791,105 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -30, 10) -- Leave room for scrollbar on right
   -- Create scroll child frame
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-  statsScrollChild:SetSize(435, 300) -- Width matches section header width
+  local SECTION_WIDTH = 485
+  local CONTENT_WIDTH = 465
+  statsScrollChild:SetSize(SECTION_WIDTH, 300)
   statsScrollFrame:SetScrollChild(statsScrollChild)
   local resourceEventFrame
 
   -- Track all sections for dynamic positioning
   local sections = {}
-  local function addSection(header, content, name)
+  local updateSectionPositions
+
+  local function syncStatsContentWidths()
+    local w = statsScrollFrame:GetWidth()
+    if w and w > 0 then
+      SECTION_WIDTH = w
+      CONTENT_WIDTH = math.max(100, w - 20)
+    end
+    statsScrollChild:SetWidth(SECTION_WIDTH)
+    for _, section in ipairs(sections) do
+      if section.header then
+        section.header:SetWidth(SECTION_WIDTH)
+      end
+      if section.content then
+        section.content:SetWidth(CONTENT_WIDTH)
+        if section.content._statRows then
+          RelayoutStatRows(section.content, section.content._statRows, section.content._statGridOptions)
+        end
+      end
+    end
+  end
+  local function addSection(header, content, name, title)
     local section = {
       header = header,
       content = content,
       name = name,
+      title = title or name,
       collapsed = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections[name] or false,
+      hiddenBySearch = false,
     }
     table.insert(sections, section)
     return section
   end
 
   -- Function to update section positions based on collapsed state
-  local function updateSectionPositions()
-    for i, section in ipairs(sections) do
-      -- Position header
-      section.header:ClearAllPoints()
-      if i == 1 then
-        section.header:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
-      else
-        -- Anchor to the previous section's header if collapsed, otherwise to its content
-        local previousSection = sections[i - 1]
-        local anchorFrame =
-          previousSection.collapsed and previousSection.header or previousSection.content
-        section.header:SetPoint(
-          'TOPLEFT',
-          anchorFrame,
-          'BOTTOMLEFT',
-          previousSection.collapsed and 0 or -LAYOUT.CONTENT_INDENT,
-          previousSection.collapsed and -LAYOUT.SECTION_SPACING or -LAYOUT.SECTION_SPACING
-        )
-      end
-
-      -- Show/hide content based on collapsed state
-      if section.collapsed then
+  updateSectionPositions = function()
+    local lastAnchor = nil
+    for _, section in ipairs(sections) do
+      if section.hiddenBySearch then
+        section.header:Hide()
         section.content:Hide()
       else
-        section.content:Show()
-        section.content:ClearAllPoints()
-        section.content:SetPoint(
-          'TOPLEFT',
-          section.header,
-          'BOTTOMLEFT',
-          LAYOUT.CONTENT_INDENT,
-          -LAYOUT.CONTENT_PADDING
-        )
+        section.header:Show()
+        section.header:ClearAllPoints()
+        if not lastAnchor then
+          section.header:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
+        else
+          local previousSection = lastAnchor
+          local anchorFrame =
+            previousSection.collapsed and previousSection.header or previousSection.content
+          section.header:SetPoint(
+            'TOPLEFT',
+            anchorFrame,
+            'BOTTOMLEFT',
+            previousSection.collapsed and 0 or -LAYOUT.CONTENT_INDENT,
+            -LAYOUT.SECTION_SPACING
+          )
+        end
+
+        if section.collapsed then
+          section.content:Hide()
+        else
+          section.content:Show()
+          section.content:ClearAllPoints()
+          section.content:SetPoint(
+            'TOPLEFT',
+            section.header,
+            'BOTTOMLEFT',
+            LAYOUT.CONTENT_INDENT,
+            -LAYOUT.CONTENT_PADDING
+          )
+        end
+        lastAnchor = section
       end
     end
+
+    local bottom = 20
+    if lastAnchor then
+      local bottomFrame = lastAnchor.collapsed and lastAnchor.header or lastAnchor.content
+      bottom = math.abs(select(5, bottomFrame:GetPoint(1)) or 0) + (bottomFrame:GetHeight() or 0) + 40
+    end
+    -- Prefer measuring from scroll child top to last frame bottom when available
+    if lastAnchor then
+      local bottomFrame = lastAnchor.collapsed and lastAnchor.header or lastAnchor.content
+      local top = statsScrollChild:GetTop()
+      local frameBottom = bottomFrame:GetBottom()
+      if top and frameBottom then
+        bottom = (top - frameBottom) + 40
+      end
+    end
+    statsScrollChild:SetHeight(math.max(300, bottom))
   end
 
   -- Helper function to create a collapsible header
@@ -1584,26 +906,31 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       collapseIcon:SetText(collapsed and '+' or '-')
     end
 
+    if section then
+      section.SetCollapsed = function(collapsed, opts)
+        opts = opts or {}
+        section.collapsed = collapsed and true or false
+        updateIcon(section.collapsed)
+        if not opts.skipSave then
+          if not ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections then
+            ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections = {}
+          end
+          ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections[sectionName] = section.collapsed
+        end
+        if not opts.skipLayout then
+          updateSectionPositions()
+        end
+        if not section.collapsed and UpdateLowestHealthDisplay then
+          UpdateLowestHealthDisplay()
+        end
+      end
+    end
+
     -- Enable mouse interaction
     header:EnableMouse(true)
     header:SetScript('OnMouseDown', function(self, button)
-      if button == 'LeftButton' and section then
-        section.collapsed = not section.collapsed
-        -- Save state
-        if not ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections then
-          ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections = {}
-        end
-        ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections[sectionName] = section.collapsed
-        -- Update icon
-        updateIcon(section.collapsed)
-        -- Update all positions
-        updateSectionPositions()
-        if not section.collapsed then
-          if UpdateLowestHealthDisplay then
-            UpdateLowestHealthDisplay()
-          end
-          -- XP verification removed in UltraStatistics
-        end
+      if button == 'LeftButton' and section and section.SetCollapsed then
+        section.SetCollapsed(not section.collapsed)
       end
     end)
 
@@ -1625,7 +952,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Character Info section (collapsible)
   local characterInfoHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  characterInfoHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  characterInfoHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
 
   -- Modern WoW row styling with rounded corners and greyish background
   characterInfoHeader:SetBackdrop({
@@ -1654,12 +981,12 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Character Info breakdown
   local characterInfoContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  characterInfoContent:SetSize(415, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Level only
+  characterInfoContent:SetSize(CONTENT_WIDTH, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Level only
   -- Position will be set by updateSectionPositions
   characterInfoContent:Show() -- Show by default
   -- Register section and make header clickable
   local characterInfoSection =
-    addSection(characterInfoHeader, characterInfoContent, 'characterInfo')
+    addSection(characterInfoHeader, characterInfoContent, 'characterInfo', 'Character Info')
   makeHeaderClickable(
     characterInfoHeader,
     characterInfoContent,
@@ -1728,138 +1055,109 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     end,
     defaultValue = 0,
   } }
-  if _G.UHC_XPVerification and type(_G.UHC_XPVerification.GetVerificationVerdictAndSettingLabel) == 'function' then
-    table.insert(characterStatsConfig, 3, {
-      key = 'uhcXpVerification',
-      label = 'Ultra Status:',
-      tooltipKey = 'uhcXpVerification',
-      width = 1,
-      settingName = 'showMainStatisticsPanelUhcXpVerification',
-      valueFunc = function()
-        local ok, s = pcall(function()
-          return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
-        end)
-        return ok and s or ''
-      end,
-      defaultValue = '',
-    })
-  end
   CreateStatsGrid(characterInfoContent, characterStatsConfig, {
     defaultWidth = 1,
     rowHeight = 36,
   })
 
-  -- Create Health Tracking section (Deaths) - hidden on Hardcore servers
-  if UltraStatistics_IsHardcore and UltraStatistics_IsHardcore() then
-    local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-    healthTrackingHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  -- Create Health Tracking section (Deaths)
+  local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  healthTrackingHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
 
-    healthTrackingHeader:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\WHITE8X8',
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-      tile = true,
-      tileSize = 8,
-      edgeSize = 12,
-      insets = {
-        left = 3,
-        right = 3,
-        top = 3,
-        bottom = 3,
-      },
-    })
-    healthTrackingHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-    healthTrackingHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
-    local healthTrackingLabel =
-      healthTrackingHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-    healthTrackingLabel:SetPoint('LEFT', healthTrackingHeader, 'LEFT', 24, 0)
-    healthTrackingLabel:SetText('Deaths')
-    healthTrackingLabel:SetTextColor(0.9, 0.85, 0.75, 1)
-    healthTrackingLabel:SetShadowOffset(1, -1)
-    healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
+  healthTrackingHeader:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  healthTrackingHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  healthTrackingHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  local healthTrackingLabel =
+    healthTrackingHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  healthTrackingLabel:SetPoint('LEFT', healthTrackingHeader, 'LEFT', 24, 0)
+  healthTrackingLabel:SetText('Deaths')
+  healthTrackingLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  healthTrackingLabel:SetShadowOffset(1, -1)
+  healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
 
-    local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-    healthTrackingContent:SetSize(415, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
-    healthTrackingContent:Show()
-    local healthTrackingSection =
-      addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
-    makeHeaderClickable(
-      healthTrackingHeader,
-      healthTrackingContent,
-      'healthTracking',
-      healthTrackingSection
-    )
-    healthTrackingContent:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\WHITE8X8',
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-      tile = true,
-      tileSize = 8,
-      edgeSize = 10,
-      insets = {
-        left = 3,
-        right = 3,
-        top = 3,
-        bottom = 3,
-      },
-    })
-    healthTrackingContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
-    healthTrackingContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+  local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  healthTrackingContent:SetSize(CONTENT_WIDTH, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
+  healthTrackingContent:Show()
+  local healthTrackingSection =
+    addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking', 'Deaths')
+  makeHeaderClickable(
+    healthTrackingHeader,
+    healthTrackingContent,
+    'healthTracking',
+    healthTrackingSection
+  )
+  healthTrackingContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  healthTrackingContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  healthTrackingContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
-    local healthStats = { {
-      key = 'playerDeaths',
-      label = 'Deaths (Total):',
-      tooltipKey = 'playerDeaths',
-      settingName = 'showMainStatisticsPanelPlayerDeaths',
-      defaultValue = 0,
-      width = 1,
-    }, {
-      key = 'playerDeathsOpenWorld',
-      label = 'Deaths (Open World):',
-      tooltipKey = 'playerDeathsOpenWorld',
-      settingName = 'showMainStatisticsPanelPlayerDeathsOpenWorld',
-      defaultValue = 0,
-      width = 0.5,
-    }, {
-      key = 'playerDeathsDungeon',
-      label = 'Deaths (Dungeon):',
-      tooltipKey = 'playerDeathsDungeon',
-      settingName = 'showMainStatisticsPanelPlayerDeathsDungeon',
-      defaultValue = 0,
-      width = 0.5,
-    }, {
-      key = 'playerDeathsHeroicDungeon',
-      label = 'Deaths (Heroic Dungeon):',
-      tooltipKey = 'playerDeathsHeroicDungeon',
-      settingName = 'showMainStatisticsPanelPlayerDeathsHeroicDungeon',
-      defaultValue = 0,
-      width = 0.5,
-    }, {
-      key = 'playerDeathsRaid',
-      label = 'Deaths (Raid):',
-      tooltipKey = 'playerDeathsRaid',
-      settingName = 'showMainStatisticsPanelPlayerDeathsRaid',
-      defaultValue = 0,
-      width = 0.5,
-    }, {
-      key = 'playerDeathsBattleground',
-      label = 'Deaths (Battleground):',
-      tooltipKey = 'playerDeathsBattleground',
-      settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
-      defaultValue = 0,
-      width = 0.5,
-    }, {
-      key = 'playerDeathsArena',
-      label = 'Deaths (Arena):',
-      tooltipKey = 'playerDeathsArena',
-      settingName = 'showMainStatisticsPanelPlayerDeathsArena',
-      defaultValue = 0,
-      width = 0.5,
-    } }
-    CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
-  end
+  local healthStats = { {
+    key = 'playerDeaths',
+    label = 'Deaths (Total):',
+    tooltipKey = 'playerDeaths',
+    settingName = 'showMainStatisticsPanelPlayerDeaths',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'serverDeaths',
+    label = 'Server Deaths:',
+    tooltipKey = 'serverDeaths',
+    settingName = 'showMainStatisticsPanelServerDeaths',
+    valueFunc = function()
+      return UltraStatisticsCharacterStats:GetServerDeaths()
+    end,
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'playerDeathsOpenWorld',
+    label = 'Deaths (Open World):',
+    tooltipKey = 'playerDeathsOpenWorld',
+    settingName = 'showMainStatisticsPanelPlayerDeathsOpenWorld',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
+    key = 'playerDeathsBattleground',
+    label = 'Deaths (Battleground):',
+    tooltipKey = 'playerDeathsBattleground',
+    settingName = 'showMainStatisticsPanelPlayerDeathsBattleground',
+    defaultValue = 0,
+    width = 0.5,
+  }, {
+    key = 'playerDeathsArena',
+    label = 'Deaths (Arena):',
+    tooltipKey = 'playerDeathsArena',
+    settingName = 'showMainStatisticsPanelPlayerDeathsArena',
+    defaultValue = 0,
+    width = 0.5,
+  } }
+  CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
 
   -- Create Lowest Health section
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  lowestHealthHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
   lowestHealthHeader:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -1884,9 +1182,9 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   lowestHealthLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthContent:SetSize(415, 3 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+  lowestHealthContent:SetSize(CONTENT_WIDTH, 3 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
   lowestHealthContent:Show()
-  local lowestHealthSection = addSection(lowestHealthHeader, lowestHealthContent, 'lowestHealth')
+  local lowestHealthSection = addSection(lowestHealthHeader, lowestHealthContent, 'lowestHealth', 'Lowest Health')
   makeHeaderClickable(lowestHealthHeader, lowestHealthContent, 'lowestHealth', lowestHealthSection)
   lowestHealthContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
@@ -1930,7 +1228,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Combat section (collapsible)
   local combatHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  combatHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  combatHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
 
   -- Modern WoW row styling with rounded corners and greyish background
@@ -1959,11 +1257,11 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Combat breakdown
   local combatContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  combatContent:SetSize(415, 8 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
+  combatContent:SetSize(CONTENT_WIDTH, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
   -- Position will be set by updateSectionPositions
   combatContent:Show() -- Show by default
   -- Register section and make header clickable
-  local combatSection = addSection(combatHeader, combatContent, 'combat')
+  local combatSection = addSection(combatHeader, combatContent, 'combat', 'Combat')
   makeHeaderClickable(combatHeader, combatContent, 'combat', combatSection)
   combatLabel:SetTextColor(0.9, 0.85, 0.75, 1)
   combatLabel:SetShadowOffset(1, -1)
@@ -2060,7 +1358,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Survival section (collapsible)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  survivalHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
@@ -2088,11 +1386,11 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Survival breakdown
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalContent:SetSize(415, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
+  survivalContent:SetSize(CONTENT_WIDTH, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   survivalContent:Show() -- Always show
   -- Register section and make header clickable
-  local survivalSection = addSection(survivalHeader, survivalContent, 'survival')
+  local survivalSection = addSection(survivalHeader, survivalContent, 'survival', 'Survival')
   makeHeaderClickable(survivalHeader, survivalContent, 'survival', survivalSection)
   -- Modern content frame styling
   survivalContent:SetBackdrop({
@@ -2184,7 +1482,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Social section (collapsible)
   local socialHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  socialHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  socialHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
   socialHeader:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -2208,9 +1506,9 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   socialLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local socialContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  socialContent:SetSize(415, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+  socialContent:SetSize(CONTENT_WIDTH, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
   socialContent:Show()
-  local socialSection = addSection(socialHeader, socialContent, 'social')
+  local socialSection = addSection(socialHeader, socialContent, 'social', 'Social')
   makeHeaderClickable(socialHeader, socialContent, 'social', socialSection)
   socialContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
@@ -2240,7 +1538,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create PvP section (duel stats)
   local pvpHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  pvpHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  pvpHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
   pvpHeader:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -2264,9 +1562,9 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   pvpLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local pvpContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  pvpContent:SetSize(415, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
+  pvpContent:SetSize(CONTENT_WIDTH, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
   pvpContent:Show()
-  local pvpSection = addSection(pvpHeader, pvpContent, 'pvp')
+  local pvpSection = addSection(pvpHeader, pvpContent, 'pvp', 'PvP')
   makeHeaderClickable(pvpHeader, pvpContent, 'pvp', pvpSection)
   pvpContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
@@ -2324,7 +1622,7 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create modern WoW-style Misc section (collapsible)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscHeader:SetSize(435, LAYOUT.SECTION_HEADER_HEIGHT)
+  miscHeader:SetSize(SECTION_WIDTH, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   miscHeader:SetBackdrop({
@@ -2352,12 +1650,12 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
 
   -- Create content frame for Misc breakdown
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscContent:SetSize(415, 2 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- 4 stats in 2-column grid
+  miscContent:SetSize(CONTENT_WIDTH, 2 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- 4 stats in 2-column grid
   -- Position will be set by updateSectionPositions
   miscContent:Show()
 
   -- Register section and make header clickable
-  local miscSection = addSection(miscHeader, miscContent, 'misc')
+  local miscSection = addSection(miscHeader, miscContent, 'misc', 'Misc')
   makeHeaderClickable(miscHeader, miscContent, 'misc', miscSection)
   -- Modern content frame styling
   miscContent:SetBackdrop({
@@ -2403,7 +1701,117 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
   -- Settings XP Gain Verification section removed in UltraStatistics
 
   -- Set initial positioning after all statistics are created
+  syncStatsContentWidths()
   updateSectionPositions()
+  statsScrollFrame:SetScript('OnSizeChanged', function()
+    syncStatsContentWidths()
+    updateSectionPositions()
+  end)
+
+  local function IsStatsSearchMatch(searchBlob, query)
+    if not query or query == '' then
+      return true
+    end
+    if not searchBlob then
+      return false
+    end
+    return string.find(searchBlob, query, 1, true) ~= nil
+  end
+
+  local function applySearchFilter(query)
+    local q = string.lower(query or '')
+    for _, section in ipairs(sections) do
+      local rows = section.content and section.content._statRows or {}
+      local sectionBlob = string.lower(section.title or section.name or '')
+      local visibleCount = 0
+
+      if q == '' then
+        for _, row in ipairs(rows) do
+          row.visible = true
+        end
+        if #rows > 0 then
+          RelayoutStatRows(section.content, rows, section.content._statGridOptions)
+        end
+        section.hiddenBySearch = false
+        local saved = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections[section.name]
+        if section.SetCollapsed then
+          section.SetCollapsed(saved and true or false, { skipSave = true, skipLayout = true })
+        else
+          section.collapsed = saved and true or false
+        end
+      else
+        local sectionTitleMatch = IsStatsSearchMatch(sectionBlob, q)
+        for _, row in ipairs(rows) do
+          local match = sectionTitleMatch or IsStatsSearchMatch(row.searchBlob, q)
+          row.visible = match
+          if match then
+            visibleCount = visibleCount + 1
+          end
+        end
+        if #rows > 0 then
+          RelayoutStatRows(section.content, rows, section.content._statGridOptions)
+        elseif sectionTitleMatch then
+          visibleCount = 1
+        end
+        section.hiddenBySearch = visibleCount == 0
+        if not section.hiddenBySearch and section.SetCollapsed then
+          section.SetCollapsed(false, { skipSave = true, skipLayout = true })
+        end
+      end
+    end
+    updateSectionPositions()
+  end
+
+  clearSearchButton:SetScript('OnClick', function()
+    searchBox:SetText('')
+    searchBox:ClearFocus()
+    searchPlaceholder:Show()
+    applySearchFilter('')
+  end)
+
+  collapseAllButton:SetScript('OnClick', function()
+    for _, section in ipairs(sections) do
+      if not section.hiddenBySearch and section.SetCollapsed then
+        section.SetCollapsed(true, { skipLayout = true })
+      end
+    end
+    updateSectionPositions()
+  end)
+
+  expandAllButton:SetScript('OnClick', function()
+    for _, section in ipairs(sections) do
+      if not section.hiddenBySearch and section.SetCollapsed then
+        section.SetCollapsed(false, { skipLayout = true })
+      end
+    end
+    updateSectionPositions()
+  end)
+
+  searchBox:SetScript('OnTextChanged', function(self)
+    local txt = self:GetText() or ''
+    if txt == '' then
+      searchPlaceholder:Show()
+    else
+      searchPlaceholder:Hide()
+    end
+    applySearchFilter(txt)
+  end)
+  searchBox:SetScript('OnEditFocusGained', function()
+    if (searchBox:GetText() or '') == '' then
+      searchPlaceholder:Hide()
+    end
+  end)
+  searchBox:SetScript('OnEditFocusLost', function()
+    if (searchBox:GetText() or '') == '' then
+      searchPlaceholder:Show()
+    end
+  end)
+  searchBox:SetScript('OnEscapePressed', function(self)
+    self:SetText('')
+    self:ClearFocus()
+    searchPlaceholder:Show()
+    applySearchFilter('')
+  end)
 
   -- Update the lowest health display
   local function UpdateLowestHealthDisplay()
@@ -2414,12 +1822,6 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
       local guildName = select(1, GetGuildInfo('player'))
       local gText = (guildName and guildName ~= '') and ('<' .. guildName .. '>') or 'Guildless'
       UpdateStatBar('guild', gText)
-    end
-    if statBars.uhcXpVerification and _G.UHC_XPVerification and _G.UHC_XPVerification.GetVerificationVerdictAndSettingLabel then
-      local ok, s = pcall(function()
-        return UHC_XPVerification:GetVerificationVerdictAndSettingLabel()
-      end)
-      UpdateStatBar('uhcXpVerification', ok and s or '')
     end
     -- Max Health / Max Resource: show max *ever*, only update stored when current is higher
     local currentMaxHealth = UnitHealthMax('player') or 0
@@ -2448,17 +1850,12 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     end
     UpdateStatBar('closeEscapes', UltraStatisticsCharacterStats:GetStat('closeEscapes') or 0)
     UpdateStatBar('playerDeaths', UltraStatisticsCharacterStats:GetStat('playerDeaths') or 0)
+    UpdateStatBar('serverDeaths', UltraStatisticsCharacterStats:GetServerDeaths())
     UpdateStatBar('playerDeathsOpenWorld', UltraStatisticsCharacterStats:GetStat('playerDeathsOpenWorld') or 0)
     UpdateStatBar(
       'playerDeathsBattleground',
       UltraStatisticsCharacterStats:GetStat('playerDeathsBattleground') or 0
     )
-    UpdateStatBar('playerDeathsDungeon', UltraStatisticsCharacterStats:GetStat('playerDeathsDungeon') or 0)
-    UpdateStatBar(
-      'playerDeathsHeroicDungeon',
-      UltraStatisticsCharacterStats:GetStat('playerDeathsHeroicDungeon') or 0
-    )
-    UpdateStatBar('playerDeathsRaid', UltraStatisticsCharacterStats:GetStat('playerDeathsRaid') or 0)
     UpdateStatBar('playerDeathsArena', UltraStatisticsCharacterStats:GetStat('playerDeathsArena') or 0)
     UpdateStatBar('lowestHealth', UltraStatisticsCharacterStats:GetStat('lowestHealth') or 100)
     UpdateStatBar('lowestHealthThisLevel', UltraStatisticsCharacterStats:GetStat('lowestHealthThisLevel') or 100)
@@ -2474,9 +1871,9 @@ function UltraStatistics_InitializeStatisticsTab(tabContents)
     UpdateStatBar('elitesSlain', UltraStatisticsCharacterStats:GetStat('elitesSlain') or 0)
     UpdateStatBar('rareElitesSlain', UltraStatisticsCharacterStats:GetStat('rareElitesSlain') or 0)
     UpdateStatBar('worldBossesSlain', UltraStatisticsCharacterStats:GetStat('worldBossesSlain') or 0)
-    UpdateStatBar('enemiesSlain', UltraStatisticsCharacterStats:GetStat('enemiesSlain') or 0)
     UpdateStatBar('dungeonBossesKilled', UltraStatisticsCharacterStats:GetStat('dungeonBossesKilled') or 0)
     UpdateStatBar('dungeonsCompleted', UltraStatisticsCharacterStats:GetStat('dungeonsCompleted') or 0)
+    UpdateStatBar('enemiesSlain', UltraStatisticsCharacterStats:GetStat('enemiesSlain') or 0)
 
     UpdateStatBar('highestCritValue', UltraStatisticsCharacterStats:GetStat('highestCritValue') or 0)
     UpdateStatBar('highestHealCritValue', UltraStatisticsCharacterStats:GetStat('highestHealCritValue') or 0)

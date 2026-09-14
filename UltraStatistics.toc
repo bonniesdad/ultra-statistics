@@ -1,6 +1,6 @@
 ## Interface: 11509, 20505
 ## Title: Ultra Statistics
-## Version: 1.0.9
+## Version: 2.0.0
 ## Author: BonniesDad
 ## Notes: Statistis for WoW Classic characters.
 ## IconTexture: Interface\AddOns\UltraStatistics\Textures\stats-icons\playerJumps.png
@@ -8,7 +8,6 @@
 
 UltraStatistics.lua
 PatchNotes.lua
-Constants/HeroicBossSpells.lua
 
 ## Libs
 Libs/LibStub/LibStub.lua
@@ -24,16 +23,10 @@ Functions/PatchNotesDisplay.lua
 Functions/Utils/FormatNumber.lua
 Functions/Utils/FrameUtils.lua
 Functions/Utils/DiscordInvite.lua
-Functions/Utils/TwitchInvite.lua
-Functions/Utils/ExpansionCheck.lua
-Functions/Utils/HardcoreCheck.lua
-Functions/Utils/AboutAuthor.lua
 
 Functions/DB/SaveUltraStatisticsDBData.lua
 Functions/DB/LoadUltraStatisticsDBData.lua
 Functions/DB/UltraStatisticsCharacterStats.lua
-Functions/DB/DungeonRaidBossInfo.lua
-Functions/DB/DungeonRaidStats.lua
 Functions/Utils/ImportFromUltra.lua
 
 Functions/Checks/IsUltraStatisticsEnemyElite.lua
@@ -45,7 +38,6 @@ Functions/Statistics/ItemTracker.lua
 Functions/Statistics/UltraStatisticsKillTracker.lua
 Functions/Statistics/UltraStatisticsCritTracker.lua
 Functions/Statistics/PartyDeathTracker.lua
-Functions/Statistics/BossFightTracker.lua
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackPlayerDeaths.lua
 Functions/Statistics/TrackAvoidance.lua
@@ -55,15 +47,16 @@ Functions/Statistics/DuelTracker.lua
 Functions/Statistics/CombatLogDispatcher.lua
 Functions/Statistics/DuelEventListener.lua
 
+Functions/Leaderboard/WireCodec.lua
+Functions/Leaderboard/ChannelConnection.lua
+Functions/Leaderboard/Store.lua
+Functions/Leaderboard/Comms.lua
+
 Settings/TabManager.lua
 Settings/Settings.lua
 Settings/StatisticsTab.lua
+Settings/LeaderboardTab.lua
 Settings/SettingsTab.lua
 Settings/InfoTab.lua
-Settings/DungeonsTab.lua
-Settings/HeroicsTab.lua
-Settings/RaidsTab.lua
-Settings/CreditsTab.lua
 
-Functions/Overlays/StatisticsTrackingToast.lua
 Functions/Overlays/MainScreenStatistics.lua

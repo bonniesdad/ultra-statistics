@@ -36,28 +36,36 @@ local function shouldDedupeBossKill(destGUID)
   return false
 end
 
-local function HandleBossDeathForKillTracking(trigger, destGUID)
-  if not destGUID or not UltraStatisticsCharacterStats then return end
-  if not IsUltraStatisticsDungeonBoss then return end
+local function HandleBossDeathForKillTracking(destGUID)
+  if not destGUID or not UltraStatisticsCharacterStats then
+    return
+  end
+  if not IsUltraStatisticsDungeonBoss then
+    return
+  end
 
   local isDungeon, isRaid = IsUltraStatisticsDungeonBoss(destGUID)
-  if not (isDungeon or isRaid) then return end
+  if not (isDungeon or isRaid) then
+    return
+  end
 
-  if shouldDedupeBossKill(destGUID) then return end
+  if shouldDedupeBossKill(destGUID) then
+    return
+  end
 
   local currentDungeonBosses = UltraStatisticsCharacterStats:GetStat('dungeonBossesKilled') or 0
   UltraStatisticsCharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
-
-  if DungeonRaidStats and DungeonRaidStats.RecordBossKill then
-    local ok = DungeonRaidStats.RecordBossKill(destGUID) == true
-  end
 end
 
 function UltraStatisticsKillTracker.HandlePartyKill(destGUID)
-  if not destGUID or not UltraStatisticsCharacterStats then return end
-  
+  if not destGUID or not UltraStatisticsCharacterStats then
+    return
+  end
+
   -- Dedupe: PARTY_KILL can fire twice for the same mob in some cases
-  if shouldDedupePartyKill(destGUID) then return end
+  if shouldDedupePartyKill(destGUID) then
+    return
+  end
 
   -- Player kills (PvP): destGUID starts with "Player-" for enemy players
   if destGUID:sub(1, 7) == 'Player-' then
@@ -67,7 +75,7 @@ function UltraStatisticsKillTracker.HandlePartyKill(destGUID)
   end
 
   -- Boss kill tracking (PARTY_KILL only fires when someone in the party gets the killing blow)
-  HandleBossDeathForKillTracking('PARTY_KILL', destGUID)
+  HandleBossDeathForKillTracking(destGUID)
 
   if IsUltraStatisticsEnemyElite and IsUltraStatisticsEnemyElite(destGUID) then
     local currentElites = UltraStatisticsCharacterStats:GetStat('elitesSlain') or 0
@@ -89,21 +97,6 @@ function UltraStatisticsKillTracker.HandlePartyKill(destGUID)
     if isDungeonFinalBoss then
       local currentDungeonsCompleted = UltraStatisticsCharacterStats:GetStat('dungeonsCompleted') or 0
       UltraStatisticsCharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
-
-      -- Classic dungeon clears: we may not have per-boss mapping in DungeonRaidBossInfo,
-      -- so record the clear at the instance level by name.
-      if type(GetInstanceInfo) == 'function' then
-        local name, instanceType, difficultyID = GetInstanceInfo()
-        if instanceType == 'party' then
-          local hasBossMapping =
-            (DungeonRaidBossInfo and DungeonRaidBossInfo.GetBossInfoByGUID and DungeonRaidBossInfo.GetBossInfoByGUID(
-              destGUID
-            )) ~= nil
-          if not hasBossMapping and DungeonRaidStats and DungeonRaidStats.RecordDungeonClearByName then
-            DungeonRaidStats.RecordDungeonClearByName(name, difficultyID)
-          end
-        end
-      end
     end
   end
 
@@ -113,5 +106,5 @@ end
 
 -- Boss kill tracking fallback: UNIT_DIED fires even when PARTY_KILL doesn't (no killing blow credit).
 function UltraStatisticsKillTracker.HandleUnitDied(destGUID)
-  HandleBossDeathForKillTracking('UNIT_DIED', destGUID)
+  HandleBossDeathForKillTracking(destGUID)
 end

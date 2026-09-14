@@ -1,50 +1,33 @@
 -- Settings Tab - Statistics-related options only
 
 local settingsCheckboxOptions = { {
-  name = 'Show Tiers',
-  dbSettingsValueName = 'showTiers',
-  tooltip = 'Use the tier system (Bronze, Silver, Gold, Master, Demon)',
-}, {
   name = 'Show Statistics on Main Screen',
   dbSettingsValueName = 'showOnScreenStatistics',
   tooltip = 'Show selected statistics on the screen at all times',
 }, {
-  name = 'Show Statistics Notifications',
-  dbSettingsValueName = 'showStatisticsTracking',
-  tooltip = 'Show notifications on statistic updates',
+  name = 'Opt out of Guild Leaderboard',
+  dbSettingsValueName = 'leaderboardOptOutGuild',
+  tooltip = 'Stop sharing and receiving guild leaderboard data via addon messages',
 }, {
-  name = 'Minimal Style Notifications',
-  dbSettingsValueName = 'minimalStatisticsTracking',
-  tooltip = 'Show minimal information in the notifications',
-  dependsOn = 'showStatisticsTracking',
-}, {
-  name = 'Only Show Tier Notifications',
-  dbSettingsValueName = 'statisticsTrackingTierOnly',
-  tooltip = 'Only show a notification when you advance to a new tier',
-  dependsOn = 'showStatisticsTracking',
+  name = 'Opt out of Server Leaderboard',
+  dbSettingsValueName = 'leaderboardOptOutServer',
+  tooltip = 'Stop sharing and receiving realm leaderboard data via the data channel',
 } }
-
-local settingsSliderOptions = {}
 
 local LAYOUT = {
   PAGE_WIDTH = 395,
   ROW_WIDTH = 355,
-  SEARCH_WIDTH = 400,
   HEADER_HEIGHT = 28,
   HEADER_PADDING_H = 12,
-  ROW_HEIGHT = 30,
   COLOR_ROW_HEIGHT = 24,
-  SECTION_GAP = 10,
   HEADER_CONTENT_GAP = 10,
   LABEL_WIDTH = 140,
-  SLIDER_WIDTH = 150,
 }
 
 local ROW_BUTTON_HEIGHT = 48
 local ROW_BUTTON_PAD_H = 14
-local ROW_BUTTON_PAD_V = 10
 local OPTION_ROW_TOTAL = 58 -- height of each option row (button + gap between rows)
-local REPOSITION_ROW_HEIGHT = 32 -- smaller row for Reposition button (no description)
+
 --- Create a simple checkbox row (standard WoW checkbox + label + optional description).
 --- Returned object is click-compatible with older row-button code: SetChecked/GetChecked/Enable/Disable, plus .Text and .Description.
 local function CreateOptionRowButton(parent)
@@ -122,16 +105,6 @@ local function CreateOptionRowButton(parent)
   return row
 end
 
-local function IsSearchMatch(searchBlob, query)
-  if not query or query == '' then
-    return true
-  end
-  if not searchBlob then
-    return false
-  end
-  return string.find(searchBlob, query, 1, true) ~= nil
-end
-
 function updateRadioButtons()
   for settingName, radio in pairs(radioButtons or {}) do
     if radio then
@@ -144,34 +117,15 @@ function updateRadioButtons()
   end
 end
 
--- Single section: Statistics (showOnScreenStatistics is in Statistics Display panel)
-local STATISTICS_SECTIONS = { {
-  title = 'Statistics',
-  settings = {
-    'showTiers',
-    'showStatisticsTracking',
-    'minimalStatisticsTracking',
-    'statisticsTrackingTierOnly',
-  },
-} }
-
 function UltraStatistics_InitializeSettingsTab(tabContents)
-  -- Settings tab is tab index 5 in TabManager.lua
-  if not tabContents or not tabContents[5] then return end
-  if tabContents[5].initialized then return end
-  tabContents[5].initialized = true
+  -- Settings tab is tab index 3 in TabManager.lua
+  if not tabContents or not tabContents[3] then return end
+  if tabContents[3].initialized then return end
+  tabContents[3].initialized = true
 
   tempSettings = tempSettings or {}
-  if not ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections then
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections = {}
-  end
-  if ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection == nil then
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection = {}
-  end
 
   local checkboxes = {}
-  local sectionFrames = {}
-  local lastSectionFrame = nil
 
   local function cascadeDependencyUpdates(settingName)
     if not settingName then return end
@@ -201,35 +155,10 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     end
   end
 
-  -- Search row full width: [Search bar stretches] [Clear] [Collapse All], right edge lines up with panel below (LEFT 10, RIGHT -10)
-  local searchBox = CreateFrame('EditBox', nil, tabContents[5], 'InputBoxTemplate')
-  searchBox:SetHeight(24)
-  searchBox:SetAutoFocus(false)
-
-  local clearSearchButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
-  clearSearchButton:SetSize(56, 22)
-  clearSearchButton:SetText('Clear')
-
-  local collapseAllButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
-  collapseAllButton:SetSize(96, 22)
-  collapseAllButton:SetText('Collapse')
-  collapseAllButton:SetPoint('TOPRIGHT', tabContents[5], 'TOPRIGHT', -40, -60)
-
-  clearSearchButton:SetPoint('TOPRIGHT', collapseAllButton, 'TOPLEFT', -6, 0)
-
-  searchBox:SetPoint('TOPLEFT', tabContents[5], 'TOPLEFT', 20, -60)
-  searchBox:SetPoint('TOPRIGHT', clearSearchButton, 'TOPLEFT', -6, 0)
-  searchBox:SetHeight(24)
-
-  local searchPlaceholder = searchBox:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
-  searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
-  searchPlaceholder:SetText('Search options...')
-
-  local optionsFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
-  optionsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
-  optionsFrame:SetPoint('LEFT', tabContents[5], 'LEFT', 10, 0)
-  optionsFrame:SetPoint('RIGHT', tabContents[5], 'RIGHT', -10, 0)
-  optionsFrame:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, 10)
+  local optionsFrame = CreateFrame('Frame', nil, tabContents[3], 'BackdropTemplate')
+  optionsFrame:SetPoint('TOPLEFT', tabContents[3], 'TOPLEFT', 0, -60)
+  optionsFrame:SetPoint('TOPRIGHT', tabContents[3], 'TOPRIGHT', 0, -60)
+  optionsFrame:SetPoint('BOTTOM', tabContents[3], 'BOTTOM', 0, 10)
   optionsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -246,282 +175,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   optionsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
   optionsFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
 
-  local scrollFrame = CreateFrame('ScrollFrame', nil, optionsFrame, 'UIPanelScrollFrameTemplate')
-  scrollFrame:SetPoint('TOPLEFT', optionsFrame, 'TOPLEFT', 10, -10)
-  scrollFrame:SetPoint('BOTTOMRIGHT', optionsFrame, 'BOTTOMRIGHT', -30, 10)
-  local scrollChild = CreateFrame('Frame')
-  scrollFrame:SetScrollChild(scrollChild)
-  scrollChild:SetHeight(400)
-  scrollChild:SetWidth(scrollFrame:GetWidth() - 10)
-
-  local sectionChildren = {}
-  local sectionCollapsed = {}
-  local sectionHeaderIcons = {}
-  local sectionExpandedHeights = {}
-  local sectionCollapsedHeights = {}
-  local prevSectionFrame = nil
   local HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
-  local ROW_HEIGHT = LAYOUT.ROW_HEIGHT
   local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
-  local SECTION_GAP = LAYOUT.SECTION_GAP
 
-  for sectionIndex, section in ipairs(STATISTICS_SECTIONS) do
-    local sectionFrame = CreateFrame('Frame', nil, scrollChild, 'BackdropTemplate')
-    sectionFrame:SetWidth(LAYOUT.PAGE_WIDTH)
-    if prevSectionFrame then
-      sectionFrame:SetPoint('TOPLEFT', prevSectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
-      sectionFrame:SetPoint('TOPRIGHT', prevSectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
-    else
-      sectionFrame:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, -10)
-      sectionFrame:SetPoint('TOPRIGHT', scrollChild, 'TOPRIGHT', 0, -10)
-    end
-    sectionFrame:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\WHITE8X8',
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-      tile = true,
-      tileSize = 8,
-      edgeSize = 10,
-      insets = {
-        left = 3,
-        right = 3,
-        top = 3,
-        bottom = 3,
-      },
-    })
-    sectionFrame:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
-    sectionFrame:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
-
-    local sectionHeaderButton = CreateFrame('Button', nil, sectionFrame, 'BackdropTemplate')
-    sectionHeaderButton:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 0, 0)
-    sectionHeaderButton:SetPoint('TOPRIGHT', sectionFrame, 'TOPRIGHT', 0, 0)
-    sectionHeaderButton:SetHeight(HEADER_HEIGHT)
-    sectionHeaderButton:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\WHITE8X8',
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-      tile = true,
-      tileSize = 8,
-      edgeSize = 12,
-      insets = {
-        left = 3,
-        right = 3,
-        top = 3,
-        bottom = 3,
-      },
-    })
-    sectionHeaderButton:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-    sectionHeaderButton:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
-    sectionHeaderButton:SetScript('OnEnter', function(self)
-      self:SetBackdropColor(0.2, 0.2, 0.28, 0.95)
-      self:SetBackdropBorderColor(0.6, 0.6, 0.75, 1)
-    end)
-    sectionHeaderButton:SetScript('OnLeave', function(self)
-      self:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-      self:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
-    end)
-
-    local headerPad = LAYOUT.HEADER_PADDING_H or 12
-    local sectionHeader =
-      sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-    sectionHeader:SetPoint('LEFT', sectionHeaderButton, 'LEFT', headerPad, 0)
-    sectionHeader:SetText(section.title)
-    sectionHeader:SetTextColor(0.9, 0.85, 0.75, 1)
-    sectionHeader:SetShadowOffset(1, -1)
-    sectionHeader:SetShadowColor(0, 0, 0, 0.8)
-
-    local headerIcon = sectionHeaderButton:CreateTexture(nil, 'ARTWORK')
-    headerIcon:SetPoint('RIGHT', sectionHeaderButton, 'RIGHT', -headerPad, 0)
-    headerIcon:SetSize(16, 16)
-    headerIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
-    sectionChildren[sectionIndex] = {}
-    sectionHeaderIcons[sectionIndex] = headerIcon
-
-    local numRows = 0
-    for _, settingName in ipairs(section.settings) do
-      local checkboxItem = nil
-      for _, item in ipairs(settingsCheckboxOptions) do
-        if item.dbSettingsValueName == settingName then
-          checkboxItem = item
-          break
-        end
-      end
-
-      if checkboxItem then
-        numRows = numRows + 1
-        local rowY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL))
-        local checkbox = CreateOptionRowButton(sectionFrame)
-        checkbox:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', ROW_BUTTON_PAD_H, rowY)
-        checkbox:SetPoint('TOPRIGHT', sectionFrame, 'TOPRIGHT', -ROW_BUTTON_PAD_H, rowY)
-        checkbox._originalOffsetY = rowY
-        checkbox.Text:SetText(checkboxItem.name)
-        checkbox:SetDescription(checkboxItem.tooltip)
-        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName] and true or false)
-
-        checkbox._uhcSearch =
-          string.lower(
-            (checkboxItem.name or '') .. ' ' .. (checkboxItem.tooltip or '') .. ' ' .. (checkboxItem.dbSettingsValueName or '')
-          )
-
-        local function updateDependencyState()
-          local shouldDisable = false
-          if checkboxItem.dependsOn then
-            if not (tempSettings[checkboxItem.dependsOn] or false) then
-              shouldDisable = true
-            end
-          end
-          if not shouldDisable and checkboxItem.dependsOff then
-            if (tempSettings[checkboxItem.dependsOff] or false) then
-              shouldDisable = true
-            end
-          end
-          if shouldDisable then
-            checkbox:Disable()
-            checkbox.Text:SetTextColor(0.5, 0.5, 0.5)
-            if checkbox.Description then
-              checkbox.Description:SetTextColor(0.45, 0.45, 0.45, 1)
-            end
-            checkbox:SetChecked(false)
-            tempSettings[checkboxItem.dbSettingsValueName] = false
-            cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
-          else
-            checkbox:Enable()
-            checkbox.Text:SetTextColor(1, 1, 1)
-            if checkbox.Description then
-              checkbox.Description:SetTextColor(0.75, 0.72, 0.65, 1)
-            end
-          end
-        end
-        updateDependencyState()
-        checkboxes[checkboxItem.dbSettingsValueName] = checkbox
-        table.insert(sectionChildren[sectionIndex], checkbox)
-        checkbox._updateDependency = updateDependencyState
-
-        checkbox.Check:SetScript('OnClick', function(btn)
-          if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
-          if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
-          local newVal = btn:GetChecked() and true or false
-          checkbox:SetChecked(newVal)
-          tempSettings[checkboxItem.dbSettingsValueName] = newVal
-          cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
-        end)
-
-        local rowHoverOnEnter, rowHoverOnLeave =
-          checkbox:GetScript('OnEnter'),
-          checkbox:GetScript('OnLeave')
-        checkbox:SetScript('OnEnter', function(self)
-          if rowHoverOnEnter then
-            rowHoverOnEnter(self)
-          end
-          GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-          local tooltipText = checkboxItem.tooltip or ''
-          if checkboxItem.dependsOn then
-            for _, item in ipairs(settingsCheckboxOptions) do
-              if item.dbSettingsValueName == checkboxItem.dependsOn then
-                local dep = tempSettings[checkboxItem.dependsOn] or false
-                if not dep then
-                  tooltipText = tooltipText .. '\n\n|cFFFF0000Requires: ' .. item.name .. '|r'
-                end
-                break
-              end
-            end
-          end
-          if checkboxItem.dependsOff then
-            for _, item in ipairs(settingsCheckboxOptions) do
-              if item.dbSettingsValueName == checkboxItem.dependsOff then
-                if (tempSettings[checkboxItem.dependsOff] or false) then
-                  tooltipText = tooltipText .. '\n\n|cFFFF0000Conflicts with: ' .. item.name .. '|r'
-                end
-                break
-              end
-            end
-          end
-          GameTooltip:SetText(tooltipText)
-          GameTooltip:Show()
-        end)
-        checkbox:SetScript('OnLeave', function(self)
-          if rowHoverOnLeave then
-            rowHoverOnLeave(self)
-          end
-          GameTooltip:Hide()
-        end)
-
-        if checkboxItem.dbSettingsValueName == 'statisticsTrackingTierOnly' then
-          numRows = numRows + 1
-          local repositionButton = CreateFrame('Button', nil, sectionFrame, 'UIPanelButtonTemplate')
-          repositionButton:SetSize(180, 25)
-          local btnY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL))
-          repositionButton:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', ROW_BUTTON_PAD_H, btnY)
-          repositionButton._originalOffsetY = btnY
-          repositionButton:SetText('Reposition Statistics Toast')
-          repositionButton:SetScript('OnClick', function()
-            if _G.EnableStatisticsTrackingToastRepositioning then
-              _G.EnableStatisticsTrackingToastRepositioning()
-              print(
-                '|cfff44336[ULTRA STATS]|r Statistics Tracking Toast repositioning mode enabled. Drag the highlighted area and click Confirm to save.'
-              )
-            end
-          end)
-          repositionButton:SetScript('OnEnter', function(self)
-            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetText('Reposition Statistics Toast', 1, 1, 1)
-            GameTooltip:AddLine(
-              'Highlights the Statistics Tracking Toast area and makes it draggable. Drag it to your desired position and click Confirm to save.',
-              0.8,
-              0.8,
-              0.8,
-              true
-            )
-            GameTooltip:Show()
-          end)
-          repositionButton:SetScript('OnLeave', function()
-            GameTooltip:Hide()
-          end)
-          repositionButton._uhcSearch = 'reposition statistics toast notification position'
-          table.insert(sectionChildren[sectionIndex], repositionButton)
-        end
-      end
-    end
-
-    local expandedHeight =
-      HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * OPTION_ROW_TOTAL) + REPOSITION_ROW_HEIGHT + 8
-    local collapsedHeight = HEADER_HEIGHT
-    sectionExpandedHeights[sectionIndex] = expandedHeight
-    sectionCollapsedHeights[sectionIndex] = collapsedHeight
-
-    local initialCollapsed = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title]
-    if initialCollapsed == nil then
-      initialCollapsed = false
-    end
-    sectionCollapsed[sectionIndex] = initialCollapsed
-    headerIcon:SetTexture(
-      initialCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
-    )
-    for _, child in ipairs(sectionChildren[sectionIndex]) do
-      child:SetShown(not initialCollapsed)
-    end
-    sectionFrame:SetHeight(initialCollapsed and collapsedHeight or expandedHeight)
-
-    sectionHeaderButton:SetScript('OnClick', function()
-      local collapsed = not sectionCollapsed[sectionIndex]
-      sectionCollapsed[sectionIndex] = collapsed
-      headerIcon:SetTexture(
-        collapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
-      )
-      for _, child in ipairs(sectionChildren[sectionIndex]) do
-        child:SetShown(not collapsed)
-      end
-      sectionFrame:SetHeight(collapsed and collapsedHeight or expandedHeight)
-      ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title] = collapsed
-      if SaveCharacterSettings then
-        SaveCharacterSettings(ULTRA_STATISTICS_GLOBAL_SETTINGS)
-      end
-    end)
-
-    prevSectionFrame = sectionFrame
-    lastSectionFrame = sectionFrame
-    table.insert(sectionFrames, sectionFrame)
-  end
-
-  -- Statistics Display section (opacity sliders)
   if tempSettings.statisticsBackgroundOpacity == nil then
     tempSettings.statisticsBackgroundOpacity = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsBackgroundOpacity or 0.3
   end
@@ -529,10 +185,9 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     tempSettings.statisticsBorderOpacity = ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsBorderOpacity or 0.9
   end
 
-  local displaySection = CreateFrame('Frame', nil, scrollChild, 'BackdropTemplate')
-  displaySection:SetWidth(LAYOUT.PAGE_WIDTH)
-  displaySection:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
-  displaySection:SetPoint('TOPRIGHT', lastSectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
+  local displaySection = CreateFrame('Frame', nil, optionsFrame, 'BackdropTemplate')
+  displaySection:SetPoint('TOPLEFT', optionsFrame, 'TOPLEFT', 10, -10)
+  displaySection:SetPoint('TOPRIGHT', optionsFrame, 'TOPRIGHT', -10, -10)
   displaySection:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -549,11 +204,11 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   displaySection:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
   displaySection:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
-  local displayHeaderBtn = CreateFrame('Button', nil, displaySection, 'BackdropTemplate')
-  displayHeaderBtn:SetPoint('TOPLEFT', displaySection, 'TOPLEFT', 0, 0)
-  displayHeaderBtn:SetPoint('TOPRIGHT', displaySection, 'TOPRIGHT', 0, 0)
-  displayHeaderBtn:SetHeight(HEADER_HEIGHT)
-  displayHeaderBtn:SetBackdrop({
+  local displayHeader = CreateFrame('Frame', nil, displaySection, 'BackdropTemplate')
+  displayHeader:SetPoint('TOPLEFT', displaySection, 'TOPLEFT', 0, 0)
+  displayHeader:SetPoint('TOPRIGHT', displaySection, 'TOPRIGHT', 0, 0)
+  displayHeader:SetHeight(HEADER_HEIGHT)
+  displayHeader:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
@@ -566,24 +221,16 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
       bottom = 3,
     },
   })
-  displayHeaderBtn:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
-  displayHeaderBtn:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  displayHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  displayHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
   local displayHeaderPad = LAYOUT.HEADER_PADDING_H or 12
-  local displayHeaderText = displayHeaderBtn:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  displayHeaderText:SetPoint('LEFT', displayHeaderBtn, 'LEFT', displayHeaderPad, 0)
+  local displayHeaderText = displayHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  displayHeaderText:SetPoint('LEFT', displayHeader, 'LEFT', displayHeaderPad, 0)
   displayHeaderText:SetText('Main Screen Statistics Display')
   displayHeaderText:SetTextColor(0.9, 0.85, 0.75, 1)
   displayHeaderText:SetShadowOffset(1, -1)
   displayHeaderText:SetShadowColor(0, 0, 0, 0.8)
-  local displayHeaderIcon = displayHeaderBtn:CreateTexture(nil, 'ARTWORK')
-  displayHeaderIcon:SetPoint('RIGHT', displayHeaderBtn, 'RIGHT', -displayHeaderPad, 0)
-  displayHeaderIcon:SetSize(16, 16)
-  displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
 
-  local displaySectionContentChildren = {}
-  local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
-  local GAP = 12
-  -- On Screen Statistics checkbox as first row in Statistics Display
   local onScreenCheckboxItem
   for _, item in ipairs(settingsCheckboxOptions) do
     if item.dbSettingsValueName == 'showOnScreenStatistics' then
@@ -593,7 +240,6 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end
   if onScreenCheckboxItem then
     local onScreenRow = CreateOptionRowButton(displaySection)
-    table.insert(displaySectionContentChildren, onScreenRow)
     onScreenRow:SetPoint(
       'TOPLEFT',
       displaySection,
@@ -616,20 +262,13 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
       local newVal = btn:GetChecked() and true or false
       onScreenRow:SetChecked(newVal)
       tempSettings.showOnScreenStatistics = newVal
+      if ULTRA_STATISTICS_GLOBAL_SETTINGS then
+        ULTRA_STATISTICS_GLOBAL_SETTINGS.showOnScreenStatistics = newVal
+      end
+      if CheckAddonEnabled then
+        CheckAddonEnabled()
+      end
       cascadeDependencyUpdates('showOnScreenStatistics')
-    end)
-    local rowHoverOnEnter, rowHoverOnLeave =
-      onScreenRow:GetScript('OnEnter'),
-      onScreenRow:GetScript('OnLeave')
-    onScreenRow:SetScript('OnEnter', function(self)
-      if rowHoverOnEnter then
-        rowHoverOnEnter(self)
-      end
-    end)
-    onScreenRow:SetScript('OnLeave', function(self)
-      if rowHoverOnLeave then
-        rowHoverOnLeave(self)
-      end
     end)
   end
 
@@ -638,28 +277,34 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   displaySection:SetHeight(displayRowsHeight)
 
   local opacityRow = CreateFrame('Frame', nil, displaySection)
-  table.insert(displaySectionContentChildren, opacityRow)
-  opacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
+  opacityRow:SetHeight(LAYOUT.COLOR_ROW_HEIGHT)
   opacityRow:SetPoint(
     'TOPLEFT',
     displaySection,
     'TOPLEFT',
-    10,
+    ROW_BUTTON_PAD_H,
+    -(HEADER_HEIGHT + HEADER_CONTENT_GAP + OPTION_ROW_TOTAL)
+  )
+  opacityRow:SetPoint(
+    'TOPRIGHT',
+    displaySection,
+    'TOPRIGHT',
+    -ROW_BUTTON_PAD_H,
     -(HEADER_HEIGHT + HEADER_CONTENT_GAP + OPTION_ROW_TOTAL)
   )
   local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   opacityLabel:SetPoint('LEFT', opacityRow, 'LEFT', 0, 0)
-  opacityLabel:SetWidth(LABEL_WIDTH)
   opacityLabel:SetText('Background Opacity')
+  local bgSlider = CreateFrame('Slider', nil, opacityRow, 'OptionsSliderTemplate')
+  bgSlider:SetPoint('RIGHT', opacityRow, 'RIGHT', 0, 0)
+  bgSlider:SetSize(180, 16)
   local percentText = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  percentText:SetPoint('LEFT', opacityRow, 'LEFT', LABEL_WIDTH + GAP, 0)
+  percentText:SetPoint('RIGHT', bgSlider, 'LEFT', -10, 0)
   percentText:SetWidth(40)
+  percentText:SetJustifyH('RIGHT')
   percentText:SetText(
     tostring(math.floor((tempSettings.statisticsBackgroundOpacity or 0.3) * 100)) .. '%'
   )
-  local bgSlider = CreateFrame('Slider', nil, opacityRow, 'OptionsSliderTemplate')
-  bgSlider:SetPoint('LEFT', percentText, 'RIGHT', 10, 0)
-  bgSlider:SetSize(180, 16)
   local bgSliderTrack = bgSlider:CreateTexture(nil, 'BACKGROUND')
   bgSliderTrack:SetAllPoints(bgSlider)
   bgSliderTrack:SetTexture('Interface\\Tooltips\\UI-Tooltip-Background')
@@ -680,22 +325,22 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
   end)
 
   local borderOpacityRow = CreateFrame('Frame', nil, displaySection)
-  table.insert(displaySectionContentChildren, borderOpacityRow)
-  borderOpacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
+  borderOpacityRow:SetHeight(LAYOUT.COLOR_ROW_HEIGHT)
   borderOpacityRow:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', 0, -6)
+  borderOpacityRow:SetPoint('TOPRIGHT', opacityRow, 'BOTTOMRIGHT', 0, -6)
   local borderLabel = borderOpacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   borderLabel:SetPoint('LEFT', borderOpacityRow, 'LEFT', 0, 0)
-  borderLabel:SetWidth(LABEL_WIDTH)
   borderLabel:SetText('Border Opacity')
+  local borderSlider = CreateFrame('Slider', nil, borderOpacityRow, 'OptionsSliderTemplate')
+  borderSlider:SetPoint('RIGHT', borderOpacityRow, 'RIGHT', 0, 0)
+  borderSlider:SetSize(180, 16)
   local borderPercentText = borderOpacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  borderPercentText:SetPoint('LEFT', borderOpacityRow, 'LEFT', LABEL_WIDTH + GAP, 0)
+  borderPercentText:SetPoint('RIGHT', borderSlider, 'LEFT', -10, 0)
   borderPercentText:SetWidth(40)
+  borderPercentText:SetJustifyH('RIGHT')
   borderPercentText:SetText(
     tostring(math.floor((tempSettings.statisticsBorderOpacity or 0.9) * 100)) .. '%'
   )
-  local borderSlider = CreateFrame('Slider', nil, borderOpacityRow, 'OptionsSliderTemplate')
-  borderSlider:SetPoint('LEFT', borderPercentText, 'RIGHT', 10, 0)
-  borderSlider:SetSize(180, 16)
   local borderSliderTrack = borderSlider:CreateTexture(nil, 'BACKGROUND')
   borderSliderTrack:SetAllPoints(borderSlider)
   borderSliderTrack:SetTexture('Interface\\Tooltips\\UI-Tooltip-Background')
@@ -715,149 +360,99 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     end
   end)
 
-  local displaySectionExpandedHeight = displayRowsHeight
-  local displaySectionKey = 'Main Screen Statistics Display'
-  local displayInitialCollapsed =
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
-  if displayInitialCollapsed then
-    displaySection:SetHeight(HEADER_HEIGHT)
-    for _, c in ipairs(displaySectionContentChildren) do
-      c:Hide()
+  local leaderboardSection = CreateFrame('Frame', nil, optionsFrame, 'BackdropTemplate')
+  leaderboardSection:SetPoint('TOPLEFT', displaySection, 'BOTTOMLEFT', 0, -10)
+  leaderboardSection:SetPoint('TOPRIGHT', displaySection, 'BOTTOMRIGHT', 0, -10)
+  leaderboardSection:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  leaderboardSection:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  leaderboardSection:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+
+  local leaderboardHeader = CreateFrame('Frame', nil, leaderboardSection, 'BackdropTemplate')
+  leaderboardHeader:SetPoint('TOPLEFT', leaderboardSection, 'TOPLEFT', 0, 0)
+  leaderboardHeader:SetPoint('TOPRIGHT', leaderboardSection, 'TOPRIGHT', 0, 0)
+  leaderboardHeader:SetHeight(HEADER_HEIGHT)
+  leaderboardHeader:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  leaderboardHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  leaderboardHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  local leaderboardHeaderText = leaderboardHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  leaderboardHeaderText:SetPoint('LEFT', leaderboardHeader, 'LEFT', LAYOUT.HEADER_PADDING_H or 12, 0)
+  leaderboardHeaderText:SetText('Leaderboard Sharing')
+  leaderboardHeaderText:SetTextColor(0.9, 0.85, 0.75, 1)
+  leaderboardHeaderText:SetShadowOffset(1, -1)
+  leaderboardHeaderText:SetShadowColor(0, 0, 0, 0.8)
+
+  local prevLbRow
+  local lbRowCount = 0
+  for _, item in ipairs(settingsCheckboxOptions) do
+    if item.dbSettingsValueName == 'leaderboardOptOutGuild'
+      or item.dbSettingsValueName == 'leaderboardOptOutServer'
+    then
+      lbRowCount = lbRowCount + 1
+      local row = CreateOptionRowButton(leaderboardSection)
+      if prevLbRow then
+        row:SetPoint('TOPLEFT', prevLbRow, 'BOTTOMLEFT', 0, -10)
+        row:SetPoint('TOPRIGHT', prevLbRow, 'BOTTOMRIGHT', 0, -10)
+      else
+        row:SetPoint(
+          'TOPLEFT',
+          leaderboardSection,
+          'TOPLEFT',
+          ROW_BUTTON_PAD_H,
+          -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+        )
+        row:SetPoint(
+          'TOPRIGHT',
+          leaderboardSection,
+          'TOPRIGHT',
+          -ROW_BUTTON_PAD_H,
+          -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+        )
+      end
+      row.Text:SetText(item.name)
+      row:SetDescription(item.tooltip)
+      local key = item.dbSettingsValueName
+      row:SetChecked(tempSettings[key] and true or false)
+      checkboxes[key] = row
+      row.Check:SetScript('OnClick', function(btn)
+        local newVal = btn:GetChecked() and true or false
+        row:SetChecked(newVal)
+        tempSettings[key] = newVal
+      end)
+      prevLbRow = row
     end
-    displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
   end
-
-  table.insert(sectionFrames, displaySection)
-
-  local function recalcContentHeight()
-    local total = 10
-    for i, sf in ipairs(sectionFrames) do
-      if i > 1 then
-        total = total + SECTION_GAP
-      end
-      total = total + (sf:GetHeight() or 0)
-    end
-    scrollChild:SetHeight(total + 30)
-  end
-
-  displayHeaderBtn:SetScript('OnClick', function()
-    local cur = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey]
-    if cur == nil then
-      cur = false
-    end
-    local collapsed = not cur
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = collapsed
-    displayHeaderIcon:SetTexture(
-      collapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
-    )
-    for _, c in ipairs(displaySectionContentChildren) do
-      c:SetShown(not collapsed)
-    end
-    displaySection:SetHeight(collapsed and HEADER_HEIGHT or displaySectionExpandedHeight)
-    if SaveCharacterSettings then
-      SaveCharacterSettings(ULTRA_STATISTICS_GLOBAL_SETTINGS)
-    end
-    recalcContentHeight()
-  end)
-
-  local function applySearchFilter(query)
-    local q = string.lower(query or '')
-    if q == '' then
-      -- Restore all and use saved collapse state for Statistics
-      local saved = ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection['Statistics']
-      if saved == nil then
-        saved = false
-      end
-      sectionCollapsed[1] = saved
-      sectionHeaderIcons[1]:SetTexture(
-        saved and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
-      )
-      for _, child in ipairs(sectionChildren[1]) do
-        child:ClearAllPoints()
-        local y = child._originalOffsetY or 0
-        child:SetPoint('TOPLEFT', sectionFrames[1], 'TOPLEFT', ROW_BUTTON_PAD_H, y)
-        if child.Description then
-          child:SetPoint('TOPRIGHT', sectionFrames[1], 'TOPRIGHT', -ROW_BUTTON_PAD_H, y)
-        end
-        child:SetShown(not saved)
-      end
-      sectionFrames[1]:SetHeight(saved and sectionCollapsedHeights[1] or sectionExpandedHeights[1])
-    else
-      -- Expand Statistics section and filter children
-      sectionCollapsed[1] = false
-      sectionHeaderIcons[1]:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
-      local visibleCount = 0
-      for _, child in ipairs(sectionChildren[1]) do
-        local blob = child._uhcSearch or ''
-        if IsSearchMatch(blob, q) then
-          child:Show()
-          child:ClearAllPoints()
-          local y = -(HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * OPTION_ROW_TOTAL)
-          child:SetPoint('TOPLEFT', sectionFrames[1], 'TOPLEFT', ROW_BUTTON_PAD_H, y)
-          if child.Description then
-            child:SetPoint('TOPRIGHT', sectionFrames[1], 'TOPRIGHT', -ROW_BUTTON_PAD_H, y)
-          end
-          visibleCount = visibleCount + 1
-        else
-          child:Hide()
-        end
-      end
-      sectionFrames[1]:SetHeight(
-        HEADER_HEIGHT + HEADER_CONTENT_GAP + visibleCount * OPTION_ROW_TOTAL + 8
-      )
-    end
-    recalcContentHeight()
-  end
-
-  clearSearchButton:SetScript('OnClick', function()
-    searchBox:SetText('')
-    searchBox:ClearFocus()
-    searchPlaceholder:Show()
-    applySearchFilter('')
-  end)
-
-  collapseAllButton:SetScript('OnClick', function()
-    for idx = 1, #sectionFrames do
-      if sectionCollapsed[idx] ~= nil then
-        sectionCollapsed[idx] = true
-        if sectionHeaderIcons[idx] then
-          sectionHeaderIcons[idx]:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
-        end
-        if sectionCollapsedHeights[idx] then
-          sectionFrames[idx]:SetHeight(sectionCollapsedHeights[idx])
-        end
-        if sectionChildren[idx] then
-          for _, child in ipairs(sectionChildren[idx]) do
-            child:SetShown(false)
-          end
-        end
-        local title = (STATISTICS_SECTIONS[idx] and STATISTICS_SECTIONS[idx].title)
-        if title and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections and ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection then
-          ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[title] = true
-        end
-      end
-    end
-    -- Also collapse Main Screen Statistics Display section
-    if displaySection and displaySectionContentChildren and displaySectionKey then
-      ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[displaySectionKey] = true
-      displayHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
-      for _, c in ipairs(displaySectionContentChildren) do
-        c:SetShown(false)
-      end
-      displaySection:SetHeight(HEADER_HEIGHT)
-    end
-    recalcContentHeight()
-  end)
-
-  recalcContentHeight()
-  scrollFrame:SetScript('OnSizeChanged', function()
-    scrollChild:SetWidth(scrollFrame:GetWidth() - 10)
-  end)
+  leaderboardSection:SetHeight(
+    HEADER_HEIGHT + HEADER_CONTENT_GAP + (lbRowCount * OPTION_ROW_TOTAL) + 8
+  )
 
   -- Save button
-  local saveButton = CreateFrame('Button', nil, tabContents[5], 'UIPanelButtonTemplate')
+  local saveButton = CreateFrame('Button', nil, tabContents[3], 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
-  saveButton:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, -35)
+  saveButton:SetPoint('BOTTOM', tabContents[3], 'BOTTOM', 0, -35)
   saveButton:SetText('Save and Reload')
 
   local function updateSaveButtonState()
@@ -894,32 +489,6 @@ function UltraStatistics_InitializeSettingsTab(tabContents)
     else
       doSaveAndReload()
     end
-  end)
-
-  searchBox:SetScript('OnTextChanged', function(self)
-    local txt = self:GetText() or ''
-    if txt == '' then
-      searchPlaceholder:Show()
-    else
-      searchPlaceholder:Hide()
-    end
-    applySearchFilter(txt)
-  end)
-  searchBox:SetScript('OnEditFocusGained', function()
-    if (searchBox:GetText() or '') == '' then
-      searchPlaceholder:Hide()
-    end
-  end)
-  searchBox:SetScript('OnEditFocusLost', function()
-    if (searchBox:GetText() or '') == '' then
-      searchPlaceholder:Show()
-    end
-  end)
-  searchBox:SetScript('OnEscapePressed', function(self)
-    self:SetText('')
-    self:ClearFocus()
-    searchPlaceholder:Show()
-    applySearchFilter('')
   end)
 
   _G.updateCheckboxes = updateCheckboxes

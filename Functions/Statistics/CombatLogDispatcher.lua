@@ -25,8 +25,7 @@ frame:SetScript('OnEvent', function()
     UltraStatisticsKillTracker.HandlePartyKill(destGUID)
   end
 
-  -- Some boss deaths do NOT fire PARTY_KILL for the player/party (no killing blow credit),
-  -- but they DO fire UNIT_DIED. Use this to count boss kills reliably.
+  -- Some boss deaths do not fire PARTY_KILL (no killing blow credit) but do fire UNIT_DIED.
   if subEvent == 'UNIT_DIED' and UltraStatisticsKillTracker and UltraStatisticsKillTracker.HandleUnitDied then
     UltraStatisticsKillTracker.HandleUnitDied(destGUID)
   end

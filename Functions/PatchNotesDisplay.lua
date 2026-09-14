@@ -2,57 +2,66 @@
 -- This component can be used in multiple places (version dialog, settings info tab, etc.)
 
 function CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
-  -- Create scrollable frame for patch notes
+  xOffset = xOffset or 10
+  yOffset = yOffset or -10
+  local scrollBarPad = 20
+  local bottomPad = 10
+
+  -- Create scrollable frame for patch notes (leave room on the right for the scrollbar)
   local patchNotesScrollFrame =
     CreateFrame('ScrollFrame', nil, parent, 'UIPanelScrollFrameTemplate')
-  patchNotesScrollFrame:SetSize(width, height)
-  patchNotesScrollFrame:SetPoint('TOPLEFT', parent, 'TOPLEFT', xOffset, yOffset)
+  if width and height then
+    patchNotesScrollFrame:SetSize(width, height)
+    patchNotesScrollFrame:SetPoint('TOPLEFT', parent, 'TOPLEFT', xOffset, yOffset)
+  else
+    patchNotesScrollFrame:SetPoint('TOPLEFT', parent, 'TOPLEFT', xOffset, yOffset)
+    patchNotesScrollFrame:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -(xOffset + scrollBarPad), bottomPad)
+  end
+
+  local function getContentWidth()
+    local w = patchNotesScrollFrame:GetWidth()
+    if w and w > 0 then
+      return w
+    end
+    local parentW = parent:GetWidth()
+    if parentW and parentW > 0 then
+      return math.max(50, parentW - xOffset * 2 - scrollBarPad)
+    end
+    return width or 400
+  end
 
   -- Create scroll child frame
   local patchNotesScrollChild = CreateFrame('Frame', nil, patchNotesScrollFrame)
-  patchNotesScrollChild:SetSize(width, height)
+  local contentWidth = getContentWidth()
+  local contentHeight = height or 200
+  patchNotesScrollChild:SetSize(contentWidth, contentHeight)
   patchNotesScrollFrame:SetScrollChild(patchNotesScrollChild)
 
+  local contentBuilt = false
+
   -- Helper function to create properly formatted bullet point text
-  local function createBulletText(parent, text, yOffset, fontSize, textColor)
-    -- Simple approach: detect indentation and apply consistent formatting
+  local function createBulletText(textParent, text, noteYOffset, fontSize, textColor)
     local indentLevel = 0
     local cleanText = text
 
-    -- Count leading spaces
     local spaces = string.match(text, '^%s*')
     if spaces then
-      indentLevel = math.floor(#spaces / 2) -- Every 2 spaces = 1 level
+      indentLevel = math.floor(#spaces / 2)
     end
 
-    -- Determine formatting based on indentation
-    local indent, bulletStyle
+    local indent
     if indentLevel == 0 then
       indent = 10
-      bulletStyle = '•'
     elseif indentLevel == 1 then
       indent = 30
-      bulletStyle = '-'
     else
       indent = 50
-      bulletStyle = '▪'
     end
 
-    -- Simple approach: remove leading spaces and bullets manually
-    -- cleanText = text
-    -- Remove leading spaces
-    -- cleanText = string.gsub(cleanText, "^%s+", "")
-    -- Remove any bullet character at the start
-    -- cleanText = string.gsub(cleanText, "^[•◦▪-*+]%s*", "")
-    -- Add our consistent bullet
-    -- cleanText = bulletStyle .. " " .. cleanText
-    cleanText = text
+    local textWidth = math.max(50, contentWidth - indent)
 
-    -- Calculate text width based on indentation
-    local textWidth = width - indent
-
-    local textFrame = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    textFrame:SetPoint('TOPLEFT', parent, 'TOPLEFT', indent, yOffset)
+    local textFrame = textParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    textFrame:SetPoint('TOPLEFT', textParent, 'TOPLEFT', indent, noteYOffset)
     textFrame:SetWidth(textWidth)
     textFrame:SetJustifyH('LEFT')
     local font, _, flags = textFrame:GetFont()
@@ -64,64 +73,68 @@ function CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
 
   -- Generate patch notes content
   local function generatePatchNotes()
-    local yOffset = 0
+    if contentBuilt then
+      return
+    end
+    contentWidth = getContentWidth()
+    patchNotesScrollChild:SetWidth(contentWidth)
 
-    for i, patch in ipairs(ULTRA_STATISTICS_PATCH_NOTES) do
-      -- Filter patch notes based on expansion
-      -- Skip TBC notes if we're in Classic
-      -- Skip Classic notes (no expansion field) if we're in TBC
-      local shouldSkip = false
-      if patch.expansion == 'TBC' and not UltraStatistics_IsTBC() then
-        -- Skip TBC notes in Classic
-        shouldSkip = true
-      elseif not patch.expansion and UltraStatistics_IsTBC() then
-        -- Skip Classic notes (no expansion field) in TBC
-        shouldSkip = true
-      end
+    local noteYOffset = 0
 
-      if not shouldSkip then
-        -- Version header
-        local versionHeader =
-          patchNotesScrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-        versionHeader:SetPoint('TOPLEFT', patchNotesScrollChild, 'TOPLEFT', 0, yOffset)
-        versionHeader:SetWidth(width)
-        versionHeader:SetJustifyH('LEFT')
-        local font, _, flags = versionHeader:GetFont()
-        versionHeader:SetFont(font, 14, flags)
-        versionHeader:SetTextColor(1, 1, 0)
-        versionHeader:SetText('Version ' .. patch.version .. ' (' .. patch.date .. ')')
+    for _, patch in ipairs(ULTRA_STATISTICS_PATCH_NOTES) do
+      local versionHeader =
+        patchNotesScrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+      versionHeader:SetPoint('TOPLEFT', patchNotesScrollChild, 'TOPLEFT', 0, noteYOffset)
+      versionHeader:SetWidth(contentWidth)
+      versionHeader:SetJustifyH('LEFT')
+      local font, _, flags = versionHeader:GetFont()
+      versionHeader:SetFont(font, 14, flags)
+      versionHeader:SetTextColor(1, 1, 0)
+      versionHeader:SetText('Version ' .. patch.version .. ' (' .. patch.date .. ')')
 
-        -- Calculate actual height of version header
-        local headerHeight = versionHeader:GetStringHeight()
-        yOffset = yOffset - headerHeight - 12
+      local headerHeight = versionHeader:GetStringHeight()
+      noteYOffset = noteYOffset - headerHeight - 12
 
-        -- Patch notes with improved bullet formatting
-        for j, note in ipairs(patch.notes) do
-          -- Add extra gap before main bullet points (level 0)
-          local spaces = string.match(note, '^%s*')
-          local indentLevel = spaces and math.floor(#spaces / 2) or 0
-          if indentLevel == 0 and j > 1 then
-            yOffset = yOffset - 8 -- Extra gap before main bullet points
-          end
-
-          local noteText =
-            createBulletText(patchNotesScrollChild, note, yOffset, 13, { 0.9, 0.9, 0.9 })
-
-          -- Calculate actual height of note text (handles wrapping)
-          local noteHeight = noteText:GetStringHeight()
-          yOffset = yOffset - noteHeight - 3
+      for j, note in ipairs(patch.notes) do
+        local spaces = string.match(note, '^%s*')
+        local indentLevel = spaces and math.floor(#spaces / 2) or 0
+        if indentLevel == 0 and j > 1 then
+          noteYOffset = noteYOffset - 8
         end
 
-        -- Add spacing between versions
-        yOffset = yOffset - 12
+        local noteText =
+          createBulletText(patchNotesScrollChild, note, noteYOffset, 13, { 0.9, 0.9, 0.9 })
+
+        local noteHeight = noteText:GetStringHeight()
+        noteYOffset = noteYOffset - noteHeight - 3
       end
+
+      noteYOffset = noteYOffset - 12
     end
 
-    -- Update scroll child height based on content
-    patchNotesScrollChild:SetHeight(math.max(height, math.abs(yOffset) + 20))
+    local viewHeight = patchNotesScrollFrame:GetHeight() or contentHeight
+    patchNotesScrollChild:SetHeight(math.max(viewHeight, math.abs(noteYOffset) + 20))
+    contentBuilt = true
   end
 
-  generatePatchNotes()
+  patchNotesScrollFrame:SetScript('OnSizeChanged', function()
+    contentWidth = getContentWidth()
+    patchNotesScrollChild:SetWidth(contentWidth)
+    if not contentBuilt and contentWidth > 50 then
+      generatePatchNotes()
+    end
+  end)
+
+  -- Build immediately when possible; otherwise OnSizeChanged will.
+  if getContentWidth() > 50 then
+    generatePatchNotes()
+  elseif C_Timer and C_Timer.After then
+    C_Timer.After(0, function()
+      if not contentBuilt then
+        generatePatchNotes()
+      end
+    end)
+  end
 
   return patchNotesScrollFrame
 end

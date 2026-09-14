@@ -16,17 +16,10 @@ local function GetDeathContextKey()
   if instanceType == 'arena' then
     return 'playerDeathsArena'
   end
-  if instanceType == 'party' then
-    if type(GetInstanceInfo) == 'function' then
-      local _, _, difficultyID = GetInstanceInfo()
-      if difficultyID == 2 then
-        return 'playerDeathsHeroicDungeon'
-      end
-    end
-    return 'playerDeathsDungeon'
-  end
-  if instanceType == 'raid' then
-    return 'playerDeathsRaid'
+
+  -- party/raid deaths still count toward the total, but no dedicated bucket
+  if instanceType == 'party' or instanceType == 'raid' then
+    return nil
   end
 
   return 'playerDeathsOpenWorld'
@@ -41,44 +34,12 @@ frame:SetScript('OnEvent', function(_, event)
     lastCountTime = nowT
 
     local total = UltraStatisticsCharacterStats:GetStat('playerDeaths') or 0
-    local contextKey = GetDeathContextKey()
-    local contextVal = UltraStatisticsCharacterStats:GetStat(contextKey) or 0
-
     UltraStatisticsCharacterStats:UpdateStat('playerDeaths', total + 1)
-    UltraStatisticsCharacterStats:UpdateStat(contextKey, contextVal + 1)
 
-    -- If we're in a dungeon and NOT currently in a boss fight, increment deaths for that dungeon.
-    if type(GetInstanceInfo) == 'function' then
-      local name, instanceType, difficultyID = GetInstanceInfo()
-      local inBossFight =
-        (BossFightTracker and BossFightTracker.IsInBossFight and BossFightTracker.IsInBossFight()) or false
-
-      if inBossFight then
-        local bossGUID =
-          (BossFightTracker and BossFightTracker.GetAnyBossGUIDInCombat and BossFightTracker.GetAnyBossGUIDInCombat()) or nil
-
-        local didBossDeathUpdate = false
-        if bossGUID and DungeonRaidStats and DungeonRaidStats.RecordBossDeath then
-          didBossDeathUpdate = DungeonRaidStats.RecordBossDeath(bossGUID) == true
-        end
-
-        -- Even when dying to a boss, total instance deaths should increment.
-        -- If boss-attribution didn\'t update (missing bossGUID, no mapping, gated, etc),
-        -- fall back to incrementing the current dungeon\'s instance deaths by name.
-        if not didBossDeathUpdate and instanceType == 'party' then
-          if DungeonRaidStats and DungeonRaidStats.RecordNonBossDungeonDeath then
-            DungeonRaidStats.RecordNonBossDungeonDeath(name, difficultyID)
-          end
-        end
-
-        return
-      end
-
-      if not inBossFight then
-        if DungeonRaidStats and DungeonRaidStats.RecordNonBossDungeonDeath then
-          DungeonRaidStats.RecordNonBossDungeonDeath(name, difficultyID)
-        end
-      end
+    local contextKey = GetDeathContextKey()
+    if contextKey then
+      local contextVal = UltraStatisticsCharacterStats:GetStat(contextKey) or 0
+      UltraStatisticsCharacterStats:UpdateStat(contextKey, contextVal + 1)
     end
   end
 end)

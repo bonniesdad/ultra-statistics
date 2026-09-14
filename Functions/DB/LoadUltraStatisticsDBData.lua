@@ -13,15 +13,25 @@ function LoadUltraStatisticsDBData()
     UltraStatisticsDB.characterSettings = {}
   end
 
+  if type(UltraStatisticsDB.leaderboards) ~= 'table' then
+    UltraStatisticsDB.leaderboards = {
+      guild = {},
+      server = {},
+    }
+  end
+  if type(UltraStatisticsDB.leaderboards.guild) ~= 'table' then
+    UltraStatisticsDB.leaderboards.guild = {}
+  end
+  if type(UltraStatisticsDB.leaderboards.server) ~= 'table' then
+    UltraStatisticsDB.leaderboards.server = {}
+  end
+
   -- Defaults needed by the ported Statistics UI + on-screen overlay.
   local defaultSettings = {
-    showTiers = false,
     showOnScreenStatistics = true,
-    -- Statistics tracking/toasts
-    showStatisticsTracking = false,
-    minimalStatisticsTracking = false,
-    statisticsTrackingTierOnly = false,
-    statisticsToastEnabled = {},
+    -- Leaderboard sharing (opt-out disables send + receive)
+    leaderboardOptOutGuild = false,
+    leaderboardOptOutServer = false,
     -- Statistics panel appearance
     statisticsBackgroundOpacity = 0.3,
     statisticsBorderOpacity = 0.9,
@@ -30,17 +40,16 @@ function LoadUltraStatisticsDBData()
     -- Row visibility settings (MainScreenStatistics.lua reads these)
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelGuild = false,
-    showMainStatisticsPanelUhcXpVerification = false,
     showMainStatisticsPanelTotalHP = false,
     showMainStatisticsPanelTotalMana = false,
     showMainStatisticsPanelMaxResource = false,
     showMainStatisticsPanelEnemiesSlain = true,
-    showMainStatisticsPanelDungeonsCompleted = false,
     showMainStatisticsPanelPetDeaths = false,
     showMainStatisticsPanelElitesSlain = false,
-    showMainStatisticsPanelDungeonBosses = false,
     showMainStatisticsPanelRareElitesSlain = false,
     showMainStatisticsPanelWorldBossesSlain = false,
+    showMainStatisticsPanelDungeonBosses = false,
+    showMainStatisticsPanelDungeonsCompleted = false,
     showMainStatisticsPanelHighestCritValue = false,
     showMainStatisticsPanelHighestHealCritValue = false,
     showMainStatisticsPanelHealthPotionsUsed = false,
@@ -50,11 +59,9 @@ function LoadUltraStatisticsDBData()
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
     showMainStatisticsPanelPlayerDeaths = true,
+    showMainStatisticsPanelServerDeaths = true,
     showMainStatisticsPanelPlayerDeathsOpenWorld = false,
     showMainStatisticsPanelPlayerDeathsBattleground = false,
-    showMainStatisticsPanelPlayerDeathsDungeon = false,
-    showMainStatisticsPanelPlayerDeathsHeroicDungeon = false,
-    showMainStatisticsPanelPlayerDeathsRaid = false,
     showMainStatisticsPanelPlayerDeathsArena = false,
     showMainStatisticsPanelLowestHealth = false,
     showMainStatisticsPanelLowestHealthThisLevel = false,
@@ -91,9 +98,6 @@ function LoadUltraStatisticsDBData()
   end
 
   ULTRA_STATISTICS_GLOBAL_SETTINGS = UltraStatisticsDB.characterSettings[characterGUID]
-  if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled) ~= 'table' then
-    ULTRA_STATISTICS_GLOBAL_SETTINGS.statisticsToastEnabled = {}
-  end
   if type(ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections) ~= 'table' then
     ULTRA_STATISTICS_GLOBAL_SETTINGS.collapsedStatsSections = {}
   end
